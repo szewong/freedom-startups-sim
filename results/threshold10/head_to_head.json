@@ -1,0 +1,25 @@
+{
+  "tournaments": 640,
+  "championships": {
+    "A": 368,
+    "B": 272
+  },
+  "final_four": {
+    "A": 1432,
+    "B": 1128
+  },
+  "avg_elimination_round": {
+    "A": 1.023974609375,
+    "B": 0.944775390625
+  },
+  "head_to_head_wins": {
+    "A": 330684,
+    "B": 309316
+  },
+  "champion_share_ci": [
+    0.3867003794078845,
+    0.4632996205921155
+  ],
+  "verdict": "A wins more",
+  "config_hash": "374a7f8c35c193b8"
+}

@@ -1,0 +1,32 @@
+[project]
+name = "incentive-sim"
+version = "0.1.0"
+description = "Incentive Evolution Simulator — how success metrics shape long-term performance"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2.1",
+    "pyarrow>=17.0",
+    "pyyaml>=6.0",
+    "matplotlib>=3.9",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3"]
+
+[project.scripts]
+incentive-sim = "incentive_sim.experiment:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/incentive_sim"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"

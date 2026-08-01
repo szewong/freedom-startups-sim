@@ -1,0 +1,58 @@
+{
+  "config_hash": "374a7f8c35c193b8",
+  "config": {
+    "name": "threshold10",
+    "seasons": 600,
+    "replicates": 16,
+    "root_seed": 20260801,
+    "leagues": [
+      {
+        "name": "A",
+        "win_threshold": 1
+      },
+      {
+        "name": "B",
+        "win_threshold": 10
+      }
+    ],
+    "match": {
+      "base_possessions": 60.0,
+      "tempo_scale": 40.0,
+      "base_points": 1.05,
+      "skill_scale": 0.55,
+      "overreach_penalty": 0.9,
+      "base_variance": 0.65,
+      "variance_gain": 2.2,
+      "n_segments": 4,
+      "endgame_variance_damp": 0.55,
+      "endgame_mean_cost": 0.06,
+      "margin_seek_variance_gain": 0.35,
+      "fatigue_per_game": 0.03,
+      "fatigue_aggression_gain": 0.55,
+      "fatigue_stamina_damp": 0.8
+    },
+    "learning": {
+      "eval_window": 150,
+      "step_size": 0.06,
+      "step_adaptability_gain": 1.5
+    },
+    "evolution": {
+      "replace_fraction": 0.2,
+      "attr_mutation": 0.02,
+      "strategy_mutation": 0.04,
+      "attribute_budget": 2.5,
+      "attr_min": 0.05,
+      "attr_max": 0.95
+    },
+    "tournament": {
+      "n_teams": 64,
+      "regular_season_games": 12
+    },
+    "output_dir": "results"
+  },
+  "git_sha": "HEAD",
+  "numpy": "2.5.1",
+  "python": "3.13.7",
+  "wall_clock_seconds": 236.5,
+  "games_simulated": 8582400
+}

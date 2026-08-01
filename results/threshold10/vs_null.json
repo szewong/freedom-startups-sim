@@ -1,0 +1,74 @@
+{
+  "strat_aggression": {
+    "treatment_gap": 0.15567999080330558,
+    "drift_gap": -0.01170899647699763,
+    "net_effect": 0.16738898728030321,
+    "se": 0.027798249208316504,
+    "t": 6.021565819700071,
+    "survives_null_control": true
+  },
+  "attr_offense": {
+    "treatment_gap": -0.0036836154911432523,
+    "drift_gap": -0.0011978644016326229,
+    "net_effect": -0.0024857510895106294,
+    "se": 0.0012122346363562608,
+    "t": -2.050552768383445,
+    "survives_null_control": true
+  },
+  "attr_defense": {
+    "treatment_gap": -0.0033800114944084747,
+    "drift_gap": -0.0004882616358245634,
+    "net_effect": -0.0028917498585839113,
+    "se": 0.0012282715028955862,
+    "t": -2.354324635690693,
+    "survives_null_control": true
+  },
+  "attr_risk_capacity": {
+    "treatment_gap": 0.07823027312592032,
+    "drift_gap": 0.015095105645792306,
+    "net_effect": 0.06313516748012801,
+    "se": 0.038138694313928516,
+    "t": 1.6554097778085342,
+    "survives_null_control": false
+  },
+  "strat_tempo": {
+    "treatment_gap": 0.19096144747900226,
+    "drift_gap": 0.05705813489325373,
+    "net_effect": 0.13390331258574853,
+    "se": 0.12187968662156931,
+    "t": 1.0986515989453765,
+    "survives_null_control": false
+  },
+  "margin_sd": {
+    "treatment_gap": 2.1021110022558274,
+    "drift_gap": -0.26482315974769854,
+    "net_effect": 2.366934162003526,
+    "se": 0.4704005013826776,
+    "t": 5.031742430219033,
+    "survives_null_control": true
+  },
+  "blowout_rate": {
+    "treatment_gap": 0.07829045488441463,
+    "drift_gap": -0.014024049217002243,
+    "net_effect": 0.09231450410141688,
+    "se": 0.019194830220227044,
+    "t": 4.809342048992864,
+    "survives_null_control": true
+  },
+  "close_rate": {
+    "treatment_gap": -0.03992356450410141,
+    "drift_gap": 0.009284116331096208,
+    "net_effect": -0.049207680835197616,
+    "se": 0.009631763021468745,
+    "t": -5.108896546303726,
+    "survives_null_control": true
+  },
+  "sd_aggression": {
+    "treatment_gap": 0.020617597365677746,
+    "drift_gap": -0.004447963035116478,
+    "net_effect": 0.025065560400794225,
+    "se": 0.008456926373746598,
+    "t": 2.963909024750046,
+    "survives_null_control": true
+  }
+}

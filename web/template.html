@@ -1,0 +1,1306 @@
+<title>Incentive Evolution Simulator</title>
+
+<style>
+  :root {
+    color-scheme: light;
+    --ground: #f4f5f7;
+    --panel: #ffffff;
+    --panel-2: #eceff3;
+    --ink: #10131a;
+    --ink-2: #4a5160;
+    --ink-3: #858c9c;
+    --rule: #dfe3ea;
+    --rule-strong: #c6ccd7;
+    --a: #2a78d6;
+    --b: #eb6834;
+    --a-wash: rgba(42, 120, 214, 0.10);
+    --b-wash: rgba(235, 104, 52, 0.10);
+    --void: #b9c0cc;
+    --void-ink: #6d7482;
+    --shadow: 0 1px 2px rgba(16, 19, 26, 0.05), 0 8px 24px rgba(16, 19, 26, 0.05);
+
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+    --step: clamp(0.9rem, 0.85rem + 0.2vw, 1rem);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --ground: #0e1014;
+      --panel: #171a21;
+      --panel-2: #1e222b;
+      --ink: #f2f4f8;
+      --ink-2: #a8b0c0;
+      --ink-3: #6c7484;
+      --rule: #262b35;
+      --rule-strong: #363d4a;
+      --a: #3987e5;
+      --b: #d95926;
+      --a-wash: rgba(57, 135, 229, 0.14);
+      --b-wash: rgba(217, 89, 38, 0.14);
+      --void: #4b5462;
+      --void-ink: #99a1b1;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --ground: #0e1014;
+    --panel: #171a21;
+    --panel-2: #1e222b;
+    --ink: #f2f4f8;
+    --ink-2: #a8b0c0;
+    --ink-3: #6c7484;
+    --rule: #262b35;
+    --rule-strong: #363d4a;
+    --a: #3987e5;
+    --b: #d95926;
+    --a-wash: rgba(57, 135, 229, 0.14);
+    --b-wash: rgba(217, 89, 38, 0.14);
+    --void: #4b5462;
+    --void-ink: #99a1b1;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: var(--step);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: clamp(1.5rem, 1rem + 2vw, 3.5rem) clamp(1rem, 0.5rem + 2vw, 2rem) 5rem;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(2rem, 1rem + 3vw, 3.5rem);
+  }
+
+  .micro {
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  /* ---- masthead ---- */
+
+  header { display: flex; flex-direction: column; gap: 1.25rem; }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(2rem, 1.4rem + 2.6vw, 3.4rem);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    font-weight: 700;
+    text-wrap: balance;
+    max-width: 20ch;
+  }
+
+  .standfirst {
+    margin: 0;
+    max-width: 62ch;
+    font-size: clamp(1rem, 0.95rem + 0.35vw, 1.175rem);
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+
+  .rules {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .rule-card {
+    background: var(--panel);
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .rule-card .name {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+  }
+
+  .swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    flex: none;
+  }
+  .swatch.a { background: var(--a); }
+  .swatch.b { background: var(--b); }
+
+  .rule-card .formula {
+    font-family: var(--mono);
+    font-size: 0.8125rem;
+    color: var(--ink-2);
+  }
+
+  .runmeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.75rem;
+    padding-top: 0.25rem;
+    border-top: 1px solid var(--rule);
+  }
+  .runmeta div { display: flex; gap: 0.5rem; align-items: baseline; }
+  .runmeta .v { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--ink); font-size: 0.8125rem; }
+
+  /* ---- sections ---- */
+
+  section { display: flex; flex-direction: column; gap: 1.25rem; }
+
+  .sec-head { display: flex; flex-direction: column; gap: 0.4rem; }
+  .sec-head h2 {
+    margin: 0;
+    font-size: clamp(1.3rem, 1.1rem + 0.8vw, 1.75rem);
+    letter-spacing: -0.025em;
+    font-weight: 680;
+  }
+  .sec-head p { margin: 0; max-width: 68ch; color: var(--ink-2); text-wrap: pretty; }
+
+  /* ---- controls ---- */
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.5rem;
+    padding: 0.85rem 1rem;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+  }
+
+  button, select {
+    font-family: inherit;
+    font-size: 0.875rem;
+    color: var(--ink);
+    background: var(--panel-2);
+    border: 1px solid var(--rule-strong);
+    border-radius: 2px;
+    padding: 0.45rem 0.9rem;
+    cursor: pointer;
+    transition: background 0.12s ease, border-color 0.12s ease;
+  }
+  button:hover, select:hover { border-color: var(--ink-3); }
+  button:focus-visible, select:focus-visible, .season-btn:focus-visible {
+    outline: 2px solid var(--a);
+    outline-offset: 2px;
+  }
+  button[disabled] { opacity: 0.45; cursor: default; }
+
+  #play {
+    background: var(--ink);
+    color: var(--ground);
+    border-color: var(--ink);
+    font-weight: 620;
+    min-width: 9.5rem;
+  }
+  #play:hover { background: var(--ink-2); border-color: var(--ink-2); }
+
+  .seasons { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
+
+  .season-btn {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.8125rem;
+    padding: 0.3rem 0.6rem;
+    background: transparent;
+    border: 1px solid var(--rule-strong);
+    border-radius: 2px;
+    color: var(--ink-2);
+    cursor: pointer;
+  }
+  .season-btn[aria-pressed="true"] {
+    background: var(--ink);
+    color: var(--ground);
+    border-color: var(--ink);
+  }
+
+  /* ---- the wall ---- */
+
+  .walls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+    gap: 1rem;
+  }
+
+  .wall {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 1rem 1.1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    min-width: 0;
+  }
+
+  .wall-head { display: flex; flex-direction: column; gap: 0.65rem; }
+
+  .wall-title {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+  }
+  .wall-title .rulechip {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--ink-2);
+    background: var(--panel-2);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 0.1rem 0.45rem;
+  }
+
+  .tally { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+  .tally div { display: flex; flex-direction: column; gap: 0.1rem; }
+  .tally .v {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 1.45rem;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+  .wall[data-league="A"] .tally .v.hero { color: var(--a); }
+  .wall[data-league="B"] .tally .v.hero { color: var(--b); }
+
+  .round { display: flex; flex-direction: column; gap: 0.35rem; }
+
+  .round-label {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 0.25rem;
+  }
+  .round-label .count { margin-left: auto; }
+
+  .chips {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+    gap: 4px;
+  }
+
+  .chip {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 30px;
+    border-radius: 2px;
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    cursor: default;
+    border: 1px solid transparent;
+  }
+
+  .chip.pending { background: var(--panel-2); border-color: var(--rule); color: transparent; }
+
+  .wall[data-league="A"] .chip.counted { background: var(--a-wash); color: var(--a); border-color: var(--a); }
+  .wall[data-league="B"] .chip.counted { background: var(--b-wash); color: var(--b); border-color: var(--b); }
+
+  .chip.wasted {
+    background: transparent;
+    border-color: var(--void);
+    border-style: dashed;
+    color: var(--void-ink);
+  }
+
+  .chip.reveal { animation: pop 0.28s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+  @keyframes pop {
+    from { opacity: 0; transform: scale(0.82); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .chip.reveal { animation: none; }
+    * { scroll-behavior: auto !important; }
+  }
+
+  .chip:hover::after {
+    content: attr(data-detail);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: var(--ground);
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    white-space: nowrap;
+    padding: 0.3rem 0.5rem;
+    border-radius: 2px;
+    z-index: 20;
+    pointer-events: none;
+  }
+
+  .champ {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    padding-top: 0.6rem;
+    border-top: 1px solid var(--rule);
+    min-height: 2.2rem;
+  }
+  .champ .v { font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 650; }
+  .wall[data-league="A"] .champ .v { color: var(--a); }
+  .wall[data-league="B"] .champ .v { color: var(--b); }
+
+  .key {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    align-items: center;
+  }
+  .key span { display: flex; align-items: center; gap: 0.45rem; }
+  .key .box { width: 22px; height: 15px; border-radius: 2px; flex: none; }
+  .key .box.counted { background: var(--a-wash); border: 1px solid var(--a); }
+  .key .box.wasted { border: 1px dashed var(--void); }
+
+  /* ---- chart ---- */
+
+  .chart-panel {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 1rem 1.1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  .chart-scroll { overflow-x: auto; }
+  svg { display: block; width: 100%; height: auto; min-width: 520px; }
+
+  .chart-legend { display: flex; flex-wrap: wrap; gap: 0.5rem 1.75rem; }
+  .chart-legend span { display: flex; align-items: center; gap: 0.5rem; color: var(--ink-2); font-size: 0.875rem; }
+  .chart-legend .line { width: 20px; height: 2px; border-radius: 1px; flex: none; }
+
+  .readout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .readout div { background: var(--panel); padding: 0.8rem 0.9rem; display: flex; flex-direction: column; gap: 0.15rem; }
+  .readout .v { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 1.3rem; letter-spacing: -0.03em; }
+  .readout .v.a { color: var(--a); }
+  .readout .v.b { color: var(--b); }
+
+  /* ---- verdict ---- */
+
+  .verdict {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--ink);
+    border-radius: 3px;
+    padding: 1.2rem 1.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .verdict p { margin: 0; max-width: 68ch; color: var(--ink-2); text-wrap: pretty; }
+  .verdict strong { color: var(--ink); }
+
+  table { border-collapse: collapse; width: 100%; font-size: 0.875rem; }
+  th, td { text-align: right; padding: 0.5rem 0.7rem; border-bottom: 1px solid var(--rule); }
+  th:first-child, td:first-child { text-align: left; }
+  thead th { font-family: var(--mono); font-size: 0.6875rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); font-weight: 500; }
+  tbody td { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  tbody td:first-child { font-family: var(--sans); color: var(--ink-2); }
+  td.a { color: var(--a); }
+  td.b { color: var(--b); }
+
+  .caveats { display: flex; flex-direction: column; gap: 0.7rem; }
+  .caveats li { color: var(--ink-2); max-width: 72ch; }
+  .caveats ul { margin: 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+
+  footer {
+    border-top: 1px solid var(--rule);
+    padding-top: 1.25rem;
+    color: var(--ink-3);
+    font-size: 0.8125rem;
+  }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div class="micro">Freedom Startups &middot; computational appendix</div>
+    <h1>Change the definition of winning, and you change who wins.</h1>
+    <p class="standfirst">
+      Two leagues of 64 teams start from byte-identical populations and play the
+      same game under the same physics. One difference: what counts as a success.
+      After 600 seasons of selection, watch what each league became.
+    </p>
+
+<div class="rules" id="rules"></div>
+
+    <div class="runmeta micro" id="runmeta"></div>
+  </header>
+
+  <section>
+    <div class="sec-head">
+      <h2>The tournament</h2>
+      <p>
+        Every season ends in a 64-team single-elimination bracket. Each chip below is
+        one game, showing the winner&rsquo;s margin of victory. Solid means the win counted
+        under that league&rsquo;s rule; a dashed outline means the team won and got nothing
+        for it. Scrub through the seasons to watch the two populations pull apart.
+      </p>
+    </div>
+
+    <div class="controls">
+      <button id="play" type="button">Run the bracket</button>
+      <div class="seasons" id="seasons">
+        <span class="micro">Season</span>
+      </div>
+    </div>
+
+    <div class="key micro">
+      <span><span class="box counted"></span> Win counted</span>
+      <span><span class="box wasted"></span> Won, didn&rsquo;t count</span>
+      <span>Hover a chip for the score</span>
+    </div>
+
+    <div class="walls" id="walls"></div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>What 600 seasons of selection did</h2>
+      <p>
+        Population averages across 16 independent replicates, shaded with 95%
+        confidence intervals. Both leagues began at the same point on every line.
+      </p>
+    </div>
+
+    <div class="chart-panel">
+      <div class="controls" style="padding:0;border:0;background:transparent">
+        <label class="micro" for="metric">Measure</label>
+        <select id="metric"></select>
+      </div>
+      <div class="chart-scroll"><svg id="chart" viewBox="0 0 840 320" role="img" aria-labelledby="chart-title"><title id="chart-title">Population averages over 600 seasons</title></svg></div>
+<div class="chart-legend" id="chart-legend"></div>
+    </div>
+
+    <div class="readout" id="readout"></div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>The divergence, measured</h2>
+      <p>
+        Each row is the mean over the last 30 seasons, paired by replicate &mdash; both
+        leagues share a starting population within a seed, so the per-seed difference
+        removes starting luck entirely. But a confidence interval excluding zero only
+        says the two leagues ended up different &mdash; identically rewarded populations
+        drift apart too. The last column is the one that matters: it tests each effect
+        against a null control where both leagues run the <em>same</em> rule. Two effects
+        that look significant fail that test.
+      </p>
+    </div>
+    <div class="chart-panel" style="overflow-x:auto">
+      <table id="stats"></table>
+    </div>
+  </section>
+
+  <section id="h2h-section">
+    <div class="sec-head">
+      <h2>So which league is better?</h2>
+      <p>
+        A league can only grade itself on its own scale, so the reward rates above
+        are not comparable. The fair test is a neutral bracket: 32 evolved teams
+        from each league, plain win/loss, no threshold, no further learning.
+      </p>
+    </div>
+    <div id="h2h"></div>
+  </section>
+
+
+  <section id="payoff-section">
+    <div class="sec-head">
+      <h2>Better at what, exactly?</h2>
+      <p>
+        Here is the trap: every yardstick you could pick is one league&rsquo;s home rule.
+        Judge by win rate and A wins by construction; judge by blowouts and B does.
+        So don&rsquo;t pick a bar &mdash; sweep <em>every</em> bar. Both populations play the same
+        opponent, and we ask what share of games clear a bar of <em>k</em>, for every <em>k</em>.
+      </p>
+    </div>
+    <div class="chart-panel">
+      <div class="chart-scroll"><svg id="payoff-chart" viewBox="0 0 840 300" role="img" aria-labelledby="payoff-title"><title id="payoff-title">Difference in games clearing each bar</title></svg></div>
+      <div id="payoff-note" class="micro"></div>
+    </div>
+    <div style="overflow-x:auto"><table id="payoff-table"></table></div>
+  </section>
+
+  <section id="fatigue-section">
+    <div class="sec-head">
+      <h2>Wins games, loses tournaments</h2>
+      <p>
+        A championship is six straight wins. League B evolved high aggression and
+        spent its attribute budget on risk capacity rather than stamina &mdash; and
+        aggression amplifies fatigue. Both sides are equally rested at every point
+        below; the slope is what a deep run costs B.
+      </p>
+    </div>
+    <div class="chart-panel">
+      <div class="chart-scroll"><svg id="fatigue-chart" viewBox="0 0 840 300" role="img" aria-labelledby="fatigue-title"><title id="fatigue-title">B win rate by tournament round</title></svg></div>
+      <div id="fatigue-note" class="micro"></div>
+    </div>
+  </section>
+
+  <section id="invasion-section">
+    <div class="sec-head">
+      <h2>Put them in one league and let them fight</h2>
+      <p>
+        Thirty-two teams from each upbringing, one combined league, left to compete.
+        Lineage is traced through reproduction, so this measures ancestry rather than
+        this season&rsquo;s form. One ancestry usually takes the whole league, so the
+        meaningful number is how often. Under neutral drift it would be 50%.
+      </p>
+      <p>
+        The third row is the interesting one: a bar redrawn at random every season,
+        which no team can see coming. Note what decides it &mdash; not the uncertainty, but
+        the <em>average height</em> of the bars in the draw. Sampling uniformly from 1 to 10
+        means nine of ten worlds have a high bar, and being built for high bars wins
+        there even while being worse at the underlying game. Narrow that range toward
+        1 and the result would flip.
+      </p>
+    </div>
+    <div id="invasion"></div>
+  </section>
+
+  <section class="caveats">
+    <div class="sec-head">
+      <h2>What this does and doesn&rsquo;t show</h2>
+    </div>
+    <ul>
+      <li>
+        The match engine is <strong>reward-blind</strong> &mdash; a test asserts its code never
+        references a threshold, a reward, or a league. Every difference you see is
+        selection acting on strategy, not a rule written into the physics.
+      </li>
+      <li>
+        Both leagues start from <strong>byte-identical populations</strong> per replicate, so
+        starting-population luck cannot explain the gap.
+      </li>
+      <li>
+        How cheaply a team can buy volatility is a <strong>tunable of the engine</strong>, so the
+        magnitude here is not a physical constant. The direction is robust, and it
+        scales the way you would expect: raising League B&rsquo;s bar from 5 points to 10
+        roughly tripled the gap in aggression and widened every downstream effect.
+      </li>
+      <li>
+        Teams have a fixed <strong>attribute budget</strong>, so evolution must trade one capacity
+        against another rather than improving at everything at once.
+      </li>
+    </ul>
+  </section>
+
+  <footer id="footer"></footer>
+</div>
+
+<script>
+const DATA = /*__DATA__*/ null;
+const H2H = /*__H2H__*/ null;
+const STATS = /*__STATS__*/ null;
+const PAYOFF = /*__PAYOFF__*/ null;
+const FATIGUE = /*__FATIGUE__*/ null;
+const INVASION = /*__INVASION__*/ null;
+
+const LEAGUES = DATA.meta.leagues;
+const N_ROUNDS = Math.log2(DATA.meta.n_teams);
+const ROUND_NAMES = ["Round of 64", "Round of 32", "Sweet 16", "Elite Eight", "Final Four", "Final"];
+
+// Four decimals on the 0–1 parameters: some real differences are in the third
+// place, and rounding them to "-0.000" would read as no effect at all.
+const METRICS = [
+  ["strat_aggression", "Aggression (volatility bought)", 4],
+  ["margin_sd", "Margin volatility (points)", 2],
+  ["blowout_rate", "Blowout rate (10+ points)", "%"],
+  ["close_rate", "Close-game rate (within 3)", "%"],
+  ["attr_offense", "Offensive skill", 4],
+  ["attr_risk_capacity", "Risk capacity", 4],
+  ["strat_endgame_conservatism", "Endgame conservatism", 4],
+  ["strat_margin_seeking", "Margin seeking", 4],
+  ["sd_aggression", "Strategy diversity (spread of aggression)", 4],
+];
+
+// Averaged over the same final-30-season window as the significance table, so
+// the two panels never disagree.
+const TAIL_SEASONS = 30;
+
+let checkpointIndex = DATA.checkpoints.length - 1;
+let revealed = N_ROUNDS;
+let timer = null;
+
+const ruleText = (lg) =>
+  lg.threshold <= 1 ? "a win is a win" : `only win by ${lg.threshold}+`;
+const leagueLabel = (lg) => `League ${lg.name} · ${ruleText(lg)}`;
+
+const fmt = (value, mode) =>
+  mode === "%" ? (value * 100).toFixed(1) + "%" : value.toFixed(mode);
+
+/* ---------- masthead ---------- */
+
+function renderRules() {
+  document.getElementById("rules").innerHTML = LEAGUES.map((lg) => `
+    <div class="rule-card">
+      <div class="name"><span class="swatch ${lg.name.toLowerCase()}"></span>League ${lg.name} &mdash; ${ruleText(lg)}</div>
+      <div class="formula">reward = 1 if margin &ge; ${lg.threshold}</div>
+    </div>`).join("");
+
+  document.getElementById("chart-legend").innerHTML = LEAGUES.map((lg, i) => `
+    <span><span class="line" style="background:var(--${i === 0 ? "a" : "b"})"></span> ${leagueLabel(lg)}</span>`
+  ).join("");
+}
+
+function renderMeta() {
+  const m = DATA.meta;
+  const games = m.replicates * LEAGUES.length * m.seasons *
+    (m.regular_season_games * m.n_teams / 2 + m.n_teams - 1);
+  const items = [
+    ["Seasons", m.seasons.toLocaleString()],
+    ["Replicates", m.replicates],
+    ["Teams per league", m.n_teams],
+    ["Games simulated", games.toLocaleString()],
+    ["Config", m.config_hash],
+  ];
+  document.getElementById("runmeta").innerHTML = items
+    .map(([k, v]) => `<div>${k} <span class="v">${v}</span></div>`)
+    .join("");
+  document.getElementById("footer").textContent =
+    `Incentive Evolution Simulator · config ${m.config_hash} · ` +
+    `${m.replicates} replicates × ${m.seasons} seasons · every run reproducible from its seed.`;
+}
+
+/* ---------- season buttons ---------- */
+
+function renderSeasonButtons() {
+  const host = document.getElementById("seasons");
+  DATA.checkpoints.forEach((season, i) => {
+    const button = document.createElement("button");
+    button.className = "season-btn";
+    button.type = "button";
+    button.textContent = season === 0 ? "0 (start)" : season;
+    button.setAttribute("aria-pressed", String(i === checkpointIndex));
+    button.addEventListener("click", () => {
+      checkpointIndex = i;
+      stop();
+      revealed = N_ROUNDS;
+      syncSeasonButtons();
+      renderWalls();
+    });
+    host.appendChild(button);
+  });
+}
+
+function syncSeasonButtons() {
+  document.querySelectorAll(".season-btn").forEach((button, i) => {
+    button.setAttribute("aria-pressed", String(i === checkpointIndex));
+  });
+}
+
+/* ---------- the wall ---------- */
+
+function bracketFor(league) {
+  return DATA.brackets[league.name][checkpointIndex];
+}
+
+function seedLookup(bracket) {
+  const seedOf = new Map();
+  bracket.seeds.forEach((team, position) => seedOf.set(team, position + 1));
+  return seedOf;
+}
+
+function renderWalls() {
+  const host = document.getElementById("walls");
+  host.innerHTML = "";
+
+  LEAGUES.forEach((league) => {
+    const bracket = bracketFor(league);
+    const seedOf = seedLookup(bracket);
+
+    const wall = document.createElement("div");
+    wall.className = "wall";
+    wall.dataset.league = league.name;
+
+    const shown = bracket.games.filter((g) => g.stage < revealed);
+    const counted = shown.filter((g) => Math.abs(g.sa - g.sb) >= league.threshold).length;
+    const wasted = shown.length - counted;
+
+    const head = document.createElement("div");
+    head.className = "wall-head";
+    head.innerHTML = `
+      <div class="wall-title">
+        <span class="swatch ${league.name.toLowerCase()}"></span>
+        League ${league.name}
+        <span class="rulechip">margin &ge; ${league.threshold}</span>
+      </div>
+      <div class="tally">
+        <div><span class="micro">Wins that counted</span><span class="v hero">${counted}<span style="color:var(--ink-3)">/${shown.length}</span></span></div>
+        <div><span class="micro">Wasted wins</span><span class="v">${wasted}</span></div>
+        <div><span class="micro">Mean aggression</span><span class="v">${meanOf(bracket.aggression).toFixed(3)}</span></div>
+      </div>`;
+    wall.appendChild(head);
+
+    for (let round = 0; round < N_ROUNDS; round++) {
+      const games = bracket.games.filter((g) => g.stage === round);
+      const block = document.createElement("div");
+      block.className = "round";
+
+      const roundCounted = round < revealed
+        ? games.filter((g) => Math.abs(g.sa - g.sb) >= league.threshold).length
+        : 0;
+
+      block.innerHTML = `
+        <div class="round-label micro">
+          <span>${ROUND_NAMES[round]}</span>
+          <span class="count num">${round < revealed ? roundCounted + "/" + games.length : "&mdash;"}</span>
+        </div>`;
+
+      const chips = document.createElement("div");
+      chips.className = "chips";
+
+      games.forEach((game, i) => {
+        const chip = document.createElement("div");
+        const margin = Math.abs(game.sa - game.sb);
+        const winnerIsA = game.sa > game.sb;
+        const winner = winnerIsA ? game.a : game.b;
+        const loser = winnerIsA ? game.b : game.a;
+        const hi = Math.max(game.sa, game.sb);
+        const lo = Math.min(game.sa, game.sb);
+
+        if (round >= revealed) {
+          chip.className = "chip pending";
+          chip.textContent = "0";
+        } else {
+          const counts = margin >= league.threshold;
+          chip.className = "chip " + (counts ? "counted" : "wasted");
+          chip.textContent = "+" + margin;
+          chip.dataset.detail =
+            `#${seedOf.get(winner)} beat #${seedOf.get(loser)} · ${hi}–${lo}` +
+            (counts ? "" : " · no reward");
+          if (justRevealed === round) {
+            chip.classList.add("reveal");
+            chip.style.animationDelay = (i * 12) + "ms";
+          }
+        }
+        chips.appendChild(chip);
+      });
+
+      block.appendChild(chips);
+      wall.appendChild(block);
+    }
+
+    const champ = document.createElement("div");
+    champ.className = "champ";
+    if (revealed >= N_ROUNDS) {
+      champ.innerHTML =
+        `<span class="micro">Champion</span>` +
+        `<span class="v">#${seedOf.get(bracket.champion)} seed</span>` +
+        `<span class="micro">aggression ${bracket.aggression[bracket.champion].toFixed(3)}</span>`;
+    } else {
+      champ.innerHTML = `<span class="micro">Champion &mdash; bracket in progress</span>`;
+    }
+    wall.appendChild(champ);
+
+    host.appendChild(wall);
+  });
+}
+
+const meanOf = (xs) => xs.reduce((a, b) => a + b, 0) / xs.length;
+
+/* ---------- playback ---------- */
+
+let justRevealed = -1;
+
+function stop() {
+  if (timer) { clearInterval(timer); timer = null; }
+  document.getElementById("play").textContent = "Run the bracket";
+}
+
+function play() {
+  stop();
+  revealed = 0;
+  justRevealed = -1;
+  renderWalls();
+  const button = document.getElementById("play");
+  button.textContent = "Running…";
+
+  timer = setInterval(() => {
+    justRevealed = revealed;
+    revealed += 1;
+    renderWalls();
+    if (revealed >= N_ROUNDS) {
+      stop();
+      justRevealed = -1;
+    }
+  }, 850);
+}
+
+/* ---------- chart ---------- */
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+const node = (name, attrs) => {
+  const el = document.createElementNS(SVG_NS, name);
+  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+  return el;
+};
+
+function renderChart(metric, decimals) {
+  const svg = document.getElementById("chart");
+  while (svg.childNodes.length > 1) svg.removeChild(svg.lastChild);
+
+  const W = 840, H = 320;
+  const pad = { top: 18, right: 18, bottom: 38, left: 62 };
+  const plotW = W - pad.left - pad.right;
+  const plotH = H - pad.top - pad.bottom;
+
+  const seasons = DATA.season_index;
+  const seriesByLeague = LEAGUES.map((lg) => DATA.series[lg.name][metric]);
+
+  let min = Infinity, max = -Infinity;
+  seriesByLeague.forEach((s) => {
+    s.lo.forEach((v) => { if (v < min) min = v; });
+    s.hi.forEach((v) => { if (v > max) max = v; });
+  });
+  const span = (max - min) || 1;
+  const floorAtZero = min >= 0;
+  min -= span * 0.12;
+  max += span * 0.12;
+  // Rates and 0–1 parameters cannot go negative; a padded axis that dips below
+  // zero invents a range the measure does not have.
+  if (floorAtZero && min < 0) min = 0;
+
+  const x = (i) => pad.left + (seasons[i] / (DATA.meta.seasons - 1)) * plotW;
+  const y = (v) => pad.top + plotH - ((v - min) / (max - min)) * plotH;
+
+  // gridlines + y labels
+  for (let t = 0; t <= 4; t++) {
+    const value = min + (max - min) * (t / 4);
+    const yy = y(value);
+    svg.appendChild(node("line", {
+      x1: pad.left, x2: W - pad.right, y1: yy, y2: yy,
+      stroke: "var(--rule)", "stroke-width": 1, "vector-effect": "non-scaling-stroke",
+    }));
+    const label = node("text", {
+      x: pad.left - 10, y: yy + 4, "text-anchor": "end",
+      fill: "var(--ink-3)", "font-size": 11, "font-family": "var(--mono)",
+    });
+    label.textContent = decimals === "%" ? (value * 100).toFixed(0) + "%" : value.toFixed(decimals);
+    svg.appendChild(label);
+  }
+
+  // x labels
+  [0, 150, 300, 450, DATA.meta.seasons - 1].forEach((season) => {
+    const xx = pad.left + (season / (DATA.meta.seasons - 1)) * plotW;
+    const label = node("text", {
+      x: xx, y: H - pad.bottom + 20, "text-anchor": "middle",
+      fill: "var(--ink-3)", "font-size": 11, "font-family": "var(--mono)",
+    });
+    label.textContent = season;
+    svg.appendChild(label);
+  });
+
+  const axisLabel = node("text", {
+    x: pad.left + plotW / 2, y: H - 4, "text-anchor": "middle",
+    fill: "var(--ink-3)", "font-size": 11, "font-family": "var(--mono)",
+    "letter-spacing": "0.1em",
+  });
+  axisLabel.textContent = "SEASON";
+  svg.appendChild(axisLabel);
+
+  // CI bands then lines, so lines sit on top
+  seriesByLeague.forEach((s, li) => {
+    const colour = li === 0 ? "var(--a)" : "var(--b)";
+    const up = s.hi.map((v, i) => `${x(i)},${y(v)}`);
+    const down = s.lo.map((v, i) => `${x(i)},${y(v)}`).reverse();
+    svg.appendChild(node("polygon", {
+      points: up.concat(down).join(" "),
+      fill: colour, opacity: 0.14,
+    }));
+  });
+
+  seriesByLeague.forEach((s, li) => {
+    const colour = li === 0 ? "var(--a)" : "var(--b)";
+    svg.appendChild(node("polyline", {
+      points: s.mean.map((v, i) => `${x(i)},${y(v)}`).join(" "),
+      fill: "none", stroke: colour, "stroke-width": 2,
+      "stroke-linejoin": "round", "vector-effect": "non-scaling-stroke",
+    }));
+    const last = s.mean.length - 1;
+    svg.appendChild(node("circle", {
+      cx: x(last), cy: y(s.mean[last]), r: 3.5,
+      fill: colour, stroke: "var(--panel)", "stroke-width": 1.5,
+    }));
+  });
+}
+
+function renderReadout(metric, decimals) {
+  const host = document.getElementById("readout");
+  const tailFrom = DATA.meta.seasons - TAIL_SEASONS;
+  const tailIdx = DATA.season_index
+    .map((season, i) => (season >= tailFrom ? i : -1))
+    .filter((i) => i >= 0);
+
+  const values = LEAGUES.map((lg) => {
+    const mean = DATA.series[lg.name][metric].mean;
+    return meanOf(tailIdx.map((i) => mean[i]));
+  });
+  const delta = values[1] - values[0];
+  const relative = values[0] !== 0 ? (delta / Math.abs(values[0])) * 100 : 0;
+
+  host.innerHTML = `
+    <div><span class="micro">League A, last ${TAIL_SEASONS}</span><span class="v a">${fmt(values[0], decimals)}</span></div>
+    <div><span class="micro">League B, last ${TAIL_SEASONS}</span><span class="v b">${fmt(values[1], decimals)}</span></div>
+    <div><span class="micro">Difference</span><span class="v">${delta >= 0 ? "+" : ""}${fmt(delta, decimals)}</span></div>
+    <div><span class="micro">Relative</span><span class="v">${relative >= 0 ? "+" : ""}${relative.toFixed(1)}%</span></div>`;
+}
+
+function renderMetricPicker() {
+  const select = document.getElementById("metric");
+  METRICS.forEach(([key, label]) => {
+    const option = document.createElement("option");
+    option.value = key;
+    option.textContent = label;
+    select.appendChild(option);
+  });
+  select.addEventListener("change", () => {
+    const entry = METRICS.find(([k]) => k === select.value);
+    renderChart(entry[0], entry[2]);
+    renderReadout(entry[0], entry[2]);
+  });
+}
+
+/* ---------- measured divergence ---------- */
+
+function renderStats() {
+  const table = document.getElementById("stats");
+  const rows = STATS.map((s) => `
+    <tr>
+      <td>${s.label}</td>
+      <td class="a">${s.a.toFixed(s.decimals)}</td>
+      <td class="b">${s.b.toFixed(s.decimals)}</td>
+      <td>${s.delta >= 0 ? "+" : ""}${s.delta.toFixed(s.decimals)}</td>
+      <td style="color:var(--ink-3)">[${s.lo >= 0 ? "+" : ""}${s.lo.toFixed(s.decimals)}, ${s.hi >= 0 ? "+" : ""}${s.hi.toFixed(s.decimals)}]</td>
+      <td style="color:${s.significant ? "var(--ink)" : "var(--ink-3)"}">${s.significant ? "yes" : "no"}</td>
+      <td style="color:${s.survives_null === false ? "var(--b)" : "var(--ink-3)"}">${
+        s.survives_null === undefined ? "—"
+          : s.survives_null ? `yes (t ${Math.abs(s.t_vs_null).toFixed(2)})`
+          : `NO (t ${Math.abs(s.t_vs_null).toFixed(2)})`
+      }</td>
+    </tr>`).join("");
+
+  table.innerHTML = `
+    <thead>
+      <tr>
+        <th>Measure</th><th>League A</th><th>League B</th>
+        <th>Difference</th><th>95% CI</th><th>vs zero</th><th>Beats drift?</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>`;
+}
+
+/* ---------- head to head ---------- */
+
+function renderHeadToHead() {
+  const host = document.getElementById("h2h");
+  if (!H2H) {
+    host.innerHTML =
+      `<div class="verdict"><p>The neutral head-to-head has not been run for this build.</p></div>`;
+    return;
+  }
+
+  const [a, b] = LEAGUES.map((lg) => lg.name);
+  const shareB = H2H.championships[b] / H2H.tournaments;
+  const shareA = H2H.championships[a] / H2H.tournaments;
+  const wins = H2H.head_to_head_wins;
+  const totalGames = wins[a] + wins[b];
+
+  const decided = H2H.verdict !== "no significant difference";
+  const headline = decided
+    ? `${H2H.verdict.replace(/^(\w+)/, "League $1")}`
+    : "Neither league wins more.";
+
+  host.innerHTML = `
+    <div class="verdict">
+      <div class="micro">Neutral bracket &middot; ${H2H.tournaments.toLocaleString()} tournaments</div>
+      <p style="font-size:1.15rem;color:var(--ink)"><strong>${headline}</strong></p>
+      <p>
+        League B spent ${DATA.meta.seasons} seasons of selection under a harder bar and came out
+        <strong>no better at the underlying game</strong>. Both its offensive and defensive
+        skill ended up a fraction <em>lower</em> than League A&rsquo;s, not higher &mdash; small,
+        but the differences are real. What it bought instead was volatility, and on a
+        neutral court that costs it: the direct win rate is
+        ${((wins[a] / totalGames) * 100).toFixed(1)}% to ${((wins[b] / totalGames) * 100).toFixed(1)}%
+        across ${totalGames.toLocaleString()} games, and it takes
+        ${(shareB * 100).toFixed(1)}% of the championships.
+      </p>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr><th>Neutral tournament</th><th>League A</th><th>League B</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Championships</td><td class="a">${H2H.championships[a].toLocaleString()}</td><td class="b">${H2H.championships[b].toLocaleString()}</td></tr>
+            <tr><td>Championship share</td><td class="a">${(shareA * 100).toFixed(1)}%</td><td class="b">${(shareB * 100).toFixed(1)}%</td></tr>
+            <tr><td>Final Four berths</td><td class="a">${H2H.final_four[a].toLocaleString()}</td><td class="b">${H2H.final_four[b].toLocaleString()}</td></tr>
+            <tr><td>Average rounds survived</td><td class="a">${H2H.avg_elimination_round[a].toFixed(3)}</td><td class="b">${H2H.avg_elimination_round[b].toFixed(3)}</td></tr>
+            <tr><td>Direct head-to-head wins</td><td class="a">${wins[a].toLocaleString()}</td><td class="b">${wins[b].toLocaleString()}</td></tr>
+            <tr><td>&nbsp;&nbsp;as win rate</td><td class="a">${((wins[a] / totalGames) * 100).toFixed(1)}%</td><td class="b">${((wins[b] / totalGames) * 100).toFixed(1)}%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="micro" style="color:var(--ink-3)">
+        League B championship share ${(shareB * 100).toFixed(1)}%, 95% CI
+        ${(H2H.champion_share_ci[0] * 100).toFixed(1)}&ndash;${(H2H.champion_share_ci[1] * 100).toFixed(1)}%.
+        A 50% share means the two systems are equally good at producing winners.
+      </p>
+    </div>`;
+}
+
+
+/* ---------- payoff curve ---------- */
+
+function axes(svg, W, H, pad) {
+  while (svg.childNodes.length > 1) svg.removeChild(svg.lastChild);
+  return { plotW: W - pad.left - pad.right, plotH: H - pad.top - pad.bottom };
+}
+
+function renderPayoff() {
+  if (!PAYOFF) { document.getElementById("payoff-section").remove(); return; }
+
+  const svg = document.getElementById("payoff-chart");
+  const W = 840, H = 300, pad = { top: 20, right: 20, bottom: 44, left: 64 };
+  const { plotW, plotH } = axes(svg, W, H, pad);
+
+  const bars = PAYOFF.bars;
+  const gap = bars.map((_, i) => (PAYOFF.curves.B[i] - PAYOFF.curves.A[i]) * 100);
+  const span = Math.max(...gap.map(Math.abs)) * 1.35;
+
+  const x = (bar) => pad.left + ((bar - bars[0]) / (bars[bars.length - 1] - bars[0])) * plotW;
+  const y = (v) => pad.top + plotH / 2 - (v / span) * (plotH / 2);
+
+  for (const t of [-1, -0.5, 0.5, 1]) {
+    svg.appendChild(node("line", {
+      x1: pad.left, x2: W - pad.right, y1: y(span * t), y2: y(span * t),
+      stroke: "var(--rule)", "stroke-width": 1, "vector-effect": "non-scaling-stroke",
+    }));
+    const label = node("text", { x: pad.left - 10, y: y(span * t) + 4, "text-anchor": "end",
+      fill: "var(--ink-3)", "font-size": 11, "font-family": "var(--mono)" });
+    label.textContent = (span * t).toFixed(1) + "pp";
+    svg.appendChild(label);
+  }
+
+  // Split the area at the crossing so each side is coloured by who is ahead.
+  for (const side of [1, -1]) {
+    const pts = bars.map((bar, i) => `${x(bar)},${y(side > 0 ? Math.max(gap[i], 0) : Math.min(gap[i], 0))}`);
+    svg.appendChild(node("polygon", {
+      points: `${x(bars[0])},${y(0)} ${pts.join(" ")} ${x(bars[bars.length - 1])},${y(0)}`,
+      fill: side > 0 ? "var(--b)" : "var(--a)", opacity: 0.20,
+    }));
+  }
+
+  svg.appendChild(node("polyline", {
+    points: bars.map((bar, i) => `${x(bar)},${y(gap[i])}`).join(" "),
+    fill: "none", stroke: "var(--ink)", "stroke-width": 2,
+    "stroke-linejoin": "round", "vector-effect": "non-scaling-stroke",
+  }));
+  svg.appendChild(node("line", { x1: pad.left, x2: W - pad.right, y1: y(0), y2: y(0),
+    stroke: "var(--ink)", "stroke-width": 1.5, "vector-effect": "non-scaling-stroke" }));
+
+  for (const bar of [-20, -10, 0, 10, 20]) {
+    const label = node("text", { x: x(bar), y: H - pad.bottom + 22, "text-anchor": "middle",
+      fill: "var(--ink-3)", "font-size": 11, "font-family": "var(--mono)" });
+    label.textContent = bar;
+    svg.appendChild(label);
+  }
+  const caption = node("text", { x: pad.left + plotW / 2, y: H - 6, "text-anchor": "middle",
+    fill: "var(--ink-3)", "font-size": 11, "font-family": "var(--mono)", "letter-spacing": "0.1em" });
+  caption.textContent = "BAR JUDGED AGAINST (POINTS)  →  B AHEAD ABOVE THE LINE";
+  svg.appendChild(caption);
+
+  const cross = PAYOFF.crossings[0];
+  const b = LEAGUES[1];
+  document.getElementById("payoff-note").textContent =
+    `Curves cross at ${cross} points. Below that bar A-bred teams are better; above it B-bred are. ` +
+    `${PAYOFF.games_per_population.toLocaleString()} games per population.`;
+
+  const s = PAYOFF.summary;
+  const row = (label, key, invert) => {
+    const delta = s.B[key] - s.A[key];
+    const good = invert ? delta < 0 : delta > 0;
+    return `<tr><td>${label}</td><td class="a">${(s.A[key] * 100).toFixed(2)}%</td>` +
+      `<td class="b">${(s.B[key] * 100).toFixed(2)}%</td>` +
+      `<td style="color:${good ? "var(--ink)" : "var(--ink-3)"}">${delta >= 0 ? "+" : ""}${(delta * 100).toFixed(2)}pp</td></tr>`;
+  };
+
+  document.getElementById("payoff-table").innerHTML = `
+    <thead><tr><th>Against the same opponent</th><th>A-bred</th><th>B-bred</th><th>Difference</th></tr></thead>
+    <tbody>
+      <tr><td>Expected margin (points)</td><td class="a">${s.A.mean_margin.toFixed(3)}</td><td class="b">${s.B.mean_margin.toFixed(3)}</td><td>${(s.B.mean_margin - s.A.mean_margin).toFixed(3)}</td></tr>
+      ${row("Win at all", "win")}
+      ${row("Win by 5+", "win_by_5")}
+      ${row("Win by 10+", "win_by_10")}
+      ${row("LOSE by 5+", "lose_by_5", true)}
+      ${row("LOSE by 10+", "lose_by_10", true)}
+    </tbody>`;
+}
+
+/* ---------- fatigue ---------- */
+
+function renderFatigue() {
+  if (!FATIGUE) { document.getElementById("fatigue-section").remove(); return; }
+
+  const svg = document.getElementById("fatigue-chart");
+  const W = 840, H = 300, pad = { top: 26, right: 26, bottom: 52, left: 64 };
+  const { plotW, plotH } = axes(svg, W, H, pad);
+
+  const rates = FATIGUE.b_win_rate.map((v) => v * 100);
+  const lo = Math.min(...rates) - 1.6, hi = 51;
+  const x = (i) => pad.left + (i / (rates.length - 1)) * plotW;
+  const y = (v) => pad.top + plotH - ((v - lo) / (hi - lo)) * plotH;
+
+  for (const value of [44, 46, 48, 50]) {
+    if (value < lo || value > hi) continue;
+    svg.appendChild(node("line", { x1: pad.left, x2: W - pad.right, y1: y(value), y2: y(value),
+      stroke: "var(--rule)", "stroke-width": 1, "vector-effect": "non-scaling-stroke" }));
+    const label = node("text", { x: pad.left - 10, y: y(value) + 4, "text-anchor": "end",
+      fill: "var(--ink-3)", "font-size": 11, "font-family": "var(--mono)" });
+    label.textContent = value + "%";
+    svg.appendChild(label);
+  }
+
+  svg.appendChild(node("line", { x1: pad.left, x2: W - pad.right, y1: y(50), y2: y(50),
+    stroke: "var(--ink-3)", "stroke-width": 1.5, "stroke-dasharray": "5 5",
+    "vector-effect": "non-scaling-stroke" }));
+
+  svg.appendChild(node("polygon", {
+    points: `${x(0)},${y(50)} ` + rates.map((v, i) => `${x(i)},${y(v)}`).join(" ") + ` ${x(rates.length - 1)},${y(50)}`,
+    fill: "var(--a)", opacity: 0.16,
+  }));
+  svg.appendChild(node("polyline", {
+    points: rates.map((v, i) => `${x(i)},${y(v)}`).join(" "),
+    fill: "none", stroke: "var(--b)", "stroke-width": 2.4,
+    "stroke-linejoin": "round", "vector-effect": "non-scaling-stroke",
+  }));
+
+  rates.forEach((v, i) => {
+    svg.appendChild(node("circle", { cx: x(i), cy: y(v), r: 4,
+      fill: "var(--b)", stroke: "var(--panel)", "stroke-width": 1.6 }));
+    const value = node("text", { x: x(i), y: y(v) - 12, "text-anchor": "middle",
+      fill: "var(--ink)", "font-size": 11.5, "font-weight": 700, "font-family": "var(--mono)" });
+    value.textContent = v.toFixed(1) + "%";
+    svg.appendChild(value);
+    const round = node("text", { x: x(i), y: H - pad.bottom + 22, "text-anchor": "middle",
+      fill: "var(--ink-3)", "font-size": 10.5, "font-family": "var(--mono)" });
+    round.textContent = FATIGUE.rounds[i].replace(/\n/g, " ");
+    svg.appendChild(round);
+  });
+
+  const caption = node("text", { x: pad.left + plotW / 2, y: H - 6, "text-anchor": "middle",
+    fill: "var(--ink-3)", "font-size": 11, "font-family": "var(--mono)", "letter-spacing": "0.1em" });
+  caption.textContent = "HOW DEEP INTO THE TOURNAMENT";
+  svg.appendChild(caption);
+
+  document.getElementById("fatigue-note").textContent =
+    `B-bred win rate against an A-bred team falls ${FATIGUE.decay_points.toFixed(1)} points ` +
+    `from fresh legs to the final. ${FATIGUE.games_per_round.toLocaleString()} games per round.`;
+}
+
+/* ---------- invasion ---------- */
+
+function renderInvasion() {
+  const host = document.getElementById("invasion");
+  if (!INVASION) {
+    document.getElementById("invasion-section").remove();
+    return;
+  }
+
+  const rows = Object.entries(INVASION).map(([key, v]) => {
+    const share = v.p_b_fixation * 100;
+    const ci = v.ci * 100;
+    const decided = v.b_fixed + v.a_fixed;
+    const dead = Math.abs(share - 50) < ci;
+    const winner = dead ? "dead heat" : (share > 50 ? "B-bred take over" : "A-bred take over");
+    return `
+      <tr>
+        <td>${v.label}</td>
+        <td>${share.toFixed(1)}% ± ${ci.toFixed(1)}%</td>
+        <td>${v.b_fixed} / ${decided}</td>
+        <td style="color:${dead ? "var(--ink-3)" : "var(--ink)"}">${winner}</td>
+      </tr>`;
+  }).join("");
+
+  host.innerHTML = `
+    <div class="chart-panel" style="overflow-x:auto">
+      <table>
+        <thead><tr><th>Rule the combined league runs</th><th>B-bred takes over</th><th>Runs</th><th>Verdict</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="micro">
+        Each run ends when one ancestry has the whole league. Under neutral drift from a
+        50/50 start, either side would take over half the time — so a departure from 50% is selection.
+      </div>
+    </div>`;
+}
+
+/* ---------- boot ---------- */
+
+renderRules();
+renderMeta();
+renderSeasonButtons();
+renderWalls();
+renderMetricPicker();
+renderChart(METRICS[0][0], METRICS[0][2]);
+renderReadout(METRICS[0][0], METRICS[0][2]);
+renderStats();
+renderHeadToHead();
+renderPayoff();
+renderFatigue();
+renderInvasion();
+
+document.getElementById("play").addEventListener("click", () => {
+  if (timer) { stop(); revealed = N_ROUNDS; renderWalls(); }
+  else play();
+});
+</script>
