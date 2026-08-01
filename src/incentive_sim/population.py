@@ -92,34 +92,6 @@ def renormalise_budget(
     return a
 
 
-def true_strength(pop: Population, base_points: float, skill_scale: float,
-                   overreach_penalty: float, signal_cost: float) -> np.ndarray:
-    """Each team's real per-possession scoring rate against a neutral opponent.
-
-    This is the ground truth the reward function may or may not track. It is what
-    a team is actually worth on the court, after paying for aggression it cannot
-    carry and for effort diverted into looking good.
-    """
-    offense = pop.attr("offense")
-    off_emphasis = pop.strat("off_emphasis")
-    aggression = pop.strat("aggression")
-    risk_capacity = pop.attr("risk_capacity")
-    signal_effort = pop.strat("signal_effort")
-
-    # Neutral reference defender: defense 0.5, emphasis 0.5.
-    skill = offense * off_emphasis - 0.25
-    mean = base_points * (1.0 + skill_scale * skill)
-    mean = mean * (1.0 - overreach_penalty * np.maximum(0.0, aggression - risk_capacity) ** 2)
-    mean = mean * (1.0 - signal_cost * signal_effort)
-    return np.maximum(mean, 0.0)
-
-
-def rank_normalised(values: np.ndarray) -> np.ndarray:
-    """Percentile rank in [0, 1] — a scale-free view of who is actually best."""
-    order = np.argsort(np.argsort(values))
-    return order / max(1, values.size - 1)
-
-
 def initial_population(
     n_teams: int, rng: np.random.Generator, cfg: EvolutionConfig
 ) -> Population:

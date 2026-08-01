@@ -26,25 +26,3 @@ def pair_rewards(
         reward_from_margin(margin, threshold),
         reward_from_margin(-margin, threshold),
     )
-
-
-def perceived_signal(
-    signal_effort: np.ndarray, true_rank: np.ndarray, discernment: float
-) -> np.ndarray:
-    """What the world *thinks* it sees when it looks at a team.
-
-    `discernment` is how much of the observed signal is genuine quality rather
-    than effort spent on appearances. At 0 the signal is pure theatre and can be
-    bought outright; at 1 it tracks real strength and effort buys nothing.
-    """
-    return (1.0 - discernment) * signal_effort + discernment * true_rank
-
-
-def blended_reward(
-    margin: np.ndarray, threshold: int, signal_bonus: np.ndarray, signal_weight: float
-) -> np.ndarray:
-    """Score = mostly results, partly a proxy the team can buy directly."""
-    result = reward_from_margin(margin, threshold)
-    if signal_weight <= 0.0:
-        return result
-    return (1.0 - signal_weight) * result + signal_weight * signal_bonus

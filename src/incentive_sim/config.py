@@ -33,10 +33,6 @@ STRATEGY: tuple[str, ...] = (
     "tempo",
     "margin_seeking",
     "endgame_conservatism",
-    # Effort spent on looking successful rather than being successful. Costs real
-    # performance (match.py) and earns reward directly (reward.py) — the two
-    # compete, which is the whole point. Appended, never reordered.
-    "signal_effort",
 )
 
 ATTR_IX = {name: i for i, name in enumerate(ATTRIBUTES)}
@@ -66,16 +62,6 @@ class MatchConfig:
     # This is the price of buying variance.
     overreach_penalty: float = 0.90  # kappa
 
-    # The price of looking good: effort diverted into the signal is effort not
-    # spent on the game, so it scales performance down linearly. This is the
-    # parameter that decides whether looking successful is cheaper than being
-    # successful.
-    #
-    # Defaults to 0.0 — signalling is inert unless an experiment turns it on, so
-    # every result predating this mechanism still describes the model it was run
-    # under.
-    signal_cost: float = 0.0
-
     # Aggression always inflates per-possession variance, linearly.
     base_variance: float = 0.65  # v0
     variance_gain: float = 2.20  # gamma
@@ -98,16 +84,10 @@ class MatchConfig:
 
 @dataclass(frozen=True)
 class LeagueConfig:
-    """A league differs from another only by what it counts as success.
-
-    `win_threshold` sets how big a win has to be. `signal_weight` sets how much
-    of the score comes from a proxy the team can buy directly instead of earning
-    — 0.0 means results are all that count.
-    """
+    """A league differs from another *only* by `win_threshold`."""
 
     name: str
     win_threshold: int
-    signal_weight: float = 0.0
 
 
 @dataclass(frozen=True)

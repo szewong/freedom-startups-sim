@@ -110,28 +110,18 @@ def test_elimination_rounds_are_consistent_with_a_knockout(pop):
 
 
 def test_stronger_teams_reach_later_rounds(pop):
-    """Sanity: the bracket must reward skill, or 'championships' means nothing.
-
-    Measured against true strength rather than the offense attribute alone —
-    several strategy parameters feed real scoring ability, so offense on its own
-    is only part of what makes a team good.
-    """
-    from incentive_sim.population import true_strength
-
-    cfg = MatchConfig()
+    """Sanity: the bracket must reward skill, or 'championships' means nothing."""
     generator = rng(np.random.SeedSequence(13))
     reached = np.zeros(64)
     for _ in range(60):
         result = play_bracket(
-            pop, np.arange(64), 1, cfg, generator, np.zeros(64), np.zeros(64, np.int64)
+            pop, np.arange(64), 1, MatchConfig(), generator, np.zeros(64), np.zeros(64, np.int64)
         )
         reached += result.elimination_round
 
-    strength = true_strength(
-        pop, cfg.base_points, cfg.skill_scale, cfg.overreach_penalty, cfg.signal_cost
-    )
-    correlation = np.corrcoef(strength, reached)[0, 1]
-    assert correlation > 0.2, f"strength barely predicts bracket progress (r={correlation:.3f})"
+    offense = pop.attr("offense")
+    correlation = np.corrcoef(offense, reached)[0, 1]
+    assert correlation > 0.2, f"offense barely predicts bracket progress (r={correlation:.3f})"
 
 
 # -- regular season ----------------------------------------------------------

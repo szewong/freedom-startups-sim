@@ -20,7 +20,7 @@ import numpy as np
 from .config import MatchConfig, TournamentConfig
 from .match import simulate_games
 from .population import Population
-from .reward import blended_reward, pair_rewards
+from .reward import pair_rewards
 
 
 @dataclass
@@ -75,8 +75,6 @@ def play_regular_season(
     mcfg: MatchConfig,
     rng: np.random.Generator,
     log: GameLog | None = None,
-    signal_bonus: np.ndarray | None = None,
-    signal_weight: float = 0.0,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Every team plays `regular_season_games` games against random opponents.
 
@@ -93,12 +91,7 @@ def play_regular_season(
         left, right = shuffled[: n // 2], shuffled[n // 2 :]
 
         score_a, score_b = simulate_games(pop, left, right, fresh, fresh, mcfg, rng)
-        if signal_bonus is None or signal_weight <= 0.0:
-            reward_a, reward_b = pair_rewards(score_a, score_b, threshold)
-        else:
-            margin = score_a - score_b
-            reward_a = blended_reward(margin, threshold, signal_bonus[left], signal_weight)
-            reward_b = blended_reward(-margin, threshold, signal_bonus[right], signal_weight)
+        reward_a, reward_b = pair_rewards(score_a, score_b, threshold)
 
         np.add.at(reward_total, left, reward_a)
         np.add.at(reward_total, right, reward_b)
@@ -129,8 +122,6 @@ def play_bracket(
     reward_total: np.ndarray,
     games_total: np.ndarray,
     log: GameLog | None = None,
-    signal_bonus: np.ndarray | None = None,
-    signal_weight: float = 0.0,
 ) -> BracketResult:
     """Single elimination. `seeds[0]` is the top seed.
 
@@ -152,12 +143,7 @@ def play_bracket(
         played = np.full(left.shape, float(rnd))
 
         score_a, score_b = simulate_games(pop, left, right, played, played, mcfg, rng)
-        if signal_bonus is None or signal_weight <= 0.0:
-            reward_a, reward_b = pair_rewards(score_a, score_b, threshold)
-        else:
-            margin = score_a - score_b
-            reward_a = blended_reward(margin, threshold, signal_bonus[left], signal_weight)
-            reward_b = blended_reward(-margin, threshold, signal_bonus[right], signal_weight)
+        reward_a, reward_b = pair_rewards(score_a, score_b, threshold)
 
         np.add.at(reward_total, left, reward_a)
         np.add.at(reward_total, right, reward_b)
