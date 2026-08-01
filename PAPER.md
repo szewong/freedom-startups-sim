@@ -485,13 +485,67 @@ by their own lights; they are succeeding, and their peers are succeeding the sam
 way. Nothing in their experience signals that they have become worse at the
 underlying activity, because nothing they are graded on measures it.
 
-For the founder case that motivates this work, the translation is direct. Choosing
-to build for a very large outcome is not merely choosing a target; it is entering
-a selection regime. Over enough iterations that regime will shape the founder and
-the firm toward volatility — larger swings in both directions, less capacity to
-sustain a long campaign, and no better at the underlying craft. And the scoreboard
-will not report any of it, because the scoreboard counts only the outcome the bar
-was set to reward.
+### The founder case, stated precisely
+
+The translation to founders is more specific than a general warning about
+incentives, and it turns on one observation: **a funding round is a variance
+purchase.**
+
+Consider two things a company can do. Signing a first customer is a *mean*
+improvement — it raises the expected outcome, modestly and reliably. Raising a
+large round is a *variance* purchase — it takes capital and spends it to widen
+the distribution of outcomes: a bigger burn, a bigger swing, a higher probability
+of both zero and something enormous. It does not, by itself, make the company
+better at anything.
+
+Now apply §1. If the ecosystem scores outcomes above a high bar — a very large
+exit, not a good business — then a competitor whose expected outcome falls short
+of that bar improves its odds by raising σ, not μ. Under `P(outcome ≥ k)` with
+`μ < k`, the variance purchase is worth more than the mean improvement.
+
+So celebrating the round over the first deal is not vanity and not irrationality.
+**It is correct play for the game being scored.** That is what makes it hard to
+argue anyone out of, and it is why the behaviour persists among sophisticated
+people who can all do the arithmetic.
+
+The model then says what that choice costs, and each item is measured rather than
+asserted:
+
+- **You do not get better at the underlying activity.** Both capability measures
+  came out slightly *lower* in the high-bar population (§4.1).
+- **The downside grows faster than the upside.** +0.89 points of blowout wins
+  against +3.42 points of blowout losses (§4.3). The tails are not symmetric, and
+  the wrong one is fatter.
+- **You lose the ability to sustain a long campaign.** Win rate decays 48.4% →
+  44.0% across a six-round run (§4.5). In the founder frame this is the one that
+  reads least like an analogy and most like a description.
+- **The arms race does not even redistribute the winners.** Upset rate and
+  champion seed were both unaffected (§4.4). When everyone raises variance
+  together, relative ordering survives; the population simply becomes noisier for
+  no change in who succeeds.
+
+And §4.7 supplies the condition. Capability degrades only where volatility is
+cheaper than skill — which, for a startup, is precisely when **capital is
+abundant**. Cheap capital is cheap volatility. The regime in which chasing a high
+bar actively erodes company-building capability is therefore a bull market, and
+the mechanism predicts that the damage should be visible afterwards rather than
+during.
+
+We should be explicit that this mapping is an interpretation, not a simulated
+result. The simulation ran a stylised contest, not a startup ecosystem. What
+transfers is the structure — a thresholded reward, a mean–variance frontier, a
+constrained capability budget, selection over repeated trials — and the reader
+should judge the transfer on whether those four features are present, not on the
+strength of the analogy.
+
+A note on what we deliberately did *not* model. An earlier draft added a
+purchasable "signal" — an activity that earns reward without contributing to
+performance — to represent fundraising as a proxy metric. We discarded it. A
+parameter whose only function is to be rewarded is a dial labelled *cheat*, and
+demonstrating that populations pull it restates the definition of an incentive
+rather than discovering anything. The variance account above requires no such
+device: it explains the same behaviour using a mechanism that had to survive a
+null control and a price sweep.
 
 The claim is not that high bars are wrong. §4.6 shows the specialist wins in
 worlds that grade on a high bar, and many worlds do. Nor is it that high bars
