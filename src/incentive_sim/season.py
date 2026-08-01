@@ -16,9 +16,10 @@ from typing import Any
 import numpy as np
 
 from .config import ATTRIBUTES, STRATEGY, LeagueConfig, RunConfig
+from .reward import perceived_signal
 from .evolution import reproduce
 from .learning import Learner
-from .population import Population, initial_population
+from .population import Population, initial_population, rank_normalised, true_strength
 from .tournament import GameLog, play_bracket, play_regular_season, seed_from_reward
 
 BLOWOUT = 10
@@ -81,6 +82,7 @@ def run_league(
     rng: np.random.Generator,
     checkpoints: set[int] | None = None,
     progress: Any | None = None,
+    discernment: float = 0.0,
 ) -> LeagueHistory:
     """Simulate one league for ``cfg.seasons`` seasons."""
     checkpoints = checkpoints or set()
@@ -94,12 +96,24 @@ def run_league(
         capture = season in checkpoints
         log = GameLog()
 
+        # What the world can actually see about each team this season.
+        strength = true_strength(
+            pop, cfg.match.base_points, cfg.match.skill_scale,
+            cfg.match.overreach_penalty, cfg.match.signal_cost,
+        )
+        signal_bonus = (
+            perceived_signal(pop.strat("signal_effort"), rank_normalised(strength), discernment)
+            if league.signal_weight > 0.0 else None
+        )
+
         reward, games_played = play_regular_season(
-            pop, league.win_threshold, cfg.tournament, cfg.match, rng, log
+            pop, league.win_threshold, cfg.tournament, cfg.match, rng, log,
+            signal_bonus, league.signal_weight,
         )
         seeds = seed_from_reward(reward, rng)
         bracket = play_bracket(
-            pop, seeds, league.win_threshold, cfg.match, rng, reward, games_played, log
+            pop, seeds, league.win_threshold, cfg.match, rng, reward, games_played, log,
+            signal_bonus, league.signal_weight,
         )
         championships[bracket.champion] += 1
 
@@ -113,6 +127,10 @@ def run_league(
             "reward_rate": float((reward / games_played).mean()),
             "win_rate_all": float((margin > 0).mean()),
         }
+        # The two numbers that matter for Goodhart: what the scoreboard says,
+        # and what the population is actually worth.
+        row["true_strength"] = float(strength.mean())
+        row["signal_effort"] = float(pop.strat("signal_effort").mean())
         row |= pop.summary()
         row |= _season_metrics(stacked, bracket, pop, n_rounds)
         history.rows.append(row)
@@ -166,6 +184,7 @@ def run_replicate(
     replicate: int,
     checkpoints: set[int] | None = None,
     progress: Any | None = None,
+    discernment: float = 0.0,
 ) -> list[LeagueHistory]:
     """Run every league on a byte-identical starting population."""
     from .config import league_seed, population_seed, rng as make_rng
@@ -183,6 +202,7 @@ def run_replicate(
                 make_rng(league_seed(cfg, replicate, index)),
                 checkpoints=checkpoints,
                 progress=progress,
+                discernment=discernment,
             )
         )
     return histories

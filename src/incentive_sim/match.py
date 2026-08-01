@@ -60,6 +60,7 @@ def _per_possession(
     def_emphasis = pop.strategy[defend, STRAT_IX["def_emphasis"]]
     aggression = pop.strategy[attack, STRAT_IX["aggression"]]
     risk_capacity = pop.attributes[attack, ATTR_IX["risk_capacity"]]
+    signal_effort = pop.strategy[attack, STRAT_IX["signal_effort"]]
 
     skill = offense * off_emphasis - defense * def_emphasis
     mean = cfg.base_points * (1.0 + cfg.skill_scale * skill)
@@ -67,6 +68,8 @@ def _per_possession(
     # Aggression beyond what the team can carry costs efficiency, quadratically.
     overreach = np.maximum(0.0, aggression - risk_capacity)
     mean = mean * (1.0 - cfg.overreach_penalty * overreach**2)
+    # Effort diverted into looking good is effort not spent on the game.
+    mean = mean * (1.0 - cfg.signal_cost * signal_effort)
     mean = np.maximum(mean * (1.0 - fatigue), _MIN_MEAN)
 
     variance = cfg.base_variance * (1.0 + cfg.variance_gain * aggression)

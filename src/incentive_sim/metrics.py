@@ -33,6 +33,10 @@ def _git_sha() -> str:
 def write_manifest(cfg: RunConfig, path: Path, extra: dict[str, Any] | None = None) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     manifest = {
+        # v1: no signalling mechanism. v2 adds the signal_effort strategy
+        # parameter, so v1 results cannot be byte-reproduced under v2 code even
+        # though the model is unchanged when signal_cost is 0.
+        "model_version": 2,
         "config_hash": cfg.hash(),
         "config": cfg.to_dict(),
         "git_sha": _git_sha(),

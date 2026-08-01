@@ -5,6 +5,7 @@ import pytest
 
 from incentive_sim.config import (
     N_ATTRIBUTES,
+    N_STRATEGY,
     EvolutionConfig,
     LeagueConfig,
     RunConfig,
@@ -123,5 +124,5 @@ def test_population_summary_reports_every_field():
     cfg = RunConfig()
     pop = initial_population(32, rng(population_seed(cfg, 0)), cfg.evolution)
     summary = pop.summary()
-    assert len(summary) == N_ATTRIBUTES + 6
+    assert len(summary) == N_ATTRIBUTES + N_STRATEGY
     assert all(np.isfinite(v) for v in summary.values())
