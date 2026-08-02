@@ -152,18 +152,44 @@ with the reward function as an explanation for any divergence.
 
 Two channels operate:
 
-- **Within-lifetime (fast).** Each team runs a (1+1) evolution strategy on its
-  strategy vector, alternating between evaluating its incumbent and a mutated
-  candidate over 150-game windows.
-- **Across generations (slow).** Between seasons the bottom 20% of teams are
-  replaced by mutated offspring of the top 20%, inheriting both attributes and
-  strategy, with attributes renormalised to the budget.
+- **Within-lifetime.** Each team runs a (1+1) evolution strategy on its strategy
+  vector, alternating between evaluating its incumbent and a mutated candidate
+  over 150-game windows.
+- **Across generations.** Between seasons the bottom 20% of teams are replaced by
+  mutated offspring of the top 20%, inheriting both attributes and strategy, with
+  attributes renormalised to the budget.
 
-The fast channel is deliberately modest, and we sized it against a measurement
-rather than a guess. A direct probe of the engine (§3.1) shows the reward edge
-from buying variance is roughly 3 percentage points, requiring ~1,900 games per
-arm for a 2σ read. No practical per-team window reaches that. **Population
-selection is therefore the primary driver**: a 3-point edge is invisible to one
+**Generations overlap.** With 20% replaced per season a team's expected lifetime
+is 5 seasons, so one generation is roughly 5 seasons and the ~300 seasons to
+convergence is about 60 generations.
+
+Two properties of this arrangement are worth stating plainly, because both differ
+from the obvious reading.
+
+*Strategy inheritance is Lamarckian.* A child inherits its parent's **learned**
+incumbent strategy, not the strategy the parent was born with. Attributes are
+Darwinian — fixed at birth, inherited with mutation. Acquired tactics are passed
+on; acquired ability is not.
+
+*The within-lifetime channel is a source of variation more than a learner.* A team
+plays ~14 games a season and lives ~5 seasons, so ~70 games; completing a single
+accept/reject decision needs two 150-game windows, or ~21 seasons. Only about 1%
+of teams survive long enough to finish one — though those are disproportionately
+the strong, long-lived teams whose strategies get copied. Knockouts confirm the
+consequence: removing the within-lifetime channel alone leaves final capability
+unchanged (77.6 vs 77.3), removing heritable strategy mutation alone also leaves
+it unchanged (78.1), but removing **both** collapses it to 34.3. The two are
+redundant substitutes. What matters is that strategy variation exists at all;
+selection does the work. An earlier version of this paper described the
+within-lifetime channel as a "fine-tuner" doing fast adaptation, which the
+knockouts do not support.
+
+The within-lifetime channel was sized against a measurement rather than a guess.
+A direct probe of the engine (§3.1) shows the reward edge from buying variance is
+roughly 3 percentage points, requiring ~1,900 games per arm for a 2σ read. No
+practical per-team window reaches that — which, together with the knockouts
+above, is why it does not function as an optimiser. **Population selection is
+the driver**: a 3-point edge is invisible to one
 team but is a selection coefficient of s ≈ 0.08 across 64 teams, which is strong
 and compounds over hundreds of seasons.
 
