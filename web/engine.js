@@ -53,8 +53,18 @@ const Engine = (() => {
 
   // -- randomness ------------------------------------------------------------
 
+  /** mulberry32 gives correlated streams for nearby seeds, and the two leagues
+   *  are seeded one apart — which would quietly couple their randomness and
+   *  break the one property the design rests on. Mix the seed hard first. */
+  function mixSeed(x) {
+    x = ((x | 0) + 0x9E3779B9) | 0;
+    x = Math.imul(x ^ (x >>> 16), 0x21f0aaad);
+    x = Math.imul(x ^ (x >>> 15), 0x735a2d97);
+    return (x ^ (x >>> 15)) >>> 0;
+  }
+
   function makeRng(seed) {
-    let a = (seed >>> 0) || 1;
+    let a = mixSeed(seed) || 1;
     let spare = null;
 
     const next = () => {
@@ -91,6 +101,7 @@ const Engine = (() => {
       }
     };
 
+    for (let i = 0; i < 16; i++) next();
     return { next, normal, gamma, int: (n) => Math.floor(next() * n) };
   }
 
@@ -372,8 +383,13 @@ const Engine = (() => {
     }
 
     // Seed by the league's own success metric, ties broken at random.
-    const seeds = Array.from({ length: n }, (_, i) => i)
-      .sort((p, q) => (reward[q] + rng.next() * 1e-6) - (reward[p] + rng.next() * 1e-6));
+    // The jitter must be drawn ONCE PER TEAM, not inside the comparator: a
+    // comparator that re-randomises on every call is non-transitive, and with
+    // integer rewards there are many ties, so the resulting order is garbage
+    // rather than a ranking.
+    const keyed = new Float64Array(n);
+    for (let i = 0; i < n; i++) keyed[i] = reward[i] + rng.next() * 1e-6;
+    const seeds = Array.from({ length: n }, (_, i) => i).sort((p, q) => keyed[q] - keyed[p]);
     const seedOf = new Int32Array(n);
     seeds.forEach((team, pos) => { seedOf[team] = pos; });
 

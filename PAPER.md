@@ -22,11 +22,7 @@ offensive and defensive skill end up *lower* than League A's, and against a
 common opponent its expected margin is −0.53 points against League A's +0.01.
 The volatility effects are large relative to a drift null control (t = 4.8–6.0);
 the skill degradation is real but marginal (t = 2.0–2.4) and, as a price-of-
-volatility sweep shows, holds only where volatility is cheap. It is also not
-monotone: League B improves *faster* than League A for the first hundred seasons,
-peaking at +0.042 offensive skill around season 25, before the advantage decays
-and reverses. A demanding bar is a sharp selection instrument for a weak
-population and a corrupting one for a capable population.
+volatility sweep shows, holds only where volatility is cheap.
 
 The trade is not merely lateral but unfavourable. League B gains 0.89 percentage
 points at winning by 10+ while giving up 3.42 points at losing by 10+; the
@@ -284,41 +280,33 @@ strongest available evidence that the mechanism is real rather than incidental:
 At threshold 5 only offensive skill is significantly degraded; at threshold 10
 both attributes are. The harder the bar, the more real capability is traded away.
 
-### 4.2b A high bar helps a weak population and hurts a strong one
+### 4.2b Retracted: an early-lead effect that does not survive its own error bars
 
-Reporting only converged values hid a reversal. Tracking capability across the
-whole run rather than at the end:
+An earlier version of this paper reported that League B improves *faster* for the
+first hundred seasons — offensive skill peaking at +0.042 over League A around
+season 25 — and explained it by truncation selection. **That claim is withdrawn.**
 
-| Season | Offensive skill A | Offensive skill B | B − A |
+The means do trace that shape, but the per-replicate spread swamps it:
+
+| Season | Mean gap (B−A) | SD | 95% CI |
 |---|---|---|---|
-| 0 | 0.4977 | 0.4977 | 0.0000 |
-| 5 | 0.5730 | 0.5946 | **+0.0216** |
-| 25 | 0.6545 | 0.6968 | **+0.0423** |
-| 50 | 0.7166 | 0.7323 | +0.0157 |
-| 100 | 0.8188 | 0.8195 | +0.0008 |
-| 599 | 0.9326 | 0.9314 | −0.0012 |
+| 5 | +0.0216 | 0.061 | [−0.008, +0.051] |
+| 25 | +0.0423 | 0.184 | [−0.048, +0.132] |
+| 50 | +0.0157 | 0.170 | [−0.068, +0.099] |
+| 100 | +0.0008 | 0.104 | [−0.050, +0.051] |
 
-**League B improves faster for the first hundred seasons.** Its offensive skill
-peaks at +0.042 over League A around season 25 and does not fall back through
-zero until season 125; defensive skill peaks later (+0.030 at season 128) and
-crosses at season 178. The final-state result reported everywhere else in this
-paper is the *end* of a trajectory that begins with the opposite sign.
+Not significant at any season. Early trajectories are far noisier than converged
+ones — the spread at season 25 is three times the converged spread — so a mean
+curve computed over 16 replicates traces a shape that individual runs do not
+share. A faithful reimplementation of the model in JavaScript fails to reproduce
+the effect across three independent seed families, which is what prompted the
+check.
 
-The mechanism is truncation selection. When the population is weak, almost
-nobody clears a ten-point margin, so the few who do are genuinely the strongest
-teams and the reward is a very sharp quality signal. Under threshold 1 roughly
-half the field is rewarded every game, which is a far noisier read on who is
-actually good. The high bar is initially the *better* instrument.
-
-The reversal comes when the population improves enough that the bar is reachable
-by volatility rather than by dominance. From that point the cheap route is
-available and selection takes it.
-
-Stated for the case that motivates this work: **a demanding bar is a good
-instrument for a weak population and a corrupting one for a capable population**,
-and the switch happens without any change in the rule. We found this only after
-building a live simulator that plots the whole trajectory; the static analysis
-reported the last thirty seasons and would have missed it indefinitely.
+Testing the hypothesis properly would need roughly 150 replicates to bring the
+interval below the effect size. We have not run that, so the question is open
+rather than answered. We record the episode because it is the same error the
+null control in §5.1 was built to catch, committed by the same authors one
+section later: **a mean curve is not a finding until its spread is examined.**
 
 ---
 

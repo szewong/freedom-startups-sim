@@ -173,7 +173,8 @@
         <span><i style="background:var(--b)"></i> League B</span>
       </div>
       <div class="season-readout">
-        <span class="micro">Season</span><span class="v" id="season">0</span>
+        <span class="micro">Season</span>
+        <span class="v"><span id="season">0</span><span id="target-label" style="color:var(--ink-3)"></span></span>
       </div>
     </div>
     <div class="controls" id="controls"></div>
@@ -252,6 +253,8 @@
       hint: "Games every team plays before the bracket." },
     { key: "speed", label: "Seasons per frame", min: 1, max: 40, step: 1, value: 3,
       hint: "Playback speed. Higher runs faster and shows less." },
+    { key: "target", label: "Run for", min: 50, max: 3000, step: 50, value: 600,
+      hint: "Seasons to run, then stop. Press Run again to go another lap." },
   ];
 
   const CHARTS = [
@@ -267,6 +270,7 @@
 
   const params = Object.fromEntries(CONTROLS.map((c) => [c.key, c.value]));
   let seed = 7;
+  let target = params.target;
   let run = null;
   let playing = false;
   let lastWallDraw = 0;
@@ -296,7 +300,15 @@
       input.addEventListener("input", () => {
         params[c.key] = parseFloat(input.value);
         show();
-        applyLive();
+        // The target is a stopping point, not a model parameter: set it from
+        // where the run currently is, so it always means "this many more".
+        if (c.key === "target") {
+          target = (run ? run.season : 0) + Math.round(params.target);
+          setPlaying(playing);
+          render(true);
+        } else {
+          applyLive();
+        }
       });
       show();
     }
@@ -336,6 +348,7 @@
   /* ---------- lifecycle ---------- */
 
   function restart() {
+    target = Math.round(params.target);
     run = Engine.createRun({
       seed,
       leagues: [
@@ -358,14 +371,18 @@
   function tick() {
     if (!playing) return;
     const n = Math.round(params.speed);
-    for (let i = 0; i < n; i++) Engine.step(run);
+    for (let i = 0; i < n && run.season < target; i++) Engine.step(run);
     render(false);
+    if (run.season >= target) { setPlaying(false); render(true); return; }
     requestAnimationFrame(tick);
   }
 
   function setPlaying(on) {
     playing = on;
-    document.getElementById("run").textContent = on ? "Pause" : "Run";
+    const button = document.getElementById("run");
+    button.textContent = on ? "Pause"
+      : run && run.season >= target ? `Run ${Math.round(params.target)} more`
+      : "Run";
     if (on) requestAnimationFrame(tick);
   }
 
@@ -373,6 +390,7 @@
 
   function render(force) {
     document.getElementById("season").textContent = run.season.toLocaleString();
+    document.getElementById("target-label").textContent = ` / ${target.toLocaleString()}`;
     for (const spec of CHARTS) {
       if (spec.mode === "h2h" && run.h2hHistory.length < 2) continue;
       drawChart(spec);
@@ -516,9 +534,14 @@
   buildCharts();
   restart();
 
-  document.getElementById("run").addEventListener("click", () => setPlaying(!playing));
+  document.getElementById("run").addEventListener("click", () => {
+    if (!playing && run.season >= target) target = run.season + Math.round(params.target);
+    setPlaying(!playing);
+  });
   document.getElementById("step").addEventListener("click", () => {
-    setPlaying(false); Engine.step(run); render(true);
+    setPlaying(false);
+    if (run.season >= target) target = run.season + 1;
+    Engine.step(run); render(true); setPlaying(false);
   });
   document.getElementById("restart").addEventListener("click", () => { setPlaying(false); restart(); });
   window.addEventListener("resize", () => render(true));

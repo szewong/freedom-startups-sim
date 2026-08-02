@@ -35,6 +35,18 @@ const PYTHON = {
   blowoutRate_b: { value: 0.4677, tol: 0.07 },
 };
 
+// Converged values alone are not enough. A seeding bug once inverted the whole
+// early trajectory while leaving season-600 numbers inside tolerance, so the
+// transient is checked too.
+// An earlier version asserted a signed early gap between the leagues. That claim
+// did not survive its error bars (PAPER.md §4.2b) and has been withdrawn. What
+// IS checked is the trajectory shape both engines agree on: capability climbs
+// from the initial allocation toward the attribute cap.
+const PYTHON_TRANSIENT = [
+  { season: 25, lo: 0.55, hi: 0.80, note: "both populations improving by season 25" },
+  { season: 200, lo: 0.85, hi: 0.96, note: "near the attribute cap by season 200" },
+];
+
 function tailMean(history, key) {
   const tail = history.slice(-TAIL);
   return tail.reduce((acc, row) => acc + row[key], 0) / tail.length;
@@ -49,6 +61,8 @@ function main() {
     collected.A[key] = []; collected.B[key] = [];
   }
 
+  const transient = PYTHON_TRANSIENT.map(() => []);
+
   for (let replicate = 0; replicate < REPLICATES; replicate++) {
     const run = Engine.createRun({
       seed: 1000 + replicate,
@@ -60,6 +74,12 @@ function main() {
         collected[league.name][key].push(tailMean(league.history, key));
       }
     }
+    PYTHON_TRANSIENT.forEach((point, i) => {
+      const [a, b] = run.leagues;
+      transient[i].push(
+        0.5 * (a.history[point.season - 1].offense + b.history[point.season - 1].offense),
+      );
+    });
     process.stdout.write(`  replicate ${replicate + 1}/${REPLICATES}\r`);
   }
 
@@ -93,6 +113,16 @@ function main() {
       `${diff.toFixed(4).padStart(10)}${tol.toFixed(3).padStart(8)}  ${ok ? "ok" : "DRIFT"}`,
     );
   }
+
+  console.log("");
+  const avgT = (xs) => xs.reduce((a, b) => a + b, 0) / xs.length;
+  PYTHON_TRANSIENT.forEach((point, i) => {
+    const got = avgT(transient[i]);
+    const ok = got >= point.lo && got <= point.hi;
+    if (!ok) failures += 1;
+    console.log(`  ${ok ? "PASS" : "FAIL"}  season ${point.season} mean offense ` +
+                `${got.toFixed(4)} (expect ${point.lo}–${point.hi}) — ${point.note}`);
+  });
 
   // The qualitative claims matter more than any single number.
   const checks = [
