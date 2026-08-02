@@ -1,0 +1,41 @@
+{
+  "baseline": {
+    "attr_offense": 0.9326945214451104,
+    "attr_defense": 0.93287280710323,
+    "strat_aggression": 0.08516142528868427,
+    "sd_aggression": 0.06732936523409051,
+    "reward_rate": 0.49457345487607435
+  },
+  "step bar 50": {
+    "attr_offense": 0.7146015738283592,
+    "attr_defense": 0.7510327805583549,
+    "strat_aggression": 0.34594958558445627,
+    "sd_aggression": 0.14922237506460612,
+    "reward_rate": 0.0498576267780082,
+    "h2h_vs_baseline": 0.095615
+  },
+  "graded bar 50": {
+    "attr_offense": 0.9329728443223916,
+    "attr_defense": 0.9324240959904501,
+    "strat_aggression": 0.27000856165219195,
+    "sd_aggression": 0.0847793802669377,
+    "reward_rate": 0.10718133426834944,
+    "h2h_vs_baseline": 0.5053183333333333
+  },
+  "step bar 20": {
+    "attr_offense": 0.9205256050294658,
+    "attr_defense": 0.9197154400539114,
+    "strat_aggression": 0.327037720036241,
+    "sd_aggression": 0.09149289979231641,
+    "reward_rate": 0.08277176792859238,
+    "h2h_vs_baseline": 0.442655
+  },
+  "graded bar 20": {
+    "attr_offense": 0.9333566704438028,
+    "attr_defense": 0.9323531666208822,
+    "strat_aggression": 0.20870883206288743,
+    "sd_aggression": 0.08373575520120742,
+    "reward_rate": 0.23855407477594404,
+    "h2h_vs_baseline": 0.5062283333333333
+  }
+}

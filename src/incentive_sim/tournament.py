@@ -75,6 +75,7 @@ def play_regular_season(
     mcfg: MatchConfig,
     rng: np.random.Generator,
     log: GameLog | None = None,
+    graded: bool = False,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Every team plays `regular_season_games` games against random opponents.
 
@@ -91,7 +92,7 @@ def play_regular_season(
         left, right = shuffled[: n // 2], shuffled[n // 2 :]
 
         score_a, score_b = simulate_games(pop, left, right, fresh, fresh, mcfg, rng)
-        reward_a, reward_b = pair_rewards(score_a, score_b, threshold)
+        reward_a, reward_b = pair_rewards(score_a, score_b, threshold, graded)
 
         np.add.at(reward_total, left, reward_a)
         np.add.at(reward_total, right, reward_b)
@@ -122,6 +123,7 @@ def play_bracket(
     reward_total: np.ndarray,
     games_total: np.ndarray,
     log: GameLog | None = None,
+    graded: bool = False,
 ) -> BracketResult:
     """Single elimination. `seeds[0]` is the top seed.
 
@@ -143,7 +145,7 @@ def play_bracket(
         played = np.full(left.shape, float(rnd))
 
         score_a, score_b = simulate_games(pop, left, right, played, played, mcfg, rng)
-        reward_a, reward_b = pair_rewards(score_a, score_b, threshold)
+        reward_a, reward_b = pair_rewards(score_a, score_b, threshold, graded)
 
         np.add.at(reward_total, left, reward_a)
         np.add.at(reward_total, right, reward_b)

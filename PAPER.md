@@ -336,6 +336,54 @@ section later: **a mean curve is not a finding until its spread is examined.**
 
 ---
 
+### 4.2c Height and shape are two different levers
+
+The threshold has two properties that are easy to conflate: **how high** it is,
+and whether missing it scores **nothing rather than something**. Separating them
+turns out to matter more than anything else in this paper.
+
+We compare a step reward (`1 if margin >= k else 0`) against a graded reward
+(`min(margin / k, 1)`) at the same bar — same maximum, same direction, partial
+credit for partial progress. 500 seasons x 10 replicates, measured against a
+baseline population evolved under "any win counts":
+
+| Rule | Offensive skill | Aggression | Spread of aggression | Wins vs baseline |
+|---|---|---|---|---|
+| Baseline (any win) | 0.9327 | 0.085 | 0.067 | — |
+| **Step**, bar 20 | 0.9205 | 0.327 | 0.092 | 44.3% |
+| **Graded**, bar 20 | **0.9334** | 0.209 | 0.084 | **50.6%** |
+| **Step**, bar 50 | **0.7146** | 0.346 | 0.149 | **9.6%** |
+| **Graded**, bar 50 | **0.9330** | 0.270 | 0.085 | **50.5%** |
+
+The two levers come apart cleanly:
+
+**Height drives volatility.** Graded populations still evolve much higher
+aggression than baseline (0.270 vs 0.085 at bar 50). Aiming at a distant target
+makes a population more volatile whatever the scoring shape, and no amount of
+partial credit removes that. It is a property of what is being asked for.
+
+**Shape drives capability collapse.** Under a step reward at bar 50, offensive
+skill decays to 0.715 — most of the way back to the 0.5 the population started
+from — and the population loses to baseline 90% of the time. Under a graded
+reward at the same bar, skill is 0.9330 against baseline's 0.9327: *identical*,
+and it plays baseline to a dead heat. The collapse reported in §4.2 for very high
+thresholds is not caused by the height of the bar at all. It is caused by
+all-or-nothing scoring, and it disappears entirely when partial progress scores.
+
+The mechanism is information. A step reward at bar 50 fires on 5% of games, so a
+season's standings barely distinguish teams and selection runs on noise; the
+graded version fires on every game with a signal proportional to how well the
+team actually played, and selection works normally. The bar is equally
+unreachable in both. Only one of them destroys the ability to tell who is good.
+
+This is the most actionable result here, and it inverts the obvious remedy. The
+fix for a system that has stopped recognising quality is not to lower its
+ambitions — lowering the bar reduces volatility but was never what broke
+selection. The fix is to **stop scoring it as a binary**. Measure progress toward
+the outcome, not solely its attainment.
+
+---
+
 ### 4.3 The trade is unfavourable, not merely lateral
 
 Against a common opponent, 1.92M games per population:

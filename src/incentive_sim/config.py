@@ -88,6 +88,9 @@ class LeagueConfig:
 
     name: str
     win_threshold: int
+    # Step reward by default. `graded` gives partial credit toward the same bar,
+    # separating how high a bar is from whether missing it scores nothing.
+    graded: bool = False
 
 
 @dataclass(frozen=True)

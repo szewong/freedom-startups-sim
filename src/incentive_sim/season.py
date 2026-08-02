@@ -95,11 +95,12 @@ def run_league(
         log = GameLog()
 
         reward, games_played = play_regular_season(
-            pop, league.win_threshold, cfg.tournament, cfg.match, rng, log
+            pop, league.win_threshold, cfg.tournament, cfg.match, rng, log, league.graded
         )
         seeds = seed_from_reward(reward, rng)
         bracket = play_bracket(
-            pop, seeds, league.win_threshold, cfg.match, rng, reward, games_played, log
+            pop, seeds, league.win_threshold, cfg.match, rng, reward, games_played, log,
+            league.graded,
         )
         championships[bracket.champion] += 1
 
