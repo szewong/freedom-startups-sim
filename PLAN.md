@@ -430,3 +430,68 @@ PRD Phase 2 (coach personalities) and Phase 3 (startup simulator). The module
 layout keeps `reward.py`, `population.py` and `match.py` cleanly separable so
 Phase 3 can swap the domain while reusing the evolution and experiment
 machinery — but neither is built now.
+
+---
+
+## 13. Branch: the endogenous bar (`endogenous-bar`)
+
+Everywhere in v1.0 the threshold is imposed. That is not the founder's situation —
+a founder sets their own bar every time they raise, because capital funds the work
+*and* the preference stack it creates is a floor below which the outcome pays
+nothing. Both come from one decision.
+
+`ambition` becomes an evolvable strategy parameter doing three things at once:
+
+```
+performance  x (1 + capital_gain * ambition)     capital funds the work
+bar          = ambition * max_bar                 and sets the floor
+payout       = 1 + prize_slope * ambition         clearing a higher bar pays more
+```
+
+**Result** (max bar 30 points, 500 seasons x 8 replicates, sweeping how much
+capital actually helps):
+
+| Capital gain | Ambition chosen | Bar picked | Offensive skill | Wins vs baseline |
+|---|---|---|---|---|
+| 0.00 | 0.037 | 1.5 | 0.9305 | 49.9% |
+| 0.05 | 0.046 | 1.7 | 0.9316 | 50.6% |
+| 0.10 | 0.057 | 2.0 | 0.9319 | 50.6% |
+| 0.20 | 0.309 | 9.4 | 0.9305 | 49.6% |
+| **0.40** | **0.958** | **28.8** | **0.8876** | **36.4%** |
+
+Baseline is a population never given the choice, scored on any win (offense 0.9316).
+
+Three things fall out.
+
+**Given a free choice, populations refuse a high bar.** Where capital does little
+(gain ≤ 0.10) they settle on ambition 0.04–0.06 — a bar of 1–2 points out of a
+possible 30. Nobody sets themselves a demanding target for its own sake.
+
+**The switch is abrupt.** Between gain 0.10 and 0.40 the chosen bar goes from 2
+points to 29. There is no gradual climb; past a tipping point the population
+converts wholesale.
+
+**And at the top it chooses maximum ambition and is worse for it.** Offensive
+skill falls to 0.8876 against baseline's 0.9316 — a difference of −0.044, 95% CI
+[−0.062, −0.026], roughly 17x the drift band. Selection picked that. Within the
+population, high-ambition teams beat low-ambition ones; the population that
+results is worse at the underlying game than one that never had the option. **An
+individually rational bar is a collectively bad one.**
+
+The last row needs care, and the honest version is sharper than the simple one:
+
+| High-ambition population's win rate vs baseline | |
+|---|---|
+| with capital still flowing | **68.2%** |
+| with capital withdrawn | **36.4%** |
+
+They are not weak. They are *capital-dependent*. While the funding holds they are
+substantially the better population; strip the subsidy and they are far worse than
+a population that never chased the bar. That is one experiment, in a model, and it
+is a hypothesis about the world rather than evidence about it — but it is the
+cleanest statement of the founder's trade this work has produced.
+
+**Outstanding on this branch:** a null control for the endogenous mechanism; a
+sweep of `prize_slope` (does the collapse need the bigger payout, or only the
+capital?); and whether graded scoring rescues the endogenous case as it did the
+imposed one (§4.2c).

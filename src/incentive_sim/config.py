@@ -33,6 +33,11 @@ STRATEGY: tuple[str, ...] = (
     "tempo",
     "margin_seeking",
     "endgame_conservatism",
+    # How high a bar the team sets for ITSELF. Buys performance (match.py) and
+    # raises the margin it must clear to score anything (reward.py). The founder's
+    # actual decision: raising more capital funds the work and simultaneously
+    # installs a higher floor under which the outcome pays nothing.
+    "ambition",
 )
 
 ATTR_IX = {name: i for i, name in enumerate(ATTRIBUTES)}
@@ -61,6 +66,10 @@ class MatchConfig:
     # Aggression beyond a team's risk_capacity costs efficiency, quadratically.
     # This is the price of buying variance.
     overreach_penalty: float = 0.90  # kappa
+
+    # What ambition buys. Capital genuinely funds the work, so a team that sets
+    # itself a higher bar also performs better. 0 makes ambition pure downside.
+    capital_gain: float = 0.0
 
     # Aggression always inflates per-possession variance, linearly.
     base_variance: float = 0.65  # v0
@@ -91,6 +100,11 @@ class LeagueConfig:
     # Step reward by default. `graded` gives partial credit toward the same bar,
     # separating how high a bar is from whether missing it scores nothing.
     graded: bool = False
+    # When set, each team's bar comes from its own evolved `ambition` rather than
+    # from `win_threshold`, and clearing a higher bar pays proportionally more.
+    endogenous: bool = False
+    max_bar: int = 30
+    prize_slope: float = 1.0
 
 
 @dataclass(frozen=True)

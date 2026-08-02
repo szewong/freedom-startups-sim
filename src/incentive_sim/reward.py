@@ -37,3 +37,20 @@ def pair_rewards(
         reward_from_margin(margin, threshold, graded),
         reward_from_margin(-margin, threshold, graded),
     )
+
+
+def personal_bar(ambition: np.ndarray, max_bar: int) -> np.ndarray:
+    """The margin a team must clear, set by its own ambition."""
+    return np.maximum(1.0, np.rint(ambition * max_bar))
+
+
+def endogenous_reward(
+    margin: np.ndarray, ambition: np.ndarray, max_bar: int, prize_slope: float
+) -> np.ndarray:
+    """Score against a self-chosen bar, paying more for clearing a higher one.
+
+    This is the founder's trade in one line: aim higher and the prize grows, but
+    so does the margin below which you are paid nothing at all.
+    """
+    cleared = margin >= personal_bar(ambition, max_bar)
+    return np.where(cleared, 1.0 + prize_slope * ambition, 0.0)

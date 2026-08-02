@@ -90,17 +90,22 @@ def run_league(
 
     championships = np.zeros(pop.n_teams, dtype=np.int64)
 
+    endogenous = (
+        (league.max_bar, league.prize_slope) if league.endogenous else None
+    )
+
     for season in range(cfg.seasons):
         capture = season in checkpoints
         log = GameLog()
 
         reward, games_played = play_regular_season(
-            pop, league.win_threshold, cfg.tournament, cfg.match, rng, log, league.graded
+            pop, league.win_threshold, cfg.tournament, cfg.match, rng, log, league.graded,
+            endogenous,
         )
         seeds = seed_from_reward(reward, rng)
         bracket = play_bracket(
             pop, seeds, league.win_threshold, cfg.match, rng, reward, games_played, log,
-            league.graded,
+            league.graded, endogenous,
         )
         championships[bracket.champion] += 1
 
@@ -114,6 +119,11 @@ def run_league(
             "reward_rate": float((reward / games_played).mean()),
             "win_rate_all": float((margin > 0).mean()),
         }
+        row["ambition"] = float(pop.strat("ambition").mean())
+        row["sd_ambition"] = float(pop.strat("ambition").std())
+        row["personal_bar"] = float(
+            np.maximum(1.0, np.rint(pop.strat("ambition") * league.max_bar)).mean()
+        )
         row |= pop.summary()
         row |= _season_metrics(stacked, bracket, pop, n_rounds)
         history.rows.append(row)

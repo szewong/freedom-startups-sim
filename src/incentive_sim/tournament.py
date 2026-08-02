@@ -17,10 +17,10 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from .config import MatchConfig, TournamentConfig
+from .config import STRAT_IX, MatchConfig, TournamentConfig
 from .match import simulate_games
 from .population import Population
-from .reward import pair_rewards
+from .reward import endogenous_reward, pair_rewards
 
 
 @dataclass
@@ -76,6 +76,7 @@ def play_regular_season(
     rng: np.random.Generator,
     log: GameLog | None = None,
     graded: bool = False,
+    endogenous: tuple[int, float] | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Every team plays `regular_season_games` games against random opponents.
 
@@ -92,7 +93,14 @@ def play_regular_season(
         left, right = shuffled[: n // 2], shuffled[n // 2 :]
 
         score_a, score_b = simulate_games(pop, left, right, fresh, fresh, mcfg, rng)
-        reward_a, reward_b = pair_rewards(score_a, score_b, threshold, graded)
+        if endogenous is None:
+            reward_a, reward_b = pair_rewards(score_a, score_b, threshold, graded)
+        else:
+            max_bar, prize_slope = endogenous
+            amb = pop.strategy[:, STRAT_IX["ambition"]]
+            margin = score_a - score_b
+            reward_a = endogenous_reward(margin, amb[left], max_bar, prize_slope)
+            reward_b = endogenous_reward(-margin, amb[right], max_bar, prize_slope)
 
         np.add.at(reward_total, left, reward_a)
         np.add.at(reward_total, right, reward_b)
@@ -124,6 +132,7 @@ def play_bracket(
     games_total: np.ndarray,
     log: GameLog | None = None,
     graded: bool = False,
+    endogenous: tuple[int, float] | None = None,
 ) -> BracketResult:
     """Single elimination. `seeds[0]` is the top seed.
 
@@ -145,7 +154,14 @@ def play_bracket(
         played = np.full(left.shape, float(rnd))
 
         score_a, score_b = simulate_games(pop, left, right, played, played, mcfg, rng)
-        reward_a, reward_b = pair_rewards(score_a, score_b, threshold, graded)
+        if endogenous is None:
+            reward_a, reward_b = pair_rewards(score_a, score_b, threshold, graded)
+        else:
+            max_bar, prize_slope = endogenous
+            amb = pop.strategy[:, STRAT_IX["ambition"]]
+            margin = score_a - score_b
+            reward_a = endogenous_reward(margin, amb[left], max_bar, prize_slope)
+            reward_b = endogenous_reward(-margin, amb[right], max_bar, prize_slope)
 
         np.add.at(reward_total, left, reward_a)
         np.add.at(reward_total, right, reward_b)
