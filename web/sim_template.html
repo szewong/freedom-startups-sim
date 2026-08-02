@@ -1,0 +1,502 @@
+<title>Incentive Evolution — live simulator</title>
+
+<style>
+  :root {
+    color-scheme: light;
+    --ground: #f4f5f7; --panel: #ffffff; --panel-2: #eceff3;
+    --ink: #10131a; --ink-2: #4a5160; --ink-3: #858c9c;
+    --rule: #dfe3ea; --rule-strong: #c6ccd7;
+    --a: #2a78d6; --b: #eb6834;
+    --a-wash: rgba(42,120,214,0.10); --b-wash: rgba(235,104,52,0.10);
+    --void: #b9c0cc; --void-ink: #6d7482;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --ground: #0e1014; --panel: #171a21; --panel-2: #1e222b;
+      --ink: #f2f4f8; --ink-2: #a8b0c0; --ink-3: #6c7484;
+      --rule: #262b35; --rule-strong: #363d4a;
+      --a: #3987e5; --b: #d95926;
+      --a-wash: rgba(57,135,229,0.14); --b-wash: rgba(217,89,38,0.14);
+      --void: #4b5462; --void-ink: #99a1b1;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --ground: #0e1014; --panel: #171a21; --panel-2: #1e222b;
+    --ink: #f2f4f8; --ink-2: #a8b0c0; --ink-3: #6c7484;
+    --rule: #262b35; --rule-strong: #363d4a;
+    --a: #3987e5; --b: #d95926;
+    --a-wash: rgba(57,135,229,0.14); --b-wash: rgba(217,89,38,0.14);
+    --void: #4b5462; --void-ink: #99a1b1;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: var(--sans); font-size: 0.95rem; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 1280px; margin: 0 auto;
+    padding: clamp(1.25rem,1rem+1.5vw,2.5rem) clamp(0.85rem,0.5rem+1.5vw,1.75rem) 4rem;
+    display: flex; flex-direction: column; gap: 1.5rem;
+  }
+  .micro {
+    font-family: var(--mono); font-size: 0.6875rem; letter-spacing: 0.13em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+  h1 {
+    margin: 0; font-size: clamp(1.6rem,1.2rem+1.6vw,2.4rem); line-height: 1.05;
+    letter-spacing: -0.03em; font-weight: 700; text-wrap: balance; max-width: 22ch;
+  }
+  header p { margin: 0; max-width: 64ch; color: var(--ink-2); text-wrap: pretty; }
+  header { display: flex; flex-direction: column; gap: 0.7rem; }
+
+  .panel {
+    background: var(--panel); border: 1px solid var(--rule);
+    border-radius: 4px; padding: 1rem 1.1rem;
+  }
+
+  /* ---- console ---- */
+  .console { display: flex; flex-direction: column; gap: 1rem; }
+
+  .transport { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1.25rem; }
+  button {
+    font-family: inherit; font-size: 0.875rem; font-weight: 600; color: var(--ink);
+    background: var(--panel-2); border: 1px solid var(--rule-strong);
+    border-radius: 3px; padding: 0.5rem 1rem; cursor: pointer;
+    transition: background .12s, border-color .12s;
+  }
+  button:hover { border-color: var(--ink-3); }
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--a); outline-offset: 2px; }
+  #run { background: var(--ink); color: var(--ground); border-color: var(--ink); min-width: 7.5rem; }
+  #run:hover { background: var(--ink-2); border-color: var(--ink-2); }
+
+  .season-readout { display: flex; align-items: baseline; gap: 0.5rem; margin-left: auto; }
+  .season-readout .v {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    font-size: 1.5rem; font-weight: 650; letter-spacing: -0.03em;
+  }
+
+  .controls {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(215px,1fr)); gap: 0.9rem 1.4rem;
+  }
+  .ctrl { display: flex; flex-direction: column; gap: 0.3rem; }
+  .ctrl-head { display: flex; align-items: baseline; gap: 0.5rem; }
+  .ctrl-head .v {
+    margin-left: auto; font-family: var(--mono); font-variant-numeric: tabular-nums;
+    font-size: 0.8125rem; color: var(--ink); font-weight: 650;
+  }
+  .ctrl .hint { font-size: 0.75rem; color: var(--ink-3); line-height: 1.35; }
+  input[type=range] { width: 100%; accent-color: var(--a); cursor: pointer; }
+  input[type=number] {
+    font-family: var(--mono); font-size: 0.8125rem; width: 100%; color: var(--ink);
+    background: var(--panel-2); border: 1px solid var(--rule-strong);
+    border-radius: 3px; padding: 0.35rem 0.5rem;
+  }
+  .ctrl[data-league="B"] input[type=range] { accent-color: var(--b); }
+
+  /* ---- charts ---- */
+  .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%,400px),1fr)); gap: 1rem 1.4rem; }
+  .chart { display: flex; flex-direction: column; gap: 0.35rem; }
+  .chart-head { display: flex; align-items: baseline; gap: 0.5rem; }
+  .chart-head .now {
+    margin-left: auto; font-family: var(--mono); font-variant-numeric: tabular-nums;
+    font-size: 0.8125rem; font-weight: 650;
+  }
+  .chart-head .now .a { color: var(--a); }
+  .chart-head .now .b { color: var(--b); }
+  canvas { width: 100%; height: 165px; display: block; }
+
+  .legend { display: flex; gap: 1.25rem; flex-wrap: wrap; }
+  .legend span { display: flex; align-items: center; gap: 0.45rem; color: var(--ink-2); font-size: 0.8125rem; }
+  .legend i { width: 18px; height: 2px; border-radius: 1px; display: block; }
+
+  /* ---- brackets ---- */
+  .walls { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%,340px),1fr)); gap: 0.9rem; }
+  .wall { display: flex; flex-direction: column; gap: 0.7rem; min-width: 0; }
+  .wall-head { display: flex; align-items: center; gap: 0.5rem; font-weight: 650; }
+  .wall-head .rulechip {
+    margin-left: auto; font-family: var(--mono); font-size: 0.75rem; color: var(--ink-2);
+    background: var(--panel-2); border: 1px solid var(--rule); border-radius: 3px; padding: 0.1rem 0.45rem;
+  }
+  .swatch { width: 10px; height: 10px; border-radius: 2px; flex: none; }
+  .swatch.a { background: var(--a); } .swatch.b { background: var(--b); }
+  .tally { display: flex; gap: 1.4rem; flex-wrap: wrap; }
+  .tally div { display: flex; flex-direction: column; }
+  .tally .v {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    font-size: 1.3rem; font-weight: 650; letter-spacing: -0.03em; line-height: 1.15;
+  }
+  .wall[data-league="A"] .tally .v.hero { color: var(--a); }
+  .wall[data-league="B"] .tally .v.hero { color: var(--b); }
+  .chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px,1fr)); gap: 3px; }
+  .chip {
+    height: 26px; display: flex; align-items: center; justify-content: center;
+    border-radius: 2px; border: 1px solid transparent;
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    font-size: 0.75rem; font-weight: 600;
+  }
+  .wall[data-league="A"] .chip.counted { background: var(--a-wash); color: var(--a); border-color: var(--a); }
+  .wall[data-league="B"] .chip.counted { background: var(--b-wash); color: var(--b); border-color: var(--b); }
+  .chip.wasted { border-color: var(--void); border-style: dashed; color: var(--void-ink); }
+  .round-label { display: flex; align-items: baseline; gap: 0.4rem; border-bottom: 1px solid var(--rule); padding-bottom: 0.15rem; margin-top: 0.3rem; }
+  .round-label .count { margin-left: auto; font-family: var(--mono); }
+
+  .notes ul { margin: 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .notes li { color: var(--ink-2); max-width: 74ch; }
+  footer { border-top: 1px solid var(--rule); padding-top: 1rem; color: var(--ink-3); font-size: 0.8125rem; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="micro">Freedom Startups &middot; live simulator</div>
+    <h1>Turn the knobs. Watch what evolves.</h1>
+    <p>
+      Two leagues of 64 teams, identical at season zero, playing the same game under
+      the same physics. The only difference is what counts as a success. Everything
+      below is simulated in your browser as it runs &mdash; change any control mid-run
+      and the populations respond from where they are.
+    </p>
+  </header>
+
+  <section class="panel console">
+    <div class="transport">
+      <button id="run" type="button">Run</button>
+      <button id="step" type="button">+1 season</button>
+      <button id="restart" type="button">Restart</button>
+      <div class="legend">
+        <span><i style="background:var(--a)"></i> League A</span>
+        <span><i style="background:var(--b)"></i> League B</span>
+      </div>
+      <div class="season-readout">
+        <span class="micro">Season</span><span class="v" id="season">0</span>
+      </div>
+    </div>
+    <div class="controls" id="controls"></div>
+  </section>
+
+  <section class="panel">
+    <div class="charts" id="charts"></div>
+  </section>
+
+  <section class="panel">
+    <div class="micro" style="margin-bottom:0.75rem">
+      Latest season&rsquo;s bracket &mdash; each chip is one game, showing the winner&rsquo;s margin.
+      Solid counted under that league&rsquo;s rule; dashed means they won and got nothing.
+    </div>
+    <div class="walls" id="walls"></div>
+  </section>
+
+  <section class="panel notes">
+    <div class="micro" style="margin-bottom:0.75rem">What you are looking at</div>
+    <ul>
+      <li>
+        The match engine is <strong>reward-blind</strong> &mdash; it never sees a threshold.
+        Anything that diverges does so through selection, not through a rule written
+        into the physics.
+      </li>
+      <li>
+        Both leagues start from an <strong>identical population</strong> each restart, so any
+        gap you see opened up during the run.
+      </li>
+      <li>
+        <strong>Price of volatility</strong> is the parameter that decides whether a high bar
+        degrades real skill or merely adds noise. Set it low and watch League B trade
+        capability away; set it high and the skill gap closes while the volatility gap survives.
+      </li>
+      <li>
+        One run is one sample. The published figures average 16 replicates &mdash; a single
+        run here will wander further than those confidence intervals suggest.
+      </li>
+    </ul>
+  </section>
+
+  <footer id="footer"></footer>
+</div>
+
+<script>/*__ENGINE__*/</script>
+
+<script>
+(() => {
+  "use strict";
+
+  const CONTROLS = [
+    { key: "thresholdA", label: "League A wins by", min: 1, max: 20, step: 1, value: 1,
+      league: "A", hint: "Margin needed to score. 1 = any win counts." },
+    { key: "thresholdB", label: "League B wins by", min: 1, max: 20, step: 1, value: 10,
+      league: "B", hint: "The whole experiment is this one number." },
+    { key: "overreachPenalty", label: "Price of volatility", min: 0, max: 4, step: 0.05, value: 0.9,
+      hint: "What aggression beyond a team's risk capacity costs in real efficiency." },
+    { key: "attributeBudget", label: "Attribute budget", min: 1.5, max: 4.0, step: 0.1, value: 2.5,
+      hint: "Total capability a team may hold. Forces evolution to allocate, not accumulate." },
+    { key: "replaceFraction", label: "Replaced each season", min: 0.05, max: 0.4, step: 0.01, value: 0.2,
+      hint: "Selection pressure: share of the field replaced by offspring of the best." },
+    { key: "strategyMutation", label: "Strategy mutation", min: 0.005, max: 0.15, step: 0.005, value: 0.04,
+      hint: "How far offspring stray in tactics." },
+    { key: "attrMutation", label: "Attribute mutation", min: 0.005, max: 0.1, step: 0.005, value: 0.02,
+      hint: "How far offspring stray in raw ability." },
+    { key: "regularSeasonGames", label: "Regular season games", min: 2, max: 24, step: 1, value: 12,
+      hint: "Games every team plays before the bracket." },
+    { key: "speed", label: "Seasons per frame", min: 1, max: 40, step: 1, value: 3,
+      hint: "Playback speed. Higher runs faster and shows less." },
+  ];
+
+  const CHARTS = [
+    { key: "aggression", label: "Aggression — volatility bought", digits: 3 },
+    { key: "trueStrength", label: "Real capability", digits: 3 },
+    { key: "marginSd", label: "Margin volatility (points)", digits: 2 },
+    { key: "blowoutRate", label: "Blowout rate", digits: 3, pct: true },
+  ];
+
+  const ROUND_NAMES = ["Round of 64", "Round of 32", "Sweet 16", "Elite Eight", "Final Four", "Final"];
+
+  const params = Object.fromEntries(CONTROLS.map((c) => [c.key, c.value]));
+  let seed = 7;
+  let run = null;
+  let playing = false;
+  let lastWallDraw = 0;
+
+  const css = (name) => getComputedStyle(document.body).getPropertyValue(name).trim();
+
+  /* ---------- controls ---------- */
+
+  function buildControls() {
+    const host = document.getElementById("controls");
+    for (const c of CONTROLS) {
+      const wrap = document.createElement("div");
+      wrap.className = "ctrl";
+      if (c.league) wrap.dataset.league = c.league;
+      wrap.innerHTML = `
+        <div class="ctrl-head">
+          <span class="micro">${c.label}</span>
+          <span class="v" id="v-${c.key}"></span>
+        </div>
+        <input type="range" id="i-${c.key}" min="${c.min}" max="${c.max}" step="${c.step}" value="${c.value}">
+        <span class="hint">${c.hint}</span>`;
+      host.appendChild(wrap);
+
+      const input = wrap.querySelector("input");
+      const readout = wrap.querySelector(".v");
+      const show = () => { readout.textContent = fmtParam(c, params[c.key]); };
+      input.addEventListener("input", () => {
+        params[c.key] = parseFloat(input.value);
+        show();
+        applyLive();
+      });
+      show();
+    }
+
+    // Seed sits apart: it is the only control that cannot apply mid-run.
+    const wrap = document.createElement("div");
+    wrap.className = "ctrl";
+    wrap.innerHTML = `
+      <div class="ctrl-head"><span class="micro">Seed</span></div>
+      <input type="number" id="i-seed" value="${seed}" min="1" step="1">
+      <span class="hint">Restarts the run — it decides the starting population.</span>`;
+    document.getElementById("controls").appendChild(wrap);
+    wrap.querySelector("input").addEventListener("change", (e) => {
+      seed = Math.max(1, parseInt(e.target.value, 10) || 1);
+      restart();
+    });
+  }
+
+  const fmtParam = (c, value) =>
+    c.step >= 1 ? String(value) : value.toFixed(String(c.step).split(".")[1].length);
+
+  /** Most parameters are read fresh each season, so they take effect immediately —
+   *  you can raise the bar mid-run and watch the population turn. */
+  function applyLive() {
+    if (!run) return;
+    run.cfg.overreachPenalty = params.overreachPenalty;
+    run.cfg.attributeBudget = params.attributeBudget;
+    run.cfg.replaceFraction = params.replaceFraction;
+    run.cfg.strategyMutation = params.strategyMutation;
+    run.cfg.attrMutation = params.attrMutation;
+    run.cfg.regularSeasonGames = Math.round(params.regularSeasonGames);
+    run.leagues[0].threshold = Math.round(params.thresholdA);
+    run.leagues[1].threshold = Math.round(params.thresholdB);
+    drawWalls(true);
+  }
+
+  /* ---------- lifecycle ---------- */
+
+  function restart() {
+    run = Engine.createRun({
+      seed,
+      leagues: [
+        { name: "A", threshold: Math.round(params.thresholdA) },
+        { name: "B", threshold: Math.round(params.thresholdB) },
+      ],
+      config: {
+        overreachPenalty: params.overreachPenalty,
+        attributeBudget: params.attributeBudget,
+        replaceFraction: params.replaceFraction,
+        strategyMutation: params.strategyMutation,
+        attrMutation: params.attrMutation,
+        regularSeasonGames: Math.round(params.regularSeasonGames),
+      },
+    });
+    Engine.step(run);   // one season so there is something to draw
+    render(true);
+  }
+
+  function tick() {
+    if (!playing) return;
+    const n = Math.round(params.speed);
+    for (let i = 0; i < n; i++) Engine.step(run);
+    render(false);
+    requestAnimationFrame(tick);
+  }
+
+  function setPlaying(on) {
+    playing = on;
+    document.getElementById("run").textContent = on ? "Pause" : "Run";
+    if (on) requestAnimationFrame(tick);
+  }
+
+  /* ---------- rendering ---------- */
+
+  function render(force) {
+    document.getElementById("season").textContent = run.season.toLocaleString();
+    for (const spec of CHARTS) drawChart(spec);
+    drawWalls(force);
+  }
+
+  function buildCharts() {
+    const host = document.getElementById("charts");
+    for (const spec of CHARTS) {
+      const box = document.createElement("div");
+      box.className = "chart";
+      box.innerHTML = `
+        <div class="chart-head">
+          <span class="micro">${spec.label}</span>
+          <span class="now" id="now-${spec.key}"></span>
+        </div>
+        <canvas id="c-${spec.key}"></canvas>`;
+      host.appendChild(box);
+    }
+  }
+
+  function drawChart(spec) {
+    const canvas = document.getElementById(`c-${spec.key}`);
+    const dpr = window.devicePixelRatio || 1;
+    const width = canvas.clientWidth, height = canvas.clientHeight;
+    if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
+      canvas.width = width * dpr; canvas.height = height * dpr;
+    }
+    const ctx = canvas.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, width, height);
+
+    const series = run.leagues.map((lg) => lg.history.map((row) => row[spec.key]));
+    const n = series[0].length;
+    if (n < 2) return;
+
+    let lo = Infinity, hi = -Infinity;
+    for (const s of series) for (const v of s) { if (v < lo) lo = v; if (v > hi) hi = v; }
+    // Clamp on the observed minimum, before padding — otherwise the padding is
+    // what pushes the axis negative and the guard never fires.
+    const nonNegative = lo >= 0;
+    const pad = (hi - lo) * 0.12 || 0.01;
+    lo -= pad; hi += pad;
+    if (nonNegative && lo < 0) lo = 0;
+
+    const left = 46, right = 6, top = 8, bottom = 18;
+    const plotW = width - left - right, plotH = height - top - bottom;
+    const X = (i) => left + (i / (n - 1)) * plotW;
+    const Y = (v) => top + plotH - ((v - lo) / (hi - lo)) * plotH;
+
+    ctx.strokeStyle = css("--rule"); ctx.lineWidth = 1;
+    ctx.fillStyle = css("--ink-3");
+    ctx.font = `10px ${css("--mono") || "monospace"}`;
+    ctx.textAlign = "right"; ctx.textBaseline = "middle";
+    for (let t = 0; t <= 2; t++) {
+      const value = lo + (hi - lo) * (t / 2);
+      const y = Math.round(Y(value)) + 0.5;
+      ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(width - right, y); ctx.stroke();
+      ctx.fillText(spec.pct ? `${(value * 100).toFixed(0)}%` : value.toFixed(spec.digits), left - 6, y);
+    }
+
+    // Downsample to roughly one point per pixel; long runs otherwise crawl.
+    const stride = Math.max(1, Math.floor(n / plotW));
+    series.forEach((values, index) => {
+      ctx.strokeStyle = index === 0 ? css("--a") : css("--b");
+      ctx.lineWidth = 1.8; ctx.lineJoin = "round";
+      ctx.beginPath();
+      for (let i = 0; i < n; i += stride) {
+        const x = X(i), y = Y(values[i]);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.lineTo(X(n - 1), Y(values[n - 1]));
+      ctx.stroke();
+    });
+
+    const latest = series.map((s) => s[s.length - 1]);
+    const show = (v) => (spec.pct ? `${(v * 100).toFixed(1)}%` : v.toFixed(spec.digits));
+    document.getElementById(`now-${spec.key}`).innerHTML =
+      `<span class="a">${show(latest[0])}</span> · <span class="b">${show(latest[1])}</span>`;
+  }
+
+  function drawWalls(force) {
+    const now = performance.now();
+    if (!force && now - lastWallDraw < 120) return;
+    lastWallDraw = now;
+
+    const host = document.getElementById("walls");
+    host.innerHTML = "";
+    for (const league of run.leagues) {
+      const games = league.latestBracket;
+      const counted = games.filter((g) => g.counted).length;
+
+      const wall = document.createElement("div");
+      wall.className = "wall";
+      wall.dataset.league = league.name;
+
+      let html = `
+        <div class="wall-head">
+          <span class="swatch ${league.name.toLowerCase()}"></span>League ${league.name}
+          <span class="rulechip">margin ≥ ${league.threshold}</span>
+        </div>
+        <div class="tally">
+          <div><span class="micro">Counted</span><span class="v hero">${counted}<span style="color:var(--ink-3)">/${games.length}</span></span></div>
+          <div><span class="micro">Wasted wins</span><span class="v">${games.length - counted}</span></div>
+        </div>`;
+
+      for (let round = 0; round < ROUND_NAMES.length; round++) {
+        const inRound = games.filter((g) => g.stage === round);
+        if (!inRound.length) continue;
+        const roundCounted = inRound.filter((g) => g.counted).length;
+        html += `<div class="round-label micro"><span>${ROUND_NAMES[round]}</span>
+                 <span class="count">${roundCounted}/${inRound.length}</span></div><div class="chips">`;
+        for (const g of inRound) {
+          html += `<div class="chip ${g.counted ? "counted" : "wasted"}" title="#${g.winSeed} beat #${g.loseSeed} · ${g.hi}–${g.lo}">+${g.margin}</div>`;
+        }
+        html += `</div>`;
+      }
+      wall.innerHTML = html;
+      host.appendChild(wall);
+    }
+  }
+
+  /* ---------- boot ---------- */
+
+  buildControls();
+  buildCharts();
+  restart();
+
+  document.getElementById("run").addEventListener("click", () => setPlaying(!playing));
+  document.getElementById("step").addEventListener("click", () => {
+    setPlaying(false); Engine.step(run); render(true);
+  });
+  document.getElementById("restart").addEventListener("click", () => { setPlaying(false); restart(); });
+  window.addEventListener("resize", () => render(true));
+
+  document.getElementById("footer").textContent =
+    "Simulated live in your browser. The engine is a port of the Python model and is " +
+    "checked against it by scripts/validate_js_engine.cjs — agreement is statistical, not bit-for-bit.";
+})();
+</script>

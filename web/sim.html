@@ -1,0 +1,956 @@
+<title>Incentive Evolution — live simulator</title>
+
+<style>
+  :root {
+    color-scheme: light;
+    --ground: #f4f5f7; --panel: #ffffff; --panel-2: #eceff3;
+    --ink: #10131a; --ink-2: #4a5160; --ink-3: #858c9c;
+    --rule: #dfe3ea; --rule-strong: #c6ccd7;
+    --a: #2a78d6; --b: #eb6834;
+    --a-wash: rgba(42,120,214,0.10); --b-wash: rgba(235,104,52,0.10);
+    --void: #b9c0cc; --void-ink: #6d7482;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --ground: #0e1014; --panel: #171a21; --panel-2: #1e222b;
+      --ink: #f2f4f8; --ink-2: #a8b0c0; --ink-3: #6c7484;
+      --rule: #262b35; --rule-strong: #363d4a;
+      --a: #3987e5; --b: #d95926;
+      --a-wash: rgba(57,135,229,0.14); --b-wash: rgba(217,89,38,0.14);
+      --void: #4b5462; --void-ink: #99a1b1;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --ground: #0e1014; --panel: #171a21; --panel-2: #1e222b;
+    --ink: #f2f4f8; --ink-2: #a8b0c0; --ink-3: #6c7484;
+    --rule: #262b35; --rule-strong: #363d4a;
+    --a: #3987e5; --b: #d95926;
+    --a-wash: rgba(57,135,229,0.14); --b-wash: rgba(217,89,38,0.14);
+    --void: #4b5462; --void-ink: #99a1b1;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: var(--sans); font-size: 0.95rem; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 1280px; margin: 0 auto;
+    padding: clamp(1.25rem,1rem+1.5vw,2.5rem) clamp(0.85rem,0.5rem+1.5vw,1.75rem) 4rem;
+    display: flex; flex-direction: column; gap: 1.5rem;
+  }
+  .micro {
+    font-family: var(--mono); font-size: 0.6875rem; letter-spacing: 0.13em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+  h1 {
+    margin: 0; font-size: clamp(1.6rem,1.2rem+1.6vw,2.4rem); line-height: 1.05;
+    letter-spacing: -0.03em; font-weight: 700; text-wrap: balance; max-width: 22ch;
+  }
+  header p { margin: 0; max-width: 64ch; color: var(--ink-2); text-wrap: pretty; }
+  header { display: flex; flex-direction: column; gap: 0.7rem; }
+
+  .panel {
+    background: var(--panel); border: 1px solid var(--rule);
+    border-radius: 4px; padding: 1rem 1.1rem;
+  }
+
+  /* ---- console ---- */
+  .console { display: flex; flex-direction: column; gap: 1rem; }
+
+  .transport { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1.25rem; }
+  button {
+    font-family: inherit; font-size: 0.875rem; font-weight: 600; color: var(--ink);
+    background: var(--panel-2); border: 1px solid var(--rule-strong);
+    border-radius: 3px; padding: 0.5rem 1rem; cursor: pointer;
+    transition: background .12s, border-color .12s;
+  }
+  button:hover { border-color: var(--ink-3); }
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--a); outline-offset: 2px; }
+  #run { background: var(--ink); color: var(--ground); border-color: var(--ink); min-width: 7.5rem; }
+  #run:hover { background: var(--ink-2); border-color: var(--ink-2); }
+
+  .season-readout { display: flex; align-items: baseline; gap: 0.5rem; margin-left: auto; }
+  .season-readout .v {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    font-size: 1.5rem; font-weight: 650; letter-spacing: -0.03em;
+  }
+
+  .controls {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(215px,1fr)); gap: 0.9rem 1.4rem;
+  }
+  .ctrl { display: flex; flex-direction: column; gap: 0.3rem; }
+  .ctrl-head { display: flex; align-items: baseline; gap: 0.5rem; }
+  .ctrl-head .v {
+    margin-left: auto; font-family: var(--mono); font-variant-numeric: tabular-nums;
+    font-size: 0.8125rem; color: var(--ink); font-weight: 650;
+  }
+  .ctrl .hint { font-size: 0.75rem; color: var(--ink-3); line-height: 1.35; }
+  input[type=range] { width: 100%; accent-color: var(--a); cursor: pointer; }
+  input[type=number] {
+    font-family: var(--mono); font-size: 0.8125rem; width: 100%; color: var(--ink);
+    background: var(--panel-2); border: 1px solid var(--rule-strong);
+    border-radius: 3px; padding: 0.35rem 0.5rem;
+  }
+  .ctrl[data-league="B"] input[type=range] { accent-color: var(--b); }
+
+  /* ---- charts ---- */
+  .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%,400px),1fr)); gap: 1rem 1.4rem; }
+  .chart { display: flex; flex-direction: column; gap: 0.35rem; }
+  .chart-head { display: flex; align-items: baseline; gap: 0.5rem; }
+  .chart-head .now {
+    margin-left: auto; font-family: var(--mono); font-variant-numeric: tabular-nums;
+    font-size: 0.8125rem; font-weight: 650;
+  }
+  .chart-head .now .a { color: var(--a); }
+  .chart-head .now .b { color: var(--b); }
+  canvas { width: 100%; height: 165px; display: block; }
+
+  .legend { display: flex; gap: 1.25rem; flex-wrap: wrap; }
+  .legend span { display: flex; align-items: center; gap: 0.45rem; color: var(--ink-2); font-size: 0.8125rem; }
+  .legend i { width: 18px; height: 2px; border-radius: 1px; display: block; }
+
+  /* ---- brackets ---- */
+  .walls { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%,340px),1fr)); gap: 0.9rem; }
+  .wall { display: flex; flex-direction: column; gap: 0.7rem; min-width: 0; }
+  .wall-head { display: flex; align-items: center; gap: 0.5rem; font-weight: 650; }
+  .wall-head .rulechip {
+    margin-left: auto; font-family: var(--mono); font-size: 0.75rem; color: var(--ink-2);
+    background: var(--panel-2); border: 1px solid var(--rule); border-radius: 3px; padding: 0.1rem 0.45rem;
+  }
+  .swatch { width: 10px; height: 10px; border-radius: 2px; flex: none; }
+  .swatch.a { background: var(--a); } .swatch.b { background: var(--b); }
+  .tally { display: flex; gap: 1.4rem; flex-wrap: wrap; }
+  .tally div { display: flex; flex-direction: column; }
+  .tally .v {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    font-size: 1.3rem; font-weight: 650; letter-spacing: -0.03em; line-height: 1.15;
+  }
+  .wall[data-league="A"] .tally .v.hero { color: var(--a); }
+  .wall[data-league="B"] .tally .v.hero { color: var(--b); }
+  .chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px,1fr)); gap: 3px; }
+  .chip {
+    height: 26px; display: flex; align-items: center; justify-content: center;
+    border-radius: 2px; border: 1px solid transparent;
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    font-size: 0.75rem; font-weight: 600;
+  }
+  .wall[data-league="A"] .chip.counted { background: var(--a-wash); color: var(--a); border-color: var(--a); }
+  .wall[data-league="B"] .chip.counted { background: var(--b-wash); color: var(--b); border-color: var(--b); }
+  .chip.wasted { border-color: var(--void); border-style: dashed; color: var(--void-ink); }
+  .round-label { display: flex; align-items: baseline; gap: 0.4rem; border-bottom: 1px solid var(--rule); padding-bottom: 0.15rem; margin-top: 0.3rem; }
+  .round-label .count { margin-left: auto; font-family: var(--mono); }
+
+  .notes ul { margin: 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .notes li { color: var(--ink-2); max-width: 74ch; }
+  footer { border-top: 1px solid var(--rule); padding-top: 1rem; color: var(--ink-3); font-size: 0.8125rem; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="micro">Freedom Startups &middot; live simulator</div>
+    <h1>Turn the knobs. Watch what evolves.</h1>
+    <p>
+      Two leagues of 64 teams, identical at season zero, playing the same game under
+      the same physics. The only difference is what counts as a success. Everything
+      below is simulated in your browser as it runs &mdash; change any control mid-run
+      and the populations respond from where they are.
+    </p>
+  </header>
+
+  <section class="panel console">
+    <div class="transport">
+      <button id="run" type="button">Run</button>
+      <button id="step" type="button">+1 season</button>
+      <button id="restart" type="button">Restart</button>
+      <div class="legend">
+        <span><i style="background:var(--a)"></i> League A</span>
+        <span><i style="background:var(--b)"></i> League B</span>
+      </div>
+      <div class="season-readout">
+        <span class="micro">Season</span><span class="v" id="season">0</span>
+      </div>
+    </div>
+    <div class="controls" id="controls"></div>
+  </section>
+
+  <section class="panel">
+    <div class="charts" id="charts"></div>
+  </section>
+
+  <section class="panel">
+    <div class="micro" style="margin-bottom:0.75rem">
+      Latest season&rsquo;s bracket &mdash; each chip is one game, showing the winner&rsquo;s margin.
+      Solid counted under that league&rsquo;s rule; dashed means they won and got nothing.
+    </div>
+    <div class="walls" id="walls"></div>
+  </section>
+
+  <section class="panel notes">
+    <div class="micro" style="margin-bottom:0.75rem">What you are looking at</div>
+    <ul>
+      <li>
+        The match engine is <strong>reward-blind</strong> &mdash; it never sees a threshold.
+        Anything that diverges does so through selection, not through a rule written
+        into the physics.
+      </li>
+      <li>
+        Both leagues start from an <strong>identical population</strong> each restart, so any
+        gap you see opened up during the run.
+      </li>
+      <li>
+        <strong>Price of volatility</strong> is the parameter that decides whether a high bar
+        degrades real skill or merely adds noise. Set it low and watch League B trade
+        capability away; set it high and the skill gap closes while the volatility gap survives.
+      </li>
+      <li>
+        One run is one sample. The published figures average 16 replicates &mdash; a single
+        run here will wander further than those confidence intervals suggest.
+      </li>
+    </ul>
+  </section>
+
+  <footer id="footer"></footer>
+</div>
+
+<script>/* Incentive Evolution Simulator — browser engine.
+ *
+ * A direct port of src/incentive_sim (match, tournament, learning, evolution)
+ * so the page can simulate live instead of replaying stored runs.
+ *
+ * Two implementations of one model is a real risk: they can drift apart and the
+ * live numbers stop meaning what the paper says. scripts/validate_js_engine.cjs
+ * runs this engine and compares its converged statistics against the Python
+ * results, so drift shows up as a failing check rather than a quiet lie.
+ *
+ * It is NOT bit-identical to the Python: NumPy's PCG64 is not reproduced here,
+ * so a given seed gives a different draw. Agreement is statistical, over
+ * replicates — which is the only kind that matters for the claims.
+ */
+
+const Engine = (() => {
+  "use strict";
+
+  // -- column layout (mirrors config.ATTRIBUTES / config.STRATEGY) -----------
+  const A_OFF = 0, A_DEF = 1, A_RISK = 2, A_ADAPT = 3, A_STAM = 4, N_ATTR = 5;
+  const S_AGG = 0, S_OFFE = 1, S_DEFE = 2, S_TEMPO = 3, S_MARGIN = 4, S_END = 5, N_STRAT = 6;
+
+  const DEFAULTS = {
+    nTeams: 64,
+    regularSeasonGames: 12,
+
+    basePossessions: 60.0,
+    tempoScale: 40.0,
+    basePoints: 1.05,
+    skillScale: 0.55,
+    overreachPenalty: 0.90,
+    baseVariance: 0.65,
+    varianceGain: 2.20,
+    nSegments: 4,
+    endgameVarianceDamp: 0.55,
+    endgameMeanCost: 0.06,
+    marginSeekVarianceGain: 0.35,
+    fatiguePerGame: 0.030,
+    fatigueAggressionGain: 0.55,
+    fatigueStaminaDamp: 0.80,
+
+    evalWindow: 150,
+    stepSize: 0.06,
+    stepAdaptabilityGain: 1.5,
+
+    replaceFraction: 0.20,
+    attrMutation: 0.02,
+    strategyMutation: 0.04,
+    attributeBudget: 2.50,
+    attrMin: 0.05,
+    attrMax: 0.95,
+  };
+
+  // -- randomness ------------------------------------------------------------
+
+  function makeRng(seed) {
+    let a = (seed >>> 0) || 1;
+    let spare = null;
+
+    const next = () => {
+      a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+
+    const normal = () => {
+      if (spare !== null) { const v = spare; spare = null; return v; }
+      let u = 0, v = 0, s = 0;
+      do {
+        u = next() * 2 - 1;
+        v = next() * 2 - 1;
+        s = u * u + v * v;
+      } while (s >= 1 || s === 0);
+      const f = Math.sqrt((-2 * Math.log(s)) / s);
+      spare = v * f;
+      return u * f;
+    };
+
+    // Marsaglia-Tsang, shape > 1 only (we use 12).
+    const gamma = (shape) => {
+      const d = shape - 1 / 3;
+      const c = 1 / Math.sqrt(9 * d);
+      for (;;) {
+        let x, v;
+        do { x = normal(); v = 1 + c * x; } while (v <= 0);
+        v = v * v * v;
+        const u = next();
+        if (u < 1 - 0.0331 * x * x * x * x) return d * v;
+        if (Math.log(u) < 0.5 * x * x + d * (1 - v + Math.log(v))) return d * v;
+      }
+    };
+
+    return { next, normal, gamma, int: (n) => Math.floor(next() * n) };
+  }
+
+  // -- population ------------------------------------------------------------
+
+  function renormaliseBudget(attrs, n, cfg) {
+    const { attrMin: lo, attrMax: hi, attributeBudget: budget } = cfg;
+    for (let i = 0; i < attrs.length; i++) attrs[i] = Math.min(hi, Math.max(lo, attrs[i]));
+
+    for (let pass = 0; pass < 64; pass++) {
+      let worst = 0;
+      for (let t = 0; t < n; t++) {
+        const base = t * N_ATTR;
+        let total = 0;
+        for (let k = 0; k < N_ATTR; k++) total += attrs[base + k];
+        const deficit = budget - total;
+        if (Math.abs(deficit) < 1e-9) continue;
+        worst = Math.max(worst, Math.abs(deficit));
+
+        // Spread the shortfall only over attributes with headroom the right way,
+        // so the clip below cannot undo it.
+        let room = 0;
+        for (let k = 0; k < N_ATTR; k++) {
+          room += deficit > 0 ? hi - attrs[base + k] : attrs[base + k] - lo;
+        }
+        if (room <= 1e-12) continue;
+        for (let k = 0; k < N_ATTR; k++) {
+          const share = (deficit > 0 ? hi - attrs[base + k] : attrs[base + k] - lo) / room;
+          attrs[base + k] = Math.min(hi, Math.max(lo, attrs[base + k] + share * deficit));
+        }
+      }
+      if (worst < 1e-9) break;
+    }
+    return attrs;
+  }
+
+  function initialPopulation(n, rng, cfg) {
+    const attributes = new Float64Array(n * N_ATTR);
+    const strategy = new Float64Array(n * N_STRAT);
+
+    for (let t = 0; t < n; t++) {
+      let sum = 0;
+      const draws = new Array(N_ATTR);
+      for (let k = 0; k < N_ATTR; k++) { draws[k] = rng.gamma(12.0); sum += draws[k]; }
+      for (let k = 0; k < N_ATTR; k++) {
+        attributes[t * N_ATTR + k] = (draws[k] / sum) * cfg.attributeBudget;
+      }
+      for (let k = 0; k < N_STRAT; k++) {
+        strategy[t * N_STRAT + k] = Math.min(1, Math.max(0, 0.5 + rng.normal() * 0.08));
+      }
+    }
+    renormaliseBudget(attributes, n, cfg);
+    return { n, attributes, strategy };
+  }
+
+  /** A team's real scoring rate against a neutral opponent — capability with
+   *  nothing cosmetic in it. A readout, not part of the model. */
+  function trueStrength(pop, cfg) {
+    let total = 0;
+    for (let t = 0; t < pop.n; t++) {
+      const a = t * N_ATTR, s = t * N_STRAT;
+      const skill = pop.attributes[a + A_OFF] * pop.strategy[s + S_OFFE] - 0.25;
+      let mean = cfg.basePoints * (1 + cfg.skillScale * skill);
+      const over = Math.max(0, pop.strategy[s + S_AGG] - pop.attributes[a + A_RISK]);
+      mean *= 1 - cfg.overreachPenalty * over * over;
+      total += Math.max(mean, 0);
+    }
+    return total / pop.n;
+  }
+
+  // -- match engine (reward-blind: knows nothing about thresholds) -----------
+
+  function perPossession(pop, atk, def, fatigue, cfg) {
+    const a = atk * N_ATTR, sa = atk * N_STRAT, d = def * N_ATTR, sd = def * N_STRAT;
+    const skill = pop.attributes[a + A_OFF] * pop.strategy[sa + S_OFFE]
+                - pop.attributes[d + A_DEF] * pop.strategy[sd + S_DEFE];
+    let mean = cfg.basePoints * (1 + cfg.skillScale * skill);
+    const over = Math.max(0, pop.strategy[sa + S_AGG] - pop.attributes[a + A_RISK]);
+    mean *= 1 - cfg.overreachPenalty * over * over;
+    mean = Math.max(mean * (1 - fatigue), 0.05);
+    const variance = cfg.baseVariance * (1 + cfg.varianceGain * pop.strategy[sa + S_AGG]);
+    return [mean, variance];
+  }
+
+  function fatigueOf(pop, team, played, cfg) {
+    const a = team * N_ATTR, s = team * N_STRAT;
+    const f = cfg.fatiguePerGame * played
+      * (1 + cfg.fatigueAggressionGain * pop.strategy[s + S_AGG])
+      * (1 - cfg.fatigueStaminaDamp * pop.attributes[a + A_STAM]);
+    return Math.min(0.6, Math.max(0, f));
+  }
+
+  function simulateGame(pop, x, y, playedX, playedY, cfg, rng) {
+    const [meanX, varX] = perPossession(pop, x, y, fatigueOf(pop, x, playedX, cfg), cfg);
+    const [meanY, varY] = perPossession(pop, y, x, fatigueOf(pop, y, playedY, cfg), cfg);
+
+    const tempo = 0.5 * (pop.strategy[x * N_STRAT + S_TEMPO] + pop.strategy[y * N_STRAT + S_TEMPO]);
+    const perSegment = (cfg.basePossessions + cfg.tempoScale * tempo) / cfg.nSegments;
+
+    let scoreX = 0, scoreY = 0;
+    for (let seg = 0; seg < cfg.nSegments; seg++) {
+      let mmX = 1, mmY = 1, vmX = 1, vmY = 1;
+      if (seg === cfg.nSegments - 1) {
+        const lead = scoreX - scoreY;
+        if (lead > 0) [mmX, vmX] = endgame(pop, x, cfg);
+        else if (lead < 0) [mmY, vmY] = endgame(pop, y, cfg);
+      }
+      scoreX += Math.max(0, perSegment * meanX * mmX + rng.normal() * Math.sqrt(perSegment * varX * vmX));
+      scoreY += Math.max(0, perSegment * meanY * mmY + rng.normal() * Math.sqrt(perSegment * varY * vmY));
+    }
+
+    let finalX = Math.round(scoreX), finalY = Math.round(scoreY);
+    for (let ot = 0; ot < 20 && finalX === finalY; ot++) {
+      finalX += Math.round(Math.max(0, 6 * meanX + rng.normal() * Math.sqrt(6 * varX)));
+      finalY += Math.round(Math.max(0, 6 * meanY + rng.normal() * Math.sqrt(6 * varY)));
+    }
+    if (finalX === finalY) finalX += 1;
+    return [finalX, finalY];
+  }
+
+  function endgame(pop, team, cfg) {
+    const s = team * N_STRAT;
+    const varMult = (1 - cfg.endgameVarianceDamp * pop.strategy[s + S_END])
+                  * (1 + cfg.marginSeekVarianceGain * pop.strategy[s + S_MARGIN]);
+    return [1 - cfg.endgameMeanCost * pop.strategy[s + S_END], varMult];
+  }
+
+  // -- bracket ---------------------------------------------------------------
+
+  function bracketOrder(n) {
+    let order = [0];
+    for (let size = 1; size < n; size *= 2) {
+      const next = [];
+      for (const seed of order) { next.push(seed); next.push(2 * size - 1 - seed); }
+      order = next;
+    }
+    return order;
+  }
+
+  // -- learning: per-team (1+1) evolution strategy ---------------------------
+
+  function makeLearner(pop, cfg, rng) {
+    const n = pop.n;
+    const incumbent = Float64Array.from(pop.strategy);
+    const candidate = new Float64Array(n * N_STRAT);
+    const phase = new Int8Array(n);
+    const games = new Int32Array(n);
+    const reward = new Float64Array(n);
+    const incumbentScore = new Float64Array(n).fill(-1);
+
+    const step = (t) => cfg.stepSize * (1 + cfg.stepAdaptabilityGain * pop.attributes[t * N_ATTR + A_ADAPT]);
+    const mutateInto = (target, t) => {
+      const sz = step(t);
+      for (let k = 0; k < N_STRAT; k++) {
+        target[t * N_STRAT + k] = Math.min(1, Math.max(0,
+          incumbent[t * N_STRAT + k] + rng.normal() * sz));
+      }
+    };
+    for (let t = 0; t < n; t++) mutateInto(candidate, t);
+
+    const apply = () => {
+      for (let t = 0; t < n; t++) {
+        const src = phase[t] === 0 ? incumbent : candidate;
+        for (let k = 0; k < N_STRAT; k++) pop.strategy[t * N_STRAT + k] = src[t * N_STRAT + k];
+      }
+    };
+    apply();
+
+    return {
+      incumbent,
+      record(team, value) { reward[team] += value; games[team] += 1; },
+      settle() {
+        for (let t = 0; t < pop.n; t++) {
+          if (games[t] < cfg.evalWindow) continue;
+          const score = reward[t] / games[t];
+          if (phase[t] === 0) {
+            incumbentScore[t] = score;
+          } else {
+            if (score > incumbentScore[t]) {
+              for (let k = 0; k < N_STRAT; k++) incumbent[t * N_STRAT + k] = candidate[t * N_STRAT + k];
+              incumbentScore[t] = score;
+            }
+            mutateInto(candidate, t);
+          }
+          phase[t] = 1 - phase[t];
+          games[t] = 0;
+          reward[t] = 0;
+        }
+        apply();
+      },
+      reseed(team, strategyRow) {
+        for (let k = 0; k < N_STRAT; k++) incumbent[team * N_STRAT + k] = strategyRow[k];
+        mutateInto(candidate, team);
+        phase[team] = 0; games[team] = 0; reward[team] = 0; incumbentScore[team] = -1;
+        for (let k = 0; k < N_STRAT; k++) pop.strategy[team * N_STRAT + k] = strategyRow[k];
+      },
+    };
+  }
+
+  // -- one season ------------------------------------------------------------
+
+  function runSeason(state, cfg, rng) {
+    const { pop, learner, threshold } = state;
+    const n = pop.n;
+    const reward = new Float64Array(n);
+    const played = new Int32Array(n);
+    const order = new Int32Array(n);
+    for (let i = 0; i < n; i++) order[i] = i;
+
+    let games = 0, marginSum = 0, marginSq = 0, blowouts = 0, close = 0, scoreSum = 0;
+
+    const record = (x, y, sx, sy) => {
+      const margin = sx - sy;
+      const rx = margin >= threshold ? 1 : 0;
+      const ry = -margin >= threshold ? 1 : 0;
+      reward[x] += rx; reward[y] += ry;
+      played[x] += 1; played[y] += 1;
+      learner.record(x, rx); learner.record(y, ry);
+      games += 1;
+      marginSum += margin; marginSq += margin * margin;
+      const abs = Math.abs(margin);
+      if (abs >= 10) blowouts += 1;
+      if (abs <= 3) close += 1;
+      scoreSum += sx + sy;
+    };
+
+    // Regular season: everyone plays the same number of games, on fresh legs.
+    for (let round = 0; round < cfg.regularSeasonGames; round++) {
+      for (let i = n - 1; i > 0; i--) {
+        const j = rng.int(i + 1);
+        const tmp = order[i]; order[i] = order[j]; order[j] = tmp;
+      }
+      for (let i = 0; i < n / 2; i++) {
+        const x = order[i], y = order[i + n / 2];
+        const [sx, sy] = simulateGame(pop, x, y, 0, 0, cfg, rng);
+        record(x, y, sx, sy);
+      }
+    }
+
+    // Seed by the league's own success metric, ties broken at random.
+    const seeds = Array.from({ length: n }, (_, i) => i)
+      .sort((p, q) => (reward[q] + rng.next() * 1e-6) - (reward[p] + rng.next() * 1e-6));
+    const seedOf = new Int32Array(n);
+    seeds.forEach((team, pos) => { seedOf[team] = pos; });
+
+    // Bracket. Fatigue accumulates: a team in round r has played r bracket games.
+    let alive = bracketOrder(n).map((slot) => seeds[slot]);
+    const bracketGames = [];
+    let upsets = 0;
+    for (let round = 0; alive.length > 1; round++) {
+      const winners = [];
+      for (let i = 0; i < alive.length; i += 2) {
+        const x = alive[i], y = alive[i + 1];
+        const [sx, sy] = simulateGame(pop, x, y, round, round, cfg, rng);
+        record(x, y, sx, sy);
+        const xWon = sx > sy;
+        const winner = xWon ? x : y, loser = xWon ? y : x;
+        if (seedOf[winner] > seedOf[loser]) upsets += 1;
+        bracketGames.push({
+          stage: round, margin: Math.abs(sx - sy),
+          hi: Math.max(sx, sy), lo: Math.min(sx, sy),
+          winSeed: seedOf[winner] + 1, loseSeed: seedOf[loser] + 1,
+          counted: Math.abs(sx - sy) >= threshold,
+        });
+        winners.push(winner);
+      }
+      alive = winners;
+    }
+
+    learner.settle();
+    reproduce(pop, learner, reward, cfg, rng);
+
+    const meanMargin = marginSum / games;
+    const stats = {
+      aggression: mean(pop.strategy, pop.n, N_STRAT, S_AGG),
+      offense: mean(pop.attributes, pop.n, N_ATTR, A_OFF),
+      defense: mean(pop.attributes, pop.n, N_ATTR, A_DEF),
+      riskCapacity: mean(pop.attributes, pop.n, N_ATTR, A_RISK),
+      tempo: mean(pop.strategy, pop.n, N_STRAT, S_TEMPO),
+      trueStrength: trueStrength(pop, cfg),
+      marginSd: Math.sqrt(Math.max(0, marginSq / games - meanMargin * meanMargin)),
+      blowoutRate: blowouts / games,
+      closeRate: close / games,
+      upsetRate: upsets / (n - 1),
+      avgScore: scoreSum / (2 * games),
+      rewardRate: sum(reward) / sum(played),
+      champion: alive[0],
+      championSeed: seedOf[alive[0]] + 1,
+    };
+    return { stats, bracketGames };
+  }
+
+  function reproduce(pop, learner, reward, cfg, rng) {
+    const n = pop.n;
+    const nReplace = Math.max(1, Math.round(cfg.replaceFraction * n));
+    const ranked = Array.from({ length: n }, (_, i) => i).sort((p, q) => reward[p] - reward[q]);
+    const losers = ranked.slice(0, nReplace);
+    const winners = ranked.slice(n - nReplace);
+
+    const child = new Float64Array(N_STRAT);
+    for (const loser of losers) {
+      const parent = winners[rng.int(winners.length)];
+      for (let k = 0; k < N_ATTR; k++) {
+        pop.attributes[loser * N_ATTR + k] =
+          pop.attributes[parent * N_ATTR + k] + rng.normal() * cfg.attrMutation;
+      }
+      for (let k = 0; k < N_STRAT; k++) {
+        child[k] = Math.min(1, Math.max(0,
+          learner.incumbent[parent * N_STRAT + k] + rng.normal() * cfg.strategyMutation));
+      }
+      learner.reseed(loser, child);
+    }
+    renormaliseBudget(pop.attributes, n, cfg);
+  }
+
+  const mean = (arr, n, stride, col) => {
+    let total = 0;
+    for (let t = 0; t < n; t++) total += arr[t * stride + col];
+    return total / n;
+  };
+  const sum = (arr) => { let t = 0; for (let i = 0; i < arr.length; i++) t += arr[i]; return t; };
+
+  // -- public API ------------------------------------------------------------
+
+  /** Both leagues start from a byte-identical population; only the rule differs. */
+  function createRun(options) {
+    const cfg = Object.assign({}, DEFAULTS, options.config || {});
+    const leagues = options.leagues.map((league, index) => {
+      const rng = makeRng(options.seed * 7919 + 1);           // same population...
+      const pop = initialPopulation(cfg.nTeams, rng, cfg);
+      const runRng = makeRng(options.seed * 104729 + index + 1); // ...different stream
+      return {
+        name: league.name,
+        threshold: league.threshold,
+        pop,
+        learner: makeLearner(pop, cfg, runRng),
+        rng: runRng,
+        history: [],
+        latestBracket: [],
+      };
+    });
+    return { cfg, leagues, season: 0 };
+  }
+
+  function step(run) {
+    for (const league of run.leagues) {
+      const { stats, bracketGames } = runSeason(
+        { pop: league.pop, learner: league.learner, threshold: league.threshold },
+        run.cfg, league.rng,
+      );
+      league.history.push(stats);
+      league.latestBracket = bracketGames;
+    }
+    run.season += 1;
+    return run;
+  }
+
+  return { DEFAULTS, createRun, step, makeRng, initialPopulation, trueStrength, simulateGame };
+})();
+
+
+</script>
+
+<script>
+(() => {
+  "use strict";
+
+  const CONTROLS = [
+    { key: "thresholdA", label: "League A wins by", min: 1, max: 20, step: 1, value: 1,
+      league: "A", hint: "Margin needed to score. 1 = any win counts." },
+    { key: "thresholdB", label: "League B wins by", min: 1, max: 20, step: 1, value: 10,
+      league: "B", hint: "The whole experiment is this one number." },
+    { key: "overreachPenalty", label: "Price of volatility", min: 0, max: 4, step: 0.05, value: 0.9,
+      hint: "What aggression beyond a team's risk capacity costs in real efficiency." },
+    { key: "attributeBudget", label: "Attribute budget", min: 1.5, max: 4.0, step: 0.1, value: 2.5,
+      hint: "Total capability a team may hold. Forces evolution to allocate, not accumulate." },
+    { key: "replaceFraction", label: "Replaced each season", min: 0.05, max: 0.4, step: 0.01, value: 0.2,
+      hint: "Selection pressure: share of the field replaced by offspring of the best." },
+    { key: "strategyMutation", label: "Strategy mutation", min: 0.005, max: 0.15, step: 0.005, value: 0.04,
+      hint: "How far offspring stray in tactics." },
+    { key: "attrMutation", label: "Attribute mutation", min: 0.005, max: 0.1, step: 0.005, value: 0.02,
+      hint: "How far offspring stray in raw ability." },
+    { key: "regularSeasonGames", label: "Regular season games", min: 2, max: 24, step: 1, value: 12,
+      hint: "Games every team plays before the bracket." },
+    { key: "speed", label: "Seasons per frame", min: 1, max: 40, step: 1, value: 3,
+      hint: "Playback speed. Higher runs faster and shows less." },
+  ];
+
+  const CHARTS = [
+    { key: "aggression", label: "Aggression — volatility bought", digits: 3 },
+    { key: "trueStrength", label: "Real capability", digits: 3 },
+    { key: "marginSd", label: "Margin volatility (points)", digits: 2 },
+    { key: "blowoutRate", label: "Blowout rate", digits: 3, pct: true },
+  ];
+
+  const ROUND_NAMES = ["Round of 64", "Round of 32", "Sweet 16", "Elite Eight", "Final Four", "Final"];
+
+  const params = Object.fromEntries(CONTROLS.map((c) => [c.key, c.value]));
+  let seed = 7;
+  let run = null;
+  let playing = false;
+  let lastWallDraw = 0;
+
+  const css = (name) => getComputedStyle(document.body).getPropertyValue(name).trim();
+
+  /* ---------- controls ---------- */
+
+  function buildControls() {
+    const host = document.getElementById("controls");
+    for (const c of CONTROLS) {
+      const wrap = document.createElement("div");
+      wrap.className = "ctrl";
+      if (c.league) wrap.dataset.league = c.league;
+      wrap.innerHTML = `
+        <div class="ctrl-head">
+          <span class="micro">${c.label}</span>
+          <span class="v" id="v-${c.key}"></span>
+        </div>
+        <input type="range" id="i-${c.key}" min="${c.min}" max="${c.max}" step="${c.step}" value="${c.value}">
+        <span class="hint">${c.hint}</span>`;
+      host.appendChild(wrap);
+
+      const input = wrap.querySelector("input");
+      const readout = wrap.querySelector(".v");
+      const show = () => { readout.textContent = fmtParam(c, params[c.key]); };
+      input.addEventListener("input", () => {
+        params[c.key] = parseFloat(input.value);
+        show();
+        applyLive();
+      });
+      show();
+    }
+
+    // Seed sits apart: it is the only control that cannot apply mid-run.
+    const wrap = document.createElement("div");
+    wrap.className = "ctrl";
+    wrap.innerHTML = `
+      <div class="ctrl-head"><span class="micro">Seed</span></div>
+      <input type="number" id="i-seed" value="${seed}" min="1" step="1">
+      <span class="hint">Restarts the run — it decides the starting population.</span>`;
+    document.getElementById("controls").appendChild(wrap);
+    wrap.querySelector("input").addEventListener("change", (e) => {
+      seed = Math.max(1, parseInt(e.target.value, 10) || 1);
+      restart();
+    });
+  }
+
+  const fmtParam = (c, value) =>
+    c.step >= 1 ? String(value) : value.toFixed(String(c.step).split(".")[1].length);
+
+  /** Most parameters are read fresh each season, so they take effect immediately —
+   *  you can raise the bar mid-run and watch the population turn. */
+  function applyLive() {
+    if (!run) return;
+    run.cfg.overreachPenalty = params.overreachPenalty;
+    run.cfg.attributeBudget = params.attributeBudget;
+    run.cfg.replaceFraction = params.replaceFraction;
+    run.cfg.strategyMutation = params.strategyMutation;
+    run.cfg.attrMutation = params.attrMutation;
+    run.cfg.regularSeasonGames = Math.round(params.regularSeasonGames);
+    run.leagues[0].threshold = Math.round(params.thresholdA);
+    run.leagues[1].threshold = Math.round(params.thresholdB);
+    drawWalls(true);
+  }
+
+  /* ---------- lifecycle ---------- */
+
+  function restart() {
+    run = Engine.createRun({
+      seed,
+      leagues: [
+        { name: "A", threshold: Math.round(params.thresholdA) },
+        { name: "B", threshold: Math.round(params.thresholdB) },
+      ],
+      config: {
+        overreachPenalty: params.overreachPenalty,
+        attributeBudget: params.attributeBudget,
+        replaceFraction: params.replaceFraction,
+        strategyMutation: params.strategyMutation,
+        attrMutation: params.attrMutation,
+        regularSeasonGames: Math.round(params.regularSeasonGames),
+      },
+    });
+    Engine.step(run);   // one season so there is something to draw
+    render(true);
+  }
+
+  function tick() {
+    if (!playing) return;
+    const n = Math.round(params.speed);
+    for (let i = 0; i < n; i++) Engine.step(run);
+    render(false);
+    requestAnimationFrame(tick);
+  }
+
+  function setPlaying(on) {
+    playing = on;
+    document.getElementById("run").textContent = on ? "Pause" : "Run";
+    if (on) requestAnimationFrame(tick);
+  }
+
+  /* ---------- rendering ---------- */
+
+  function render(force) {
+    document.getElementById("season").textContent = run.season.toLocaleString();
+    for (const spec of CHARTS) drawChart(spec);
+    drawWalls(force);
+  }
+
+  function buildCharts() {
+    const host = document.getElementById("charts");
+    for (const spec of CHARTS) {
+      const box = document.createElement("div");
+      box.className = "chart";
+      box.innerHTML = `
+        <div class="chart-head">
+          <span class="micro">${spec.label}</span>
+          <span class="now" id="now-${spec.key}"></span>
+        </div>
+        <canvas id="c-${spec.key}"></canvas>`;
+      host.appendChild(box);
+    }
+  }
+
+  function drawChart(spec) {
+    const canvas = document.getElementById(`c-${spec.key}`);
+    const dpr = window.devicePixelRatio || 1;
+    const width = canvas.clientWidth, height = canvas.clientHeight;
+    if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
+      canvas.width = width * dpr; canvas.height = height * dpr;
+    }
+    const ctx = canvas.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, width, height);
+
+    const series = run.leagues.map((lg) => lg.history.map((row) => row[spec.key]));
+    const n = series[0].length;
+    if (n < 2) return;
+
+    let lo = Infinity, hi = -Infinity;
+    for (const s of series) for (const v of s) { if (v < lo) lo = v; if (v > hi) hi = v; }
+    // Clamp on the observed minimum, before padding — otherwise the padding is
+    // what pushes the axis negative and the guard never fires.
+    const nonNegative = lo >= 0;
+    const pad = (hi - lo) * 0.12 || 0.01;
+    lo -= pad; hi += pad;
+    if (nonNegative && lo < 0) lo = 0;
+
+    const left = 46, right = 6, top = 8, bottom = 18;
+    const plotW = width - left - right, plotH = height - top - bottom;
+    const X = (i) => left + (i / (n - 1)) * plotW;
+    const Y = (v) => top + plotH - ((v - lo) / (hi - lo)) * plotH;
+
+    ctx.strokeStyle = css("--rule"); ctx.lineWidth = 1;
+    ctx.fillStyle = css("--ink-3");
+    ctx.font = `10px ${css("--mono") || "monospace"}`;
+    ctx.textAlign = "right"; ctx.textBaseline = "middle";
+    for (let t = 0; t <= 2; t++) {
+      const value = lo + (hi - lo) * (t / 2);
+      const y = Math.round(Y(value)) + 0.5;
+      ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(width - right, y); ctx.stroke();
+      ctx.fillText(spec.pct ? `${(value * 100).toFixed(0)}%` : value.toFixed(spec.digits), left - 6, y);
+    }
+
+    // Downsample to roughly one point per pixel; long runs otherwise crawl.
+    const stride = Math.max(1, Math.floor(n / plotW));
+    series.forEach((values, index) => {
+      ctx.strokeStyle = index === 0 ? css("--a") : css("--b");
+      ctx.lineWidth = 1.8; ctx.lineJoin = "round";
+      ctx.beginPath();
+      for (let i = 0; i < n; i += stride) {
+        const x = X(i), y = Y(values[i]);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.lineTo(X(n - 1), Y(values[n - 1]));
+      ctx.stroke();
+    });
+
+    const latest = series.map((s) => s[s.length - 1]);
+    const show = (v) => (spec.pct ? `${(v * 100).toFixed(1)}%` : v.toFixed(spec.digits));
+    document.getElementById(`now-${spec.key}`).innerHTML =
+      `<span class="a">${show(latest[0])}</span> · <span class="b">${show(latest[1])}</span>`;
+  }
+
+  function drawWalls(force) {
+    const now = performance.now();
+    if (!force && now - lastWallDraw < 120) return;
+    lastWallDraw = now;
+
+    const host = document.getElementById("walls");
+    host.innerHTML = "";
+    for (const league of run.leagues) {
+      const games = league.latestBracket;
+      const counted = games.filter((g) => g.counted).length;
+
+      const wall = document.createElement("div");
+      wall.className = "wall";
+      wall.dataset.league = league.name;
+
+      let html = `
+        <div class="wall-head">
+          <span class="swatch ${league.name.toLowerCase()}"></span>League ${league.name}
+          <span class="rulechip">margin ≥ ${league.threshold}</span>
+        </div>
+        <div class="tally">
+          <div><span class="micro">Counted</span><span class="v hero">${counted}<span style="color:var(--ink-3)">/${games.length}</span></span></div>
+          <div><span class="micro">Wasted wins</span><span class="v">${games.length - counted}</span></div>
+        </div>`;
+
+      for (let round = 0; round < ROUND_NAMES.length; round++) {
+        const inRound = games.filter((g) => g.stage === round);
+        if (!inRound.length) continue;
+        const roundCounted = inRound.filter((g) => g.counted).length;
+        html += `<div class="round-label micro"><span>${ROUND_NAMES[round]}</span>
+                 <span class="count">${roundCounted}/${inRound.length}</span></div><div class="chips">`;
+        for (const g of inRound) {
+          html += `<div class="chip ${g.counted ? "counted" : "wasted"}" title="#${g.winSeed} beat #${g.loseSeed} · ${g.hi}–${g.lo}">+${g.margin}</div>`;
+        }
+        html += `</div>`;
+      }
+      wall.innerHTML = html;
+      host.appendChild(wall);
+    }
+  }
+
+  /* ---------- boot ---------- */
+
+  buildControls();
+  buildCharts();
+  restart();
+
+  document.getElementById("run").addEventListener("click", () => setPlaying(!playing));
+  document.getElementById("step").addEventListener("click", () => {
+    setPlaying(false); Engine.step(run); render(true);
+  });
+  document.getElementById("restart").addEventListener("click", () => { setPlaying(false); restart(); });
+  window.addEventListener("resize", () => render(true));
+
+  document.getElementById("footer").textContent =
+    "Simulated live in your browser. The engine is a port of the Python model and is " +
+    "checked against it by scripts/validate_js_engine.cjs — agreement is statistical, not bit-for-bit.";
+})();
+</script>
