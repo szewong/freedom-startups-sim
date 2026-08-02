@@ -196,6 +196,21 @@
     <div class="micro" style="margin-bottom:0.75rem">What you are looking at</div>
     <ul>
       <li>
+        <strong>Evolution finishes early.</strong> Capability climbs from roughly zero to
+        its ceiling and is ~75% of the way there by season 100, ~95% by season 200, and
+        done by about season 300. Everything after that is drift around an equilibrium:
+        the attribute budget is fully spent and offense and defense sit near their caps,
+        so there is nothing left to improve. Running thousands of seasons adds noise,
+        not information &mdash; 600 is already twice what the model needs.
+      </li>
+      <li>
+        <strong>Both channels do real work.</strong> Knock out within-lifetime strategy
+        learning (drop both mutation sliders to their minimum) and final capability falls
+        from ~77 to ~34. Knock out attribute mutation instead and it settles near ~43.
+        Weaken selection (replaced each season &rarr; 0.05) and the climb takes three
+        times as long. None of this is drift.
+      </li>
+      <li>
         The match engine is <strong>reward-blind</strong> &mdash; it never sees a threshold.
         Anything that diverges does so through selection, not through a rule written
         into the physics.
