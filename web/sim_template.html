@@ -237,6 +237,17 @@
         League B&rsquo;s real weakness shows up most in deep tournament runs.
       </li>
       <li>
+        <strong>Past about 25, the league stops working &mdash; but not in the obvious way.</strong>
+        The aggression gap does not collapse; it plateaus around 0.18&ndash;0.22 all the way to
+        50. What breaks is <em>skill maintenance</em>. Real capability holds steady up to a bar
+        of ~20 and then falls off a cliff: at 50, League B&rsquo;s offense decays from 0.93
+        to 0.72, drifting back toward the 0.5 it started from, because so few games score
+        that selection can no longer tell good teams from bad. Margin volatility triples,
+        but that is the population <em>fragmenting</em> rather than any team playing riskier
+        &mdash; the spread of aggression across teams doubles too. Set the bar to 40 or 50 and
+        watch capability sag while volatility explodes.
+      </li>
+      <li>
         <strong>Price of volatility</strong> is the parameter that decides whether a high bar
         degrades real skill or merely adds noise. Set it low and watch League B trade
         capability away; set it high and the skill gap closes while the volatility gap survives.
@@ -261,10 +272,12 @@
   "use strict";
 
   const CONTROLS = [
-    { key: "thresholdA", label: "League A wins by", min: 1, max: 20, step: 1, value: 1,
+    { key: "thresholdA", label: "League A wins by", min: 1, max: 50, step: 1, value: 1,
       league: "A", hint: "Margin needed to score. 1 = any win counts." },
-    { key: "thresholdB", label: "League B wins by", min: 1, max: 20, step: 1, value: 10,
-      league: "B", hint: "The whole experiment is this one number." },
+    { key: "thresholdB", label: "League B wins by", min: 1, max: 50, step: 1, value: 20,
+      league: "B", hint: "The whole experiment is this one number. The average winning " +
+        "margin is ~9 points, so 10 discards ~61% of wins and 20 discards ~91%. Past " +
+        "~25 the league stops working — see the note below." },
     { key: "overreachPenalty", label: "Price of volatility", min: 0, max: 4, step: 0.05, value: 0.9,
       hint: "What aggression beyond a team's risk capacity costs in real efficiency." },
     { key: "attributeBudget", label: "Attribute budget", min: 1.5, max: 4.0, step: 0.1, value: 2.5,
