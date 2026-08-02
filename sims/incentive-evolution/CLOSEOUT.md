@@ -76,5 +76,5 @@ the game. It therefore cannot speak to:
 - dilution, salary, or opportunity cost
 - failure as running out of cash rather than losing a game
 
-Those need a different simulation, specified in `STARTUP_SIM_PRD.md` and to be
-built clean in its own repository.
+Those need a different simulation, specified in `../founder-wealth/PRD.md`, to be
+built clean in its own session.

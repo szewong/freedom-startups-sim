@@ -1,7 +1,8 @@
 # Founder Wealth Simulator — design document
 
-**Status:** specification only. To be built clean, in its own repository, in a
-fresh session. Nothing here shares code with the basketball simulation.
+**Status:** specification only — nothing is built yet. To be built clean in a fresh
+session, in this directory. It shares no code with `../incentive-evolution`; what
+it inherits is the method in [`../../METHOD.md`](../../METHOD.md).
 
 ---
 
@@ -316,10 +317,10 @@ question — exactly as it was for the two leagues.
 
 ---
 
-## 10. Suggested repository layout
+## 10. Suggested layout
 
 ```
-founder-wealth-sim/
+sims/founder-wealth/
 ├── PRD.md                  this document
 ├── src/foundersim/
 │   ├── config.py           dataclasses, YAML, seed derivation
