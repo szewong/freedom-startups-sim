@@ -146,19 +146,60 @@ const Engine = (() => {
     return { n, attributes, strategy };
   }
 
-  /** A team's real scoring rate against a neutral opponent — capability with
-   *  nothing cosmetic in it. A readout, not part of the model. */
+  /** Expected points margin against a fixed neutral team, averaged over the
+   *  population. A readout, not part of the model.
+   *
+   *  Both halves of the game count: the team's offense against the reference's
+   *  defense, AND the reference's offense against the team's defense. An
+   *  offense-only measure would call a strong defensive population weak.
+   *
+   *  It is still a fresh-legs number — it cannot see stamina or fatigue — and it
+   *  is absolute rather than relative, so pair it with headToHead() below. */
+  const REF = 0.5 * 0.5;   // neutral team: attribute 0.5, emphasis 0.5
+
   function trueStrength(pop, cfg) {
     let total = 0;
     for (let t = 0; t < pop.n; t++) {
       const a = t * N_ATTR, s = t * N_STRAT;
-      const skill = pop.attributes[a + A_OFF] * pop.strategy[s + S_OFFE] - 0.25;
-      let mean = cfg.basePoints * (1 + cfg.skillScale * skill);
       const over = Math.max(0, pop.strategy[s + S_AGG] - pop.attributes[a + A_RISK]);
-      mean *= 1 - cfg.overreachPenalty * over * over;
-      total += Math.max(mean, 0);
+      const overreach = 1 - cfg.overreachPenalty * over * over;
+
+      const scored = Math.max(0, cfg.basePoints
+        * (1 + cfg.skillScale * (pop.attributes[a + A_OFF] * pop.strategy[s + S_OFFE] - REF))
+        * overreach);
+      const conceded = Math.max(0, cfg.basePoints
+        * (1 + cfg.skillScale * (REF - pop.attributes[a + A_DEF] * pop.strategy[s + S_DEFE])));
+
+      const tempo = 0.5 * (pop.strategy[s + S_TEMPO] + 0.5);
+      const possessions = cfg.basePossessions + cfg.tempoScale * tempo;
+      total += possessions * (scored - conceded);
     }
     return total / pop.n;
+  }
+
+  /** Who would actually beat whom. Zero-sum, so it measures relative standing
+   *  only — it cannot tell "both improved" from "both declined". That is what
+   *  trueStrength is for. Returns the second population's win rate. */
+  function headToHead(popX, popY, cfg, rng, nGames) {
+    const merged = {
+      n: popX.n + popY.n,
+      attributes: new Float64Array(popX.n * N_ATTR + popY.n * N_ATTR),
+      strategy: new Float64Array(popX.n * N_STRAT + popY.n * N_STRAT),
+    };
+    merged.attributes.set(popX.attributes, 0);
+    merged.attributes.set(popY.attributes, popX.n * N_ATTR);
+    merged.strategy.set(popX.strategy, 0);
+    merged.strategy.set(popY.strategy, popX.n * N_STRAT);
+
+    let winsY = 0, marginSum = 0;
+    for (let i = 0; i < nGames; i++) {
+      const x = rng.int(popX.n);
+      const y = popX.n + rng.int(popY.n);
+      const [sx, sy] = simulateGame(merged, x, y, 0, 0, cfg, rng);
+      if (sy > sx) winsY += 1;
+      marginSum += sy - sx;
+    }
+    return { winRate: winsY / nGames, meanMargin: marginSum / nGames };
   }
 
   // -- match engine (reward-blind: knows nothing about thresholds) -----------
@@ -432,8 +473,12 @@ const Engine = (() => {
         latestBracket: [],
       };
     });
-    return { cfg, leagues, season: 0 };
+    // A separate stream, so measurement never perturbs either league.
+    return { cfg, leagues, season: 0, h2hHistory: [], measureRng: makeRng(options.seed * 31 + 13) };
   }
+
+  const H2H_EVERY = 4;
+  const H2H_GAMES = 600;
 
   function step(run) {
     for (const league of run.leagues) {
@@ -445,10 +490,17 @@ const Engine = (() => {
       league.latestBracket = bracketGames;
     }
     run.season += 1;
+
+    // Relative standing between the two evolved populations, on fresh legs.
+    if (run.leagues.length === 2 && (run.season % H2H_EVERY === 0 || run.season === 1)) {
+      const [x, y] = run.leagues;
+      run.headToHead = headToHead(x.pop, y.pop, run.cfg, run.measureRng, H2H_GAMES);
+      run.h2hHistory.push({ season: run.season, ...run.headToHead });
+    }
     return run;
   }
 
-  return { DEFAULTS, createRun, step, makeRng, initialPopulation, trueStrength, simulateGame };
+  return { DEFAULTS, createRun, step, makeRng, initialPopulation, trueStrength, headToHead, simulateGame };
 })();
 
 if (typeof module !== "undefined" && module.exports) module.exports = Engine;

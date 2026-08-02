@@ -204,6 +204,15 @@
         gap you see opened up during the run.
       </li>
       <li>
+        <strong>Which number to watch?</strong> Two, because they answer different questions.
+        <em>Real capability</em> is absolute — expected points against a fixed neutral team,
+        counting both offense and defense — so it tells you whether a population is getting
+        better at the game at all. <em>B&rsquo;s win rate against A</em> is relative and zero-sum,
+        so it tells you who is ahead but cannot distinguish &ldquo;both improved&rdquo; from
+        &ldquo;both declined&rdquo;. Neither sees fatigue: both are fresh-legs measures, and
+        League B&rsquo;s real weakness shows up most in deep tournament runs.
+      </li>
+      <li>
         <strong>Price of volatility</strong> is the parameter that decides whether a high bar
         degrades real skill or merely adds noise. Set it low and watch League B trade
         capability away; set it high and the skill gap closes while the volatility gap survives.
@@ -247,9 +256,11 @@
 
   const CHARTS = [
     { key: "aggression", label: "Aggression — volatility bought", digits: 3 },
-    { key: "trueStrength", label: "Real capability", digits: 3 },
+    { key: "trueStrength", label: "Real capability — points vs a neutral team", digits: 1 },
     { key: "marginSd", label: "Margin volatility (points)", digits: 2 },
     { key: "blowoutRate", label: "Blowout rate", digits: 3, pct: true },
+    { key: "winRate", label: "B's win rate against A — who is actually ahead", digits: 3,
+      pct: true, mode: "h2h" },
   ];
 
   const ROUND_NAMES = ["Round of 64", "Round of 32", "Sweet 16", "Elite Eight", "Final Four", "Final"];
@@ -362,7 +373,10 @@
 
   function render(force) {
     document.getElementById("season").textContent = run.season.toLocaleString();
-    for (const spec of CHARTS) drawChart(spec);
+    for (const spec of CHARTS) {
+      if (spec.mode === "h2h" && run.h2hHistory.length < 2) continue;
+      drawChart(spec);
+    }
     drawWalls(force);
   }
 
@@ -392,7 +406,9 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, width, height);
 
-    const series = run.leagues.map((lg) => lg.history.map((row) => row[spec.key]));
+    const series = spec.mode === "h2h"
+      ? [run.h2hHistory.map((row) => row[spec.key])]
+      : run.leagues.map((lg) => lg.history.map((row) => row[spec.key]));
     const n = series[0].length;
     if (n < 2) return;
 
@@ -404,6 +420,9 @@
     const pad = (hi - lo) * 0.12 || 0.01;
     lo -= pad; hi += pad;
     if (nonNegative && lo < 0) lo = 0;
+    if (spec.mode === "h2h") {           // keep 50% visible: it is the whole reference
+      lo = Math.min(lo, 0.45); hi = Math.max(hi, 0.55);
+    }
 
     const left = 46, right = 6, top = 8, bottom = 18;
     const plotW = width - left - right, plotH = height - top - bottom;
@@ -421,10 +440,18 @@
       ctx.fillText(spec.pct ? `${(value * 100).toFixed(0)}%` : value.toFixed(spec.digits), left - 6, y);
     }
 
+    if (spec.mode === "h2h") {
+      const y = Math.round(Y(0.5)) + 0.5;
+      ctx.save();
+      ctx.strokeStyle = css("--ink-3"); ctx.setLineDash([4, 4]); ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(width - right, y); ctx.stroke();
+      ctx.restore();
+    }
+
     // Downsample to roughly one point per pixel; long runs otherwise crawl.
     const stride = Math.max(1, Math.floor(n / plotW));
     series.forEach((values, index) => {
-      ctx.strokeStyle = index === 0 ? css("--a") : css("--b");
+      ctx.strokeStyle = spec.mode === "h2h" ? css("--b") : (index === 0 ? css("--a") : css("--b"));
       ctx.lineWidth = 1.8; ctx.lineJoin = "round";
       ctx.beginPath();
       for (let i = 0; i < n; i += stride) {
@@ -437,8 +464,9 @@
 
     const latest = series.map((s) => s[s.length - 1]);
     const show = (v) => (spec.pct ? `${(v * 100).toFixed(1)}%` : v.toFixed(spec.digits));
-    document.getElementById(`now-${spec.key}`).innerHTML =
-      `<span class="a">${show(latest[0])}</span> · <span class="b">${show(latest[1])}</span>`;
+    document.getElementById(`now-${spec.key}`).innerHTML = spec.mode === "h2h"
+      ? `<span class="b">${show(latest[0])}</span>`
+      : `<span class="a">${show(latest[0])}</span> · <span class="b">${show(latest[1])}</span>`;
   }
 
   function drawWalls(force) {
