@@ -37,6 +37,16 @@ selection produces is not a better competitor or a worse one, but one *shaped to
 a particular bar* — and that shape is invisible from inside a system that scores
 only the thing it optimises for.
 
+Separating a threshold's **height** from its all-or-nothing **shape** proves more
+consequential than either alone. Replacing the step with a ramp — partial credit
+toward the same bar, same maximum — leaves the volatility effect intact but
+eliminates the capability loss entirely: at a bar of 50 points, a step-rewarded
+population decays to 0.715 offensive skill and loses to a baseline population 90%
+of the time, while a graded population at the identical bar holds 0.933 (baseline:
+0.933) and plays it to a dead heat. Height drives volatility; shape drives
+collapse. The remedy for a system that has stopped recognising quality is
+therefore not lower ambition but graded scoring.
+
 ---
 
 ## 1. Introduction
