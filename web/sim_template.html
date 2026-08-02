@@ -205,6 +205,14 @@
         gap you see opened up during the run.
       </li>
       <li>
+        <strong>50% on the win-rate chart is not "the same".</strong> It means neither
+        population wins more single games on fresh legs &mdash; which is the least
+        informative thing about them. They still differ in the shape of their results
+        (B wins bigger and loses bigger), in tournaments (A takes ~57% of titles,
+        because six straight wins compounds B&rsquo;s fatigue), and the measure is zero-sum,
+        so it would read 50% even if both populations had got worse together.
+      </li>
+      <li>
         <strong>Which number to watch?</strong> Two, because they answer different questions.
         <em>Real capability</em> is absolute — expected points against a fixed neutral team,
         counting both offense and defense — so it tells you whether a population is getting
@@ -219,8 +227,11 @@
         capability away; set it high and the skill gap closes while the volatility gap survives.
       </li>
       <li>
-        One run is one sample. The published figures average 16 replicates &mdash; a single
-        run here will wander further than those confidence intervals suggest.
+        <strong>One run cannot show the capability result.</strong> The converged gap is
+        about &minus;0.5 points per 100 possessions, and single runs scatter from
+        &minus;2.3 to +0.4 &mdash; so roughly one run in four shows League B ahead. Raise
+        <em>Replicates</em> to 8 or more and the shaded band tells you whether a gap is
+        real. At 1 replicate there is no band, and there should not be.
       </li>
     </ul>
   </section>
@@ -255,11 +266,14 @@
       hint: "Playback speed. Higher runs faster and shows less." },
     { key: "target", label: "Run for", min: 50, max: 3000, step: 50, value: 600,
       hint: "Seasons to run, then stop. Press Run again to go another lap." },
+    { key: "replicates", label: "Replicates", min: 1, max: 16, step: 1, value: 8,
+      hint: "Independent runs, averaged. At 1 the noise is larger than most of " +
+            "the effects — the capability gap needs about 8 to be readable." },
   ];
 
   const CHARTS = [
     { key: "aggression", label: "Aggression — volatility bought", digits: 3 },
-    { key: "trueStrength", label: "Real capability — points vs a neutral team", digits: 1 },
+    { key: "trueStrength", label: "Real capability — net points per 100 possessions", digits: 1 },
     { key: "marginSd", label: "Margin volatility (points)", digits: 2 },
     { key: "blowoutRate", label: "Blowout rate", digits: 3, pct: true },
     { key: "winRate", label: "B's win rate against A — who is actually ahead", digits: 3,
@@ -271,7 +285,8 @@
   const params = Object.fromEntries(CONTROLS.map((c) => [c.key, c.value]));
   let seed = 7;
   let target = params.target;
-  let run = null;
+  const primary = () => runs[0];
+  let runs = [];
   let playing = false;
   let lastWallDraw = 0;
 
@@ -302,8 +317,10 @@
         show();
         // The target is a stopping point, not a model parameter: set it from
         // where the run currently is, so it always means "this many more".
-        if (c.key === "target") {
-          target = (run ? run.season : 0) + Math.round(params.target);
+        if (c.key === "replicates") {
+          restart();
+        } else if (c.key === "target") {
+          target = (runs.length ? primary().season : 0) + Math.round(params.target);
           setPlaying(playing);
           render(true);
         } else {
@@ -333,15 +350,17 @@
   /** Most parameters are read fresh each season, so they take effect immediately —
    *  you can raise the bar mid-run and watch the population turn. */
   function applyLive() {
-    if (!run) return;
-    run.cfg.overreachPenalty = params.overreachPenalty;
-    run.cfg.attributeBudget = params.attributeBudget;
-    run.cfg.replaceFraction = params.replaceFraction;
-    run.cfg.strategyMutation = params.strategyMutation;
-    run.cfg.attrMutation = params.attrMutation;
-    run.cfg.regularSeasonGames = Math.round(params.regularSeasonGames);
-    run.leagues[0].threshold = Math.round(params.thresholdA);
-    run.leagues[1].threshold = Math.round(params.thresholdB);
+    if (!runs.length) return;
+    for (const run of runs) {
+      run.cfg.overreachPenalty = params.overreachPenalty;
+      run.cfg.attributeBudget = params.attributeBudget;
+      run.cfg.replaceFraction = params.replaceFraction;
+      run.cfg.strategyMutation = params.strategyMutation;
+      run.cfg.attrMutation = params.attrMutation;
+      run.cfg.regularSeasonGames = Math.round(params.regularSeasonGames);
+      run.leagues[0].threshold = Math.round(params.thresholdA);
+      run.leagues[1].threshold = Math.round(params.thresholdB);
+    }
     drawWalls(true);
   }
 
@@ -349,8 +368,9 @@
 
   function restart() {
     target = Math.round(params.target);
-    run = Engine.createRun({
-      seed,
+    const count = Math.round(params.replicates);
+    runs = Array.from({ length: count }, (_, i) => Engine.createRun({
+      seed: seed + i * 9973,
       leagues: [
         { name: "A", threshold: Math.round(params.thresholdA) },
         { name: "B", threshold: Math.round(params.thresholdB) },
@@ -363,17 +383,19 @@
         attrMutation: params.attrMutation,
         regularSeasonGames: Math.round(params.regularSeasonGames),
       },
-    });
-    Engine.step(run);   // one season so there is something to draw
+    }));
+    for (const run of runs) Engine.step(run);   // one season so there is something to draw
     render(true);
   }
 
   function tick() {
     if (!playing) return;
     const n = Math.round(params.speed);
-    for (let i = 0; i < n && run.season < target; i++) Engine.step(run);
+    for (let i = 0; i < n && primary().season < target; i++) {
+      for (const run of runs) Engine.step(run);
+    }
     render(false);
-    if (run.season >= target) { setPlaying(false); render(true); return; }
+    if (primary().season >= target) { setPlaying(false); render(true); return; }
     requestAnimationFrame(tick);
   }
 
@@ -381,7 +403,7 @@
     playing = on;
     const button = document.getElementById("run");
     button.textContent = on ? "Pause"
-      : run && run.season >= target ? `Run ${Math.round(params.target)} more`
+      : runs.length && primary().season >= target ? `Run ${Math.round(params.target)} more`
       : "Run";
     if (on) requestAnimationFrame(tick);
   }
@@ -389,10 +411,10 @@
   /* ---------- rendering ---------- */
 
   function render(force) {
-    document.getElementById("season").textContent = run.season.toLocaleString();
+    document.getElementById("season").textContent = primary().season.toLocaleString();
     document.getElementById("target-label").textContent = ` / ${target.toLocaleString()}`;
     for (const spec of CHARTS) {
-      if (spec.mode === "h2h" && run.h2hHistory.length < 2) continue;
+      if (spec.mode === "h2h" && primary().h2hHistory.length < 2) continue;
       drawChart(spec);
     }
     drawWalls(force);
@@ -424,14 +446,16 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, width, height);
 
-    const series = spec.mode === "h2h"
-      ? [run.h2hHistory.map((row) => row[spec.key])]
-      : run.leagues.map((lg) => lg.history.map((row) => row[spec.key]));
+    const bands = aggregate(spec);
+    const series = bands.map((b) => b.mean);
     const n = series[0].length;
     if (n < 2) return;
 
     let lo = Infinity, hi = -Infinity;
-    for (const s of series) for (const v of s) { if (v < lo) lo = v; if (v > hi) hi = v; }
+    for (const b of bands) for (let i = 0; i < b.mean.length; i++) {
+      if (b.lo[i] < lo) lo = b.lo[i];
+      if (b.hi[i] > hi) hi = b.hi[i];
+    }
     // Clamp on the observed minimum, before padding — otherwise the padding is
     // what pushes the axis negative and the guard never fires.
     const nonNegative = lo >= 0;
@@ -458,6 +482,9 @@
       ctx.fillText(spec.pct ? `${(value * 100).toFixed(0)}%` : value.toFixed(spec.digits), left - 6, y);
     }
 
+    // Downsample to roughly one point per pixel; long runs otherwise crawl.
+    const stride = Math.max(1, Math.floor(n / plotW));
+
     if (spec.mode === "h2h") {
       const y = Math.round(Y(0.5)) + 0.5;
       ctx.save();
@@ -466,8 +493,19 @@
       ctx.restore();
     }
 
-    // Downsample to roughly one point per pixel; long runs otherwise crawl.
-    const stride = Math.max(1, Math.floor(n / plotW));
+    if (runs.length > 1) {
+      bands.forEach((band, index) => {
+        ctx.fillStyle = spec.mode === "h2h" ? css("--b") : (index === 0 ? css("--a") : css("--b"));
+        ctx.globalAlpha = 0.16;
+        ctx.beginPath();
+        for (let i = 0; i < n; i += stride) ctx.lineTo(X(i), Y(band.hi[i]));
+        ctx.lineTo(X(n - 1), Y(band.hi[n - 1]));
+        for (let i = n - 1; i >= 0; i -= stride) ctx.lineTo(X(i), Y(band.lo[i]));
+        ctx.closePath(); ctx.fill();
+        ctx.globalAlpha = 1;
+      });
+    }
+
     series.forEach((values, index) => {
       ctx.strokeStyle = spec.mode === "h2h" ? css("--b") : (index === 0 ? css("--a") : css("--b"));
       ctx.lineWidth = 1.8; ctx.lineJoin = "round";
@@ -487,6 +525,36 @@
       : `<span class="a">${show(latest[0])}</span> · <span class="b">${show(latest[1])}</span>`;
   }
 
+  /** Mean across replicates, with a 95% interval. One run tells you almost
+   *  nothing about the smaller effects; the band is how you see that. */
+  function aggregate(spec) {
+    const pull = spec.mode === "h2h"
+      ? [(run) => run.h2hHistory.map((row) => row[spec.key])]
+      : [0, 1].map((li) => (run) => run.leagues[li].history.map((row) => row[spec.key]));
+
+    return pull.map((get) => {
+      const columns = runs.map(get);
+      const length = Math.min(...columns.map((c) => c.length));
+      const mean = new Float64Array(length);
+      const lo = new Float64Array(length);
+      const hi = new Float64Array(length);
+
+      for (let i = 0; i < length; i++) {
+        let total = 0;
+        for (const c of columns) total += c[i];
+        const m = total / columns.length;
+        mean[i] = m;
+        if (columns.length > 1) {
+          let sq = 0;
+          for (const c of columns) sq += (c[i] - m) ** 2;
+          const half = 1.96 * Math.sqrt(sq / (columns.length - 1)) / Math.sqrt(columns.length);
+          lo[i] = m - half; hi[i] = m + half;
+        } else { lo[i] = m; hi[i] = m; }
+      }
+      return { mean, lo, hi };
+    });
+  }
+
   function drawWalls(force) {
     const now = performance.now();
     if (!force && now - lastWallDraw < 120) return;
@@ -494,7 +562,7 @@
 
     const host = document.getElementById("walls");
     host.innerHTML = "";
-    for (const league of run.leagues) {
+    for (const league of primary().leagues) {
       const games = league.latestBracket;
       const counted = games.filter((g) => g.counted).length;
 
@@ -535,13 +603,14 @@
   restart();
 
   document.getElementById("run").addEventListener("click", () => {
-    if (!playing && run.season >= target) target = run.season + Math.round(params.target);
+    if (!playing && primary().season >= target) target = primary().season + Math.round(params.target);
     setPlaying(!playing);
   });
   document.getElementById("step").addEventListener("click", () => {
     setPlaying(false);
-    if (run.season >= target) target = run.season + 1;
-    Engine.step(run); render(true); setPlaying(false);
+    if (primary().season >= target) target = primary().season + 1;
+    for (const run of runs) Engine.step(run);
+    render(true); setPlaying(false);
   });
   document.getElementById("restart").addEventListener("click", () => { setPlaying(false); restart(); });
   window.addEventListener("resize", () => render(true));

@@ -157,15 +157,21 @@ const Engine = (() => {
     return { n, attributes, strategy };
   }
 
-  /** Expected points margin against a fixed neutral team, averaged over the
-   *  population. A readout, not part of the model.
+  /** Net points per 100 possessions against a fixed neutral team, averaged over
+   *  the population. A readout, not part of the model.
+   *
+   *  Per 100 possessions, not per game, and that matters: a per-game figure
+   *  multiplies by possession count, so a population that merely evolved a
+   *  faster tempo reads as more capable without being any better. Pace is not
+   *  skill. (This is why basketball analytics reports ratings per 100
+   *  possessions rather than per game.)
    *
    *  Both halves of the game count: the team's offense against the reference's
    *  defense, AND the reference's offense against the team's defense. An
    *  offense-only measure would call a strong defensive population weak.
    *
-   *  It is still a fresh-legs number — it cannot see stamina or fatigue — and it
-   *  is absolute rather than relative, so pair it with headToHead() below. */
+   *  It is a fresh-legs number — it cannot see stamina or fatigue — and it is
+   *  absolute rather than relative, so pair it with headToHead() below. */
   const REF = 0.5 * 0.5;   // neutral team: attribute 0.5, emphasis 0.5
 
   function trueStrength(pop, cfg) {
@@ -181,9 +187,7 @@ const Engine = (() => {
       const conceded = Math.max(0, cfg.basePoints
         * (1 + cfg.skillScale * (REF - pop.attributes[a + A_DEF] * pop.strategy[s + S_DEFE])));
 
-      const tempo = 0.5 * (pop.strategy[s + S_TEMPO] + 0.5);
-      const possessions = cfg.basePossessions + cfg.tempoScale * tempo;
-      total += possessions * (scored - conceded);
+      total += 100 * (scored - conceded);
     }
     return total / pop.n;
   }
