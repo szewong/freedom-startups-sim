@@ -316,7 +316,7 @@
     <figure>
       <div class="fig-head">
         <h3>Where the venture advantage comes from</h3>
-        <p>Median paired difference against bootstrapping the same idea. Split into what the shares returned and what the wage did.</p>
+        <p>Three separate measurements of the same comparison against bootstrapping the same idea — not a breakdown that adds up. See the note below.</p>
       </div>
       <div class="legend" id="legend-gaps"></div>
       <div class="chart" id="chart-gaps"></div>
@@ -1811,7 +1811,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = Engine;
     const sv = stats.standard_venture, bs = stats.bootstrap, mv = stats.max_venture;
     const cards = [
       { label: "Median wealth gap, standard venture vs bootstrapping", value: (sv.gapNet >= 0 ? "+" : "") + money(sv.gapNet), foot: pct(sv.pBeatsBaseline) + " of founders ahead", color: "var(--arm-2)" },
-      { label: "…of which the shares are responsible for", value: (sv.gapOwn >= 0 ? "+" : "") + money(sv.gapOwn), foot: "the rest is wages", color: "var(--arm-2)" },
+      { label: "Standard venture: what the shares alone returned", value: (sv.gapOwn >= 0 ? "+" : "") + money(sv.gapOwn), foot: "its own measurement, not subtracted from the total", color: "var(--arm-2)" },
       { label: "Maximum venture, ownership gap", value: (mv.gapOwn >= 0 ? "+" : "") + money(mv.gapOwn), foot: pct(mv.pEquityZero, 0) + " get nothing for their equity", color: "var(--arm-5)" },
       { label: "Bootstrappers whose equity paid nothing", value: pct(bs.pEquityZero, 0), foot: "no preference stack in front of them", color: "var(--arm-1)" },
     ];
@@ -1909,10 +1909,15 @@ if (typeof module !== "undefined" && module.exports) module.exports = Engine;
       draw();
 
       const sv = stats.standard_venture;
-      $("note-gaps").textContent =
+      $("note-gaps").innerHTML =
         `Standard venture is ${(sv.gapNet >= 0 ? "ahead by " : "behind by ") + money(Math.abs(sv.gapNet))}` +
-        ` overall, of which the shares account for ${money(sv.gapOwn)}. ` +
-        `${pct(sv.pEquityZero, 0)} of those founders receive nothing at all for their equity.`;
+        ` overall, and its shares alone return ${money(sv.gapOwn)}. ` +
+        `${pct(sv.pEquityZero, 0)} of those founders receive nothing at all for their equity.` +
+        `<br><br><strong>Why the three rows do not add up.</strong> Each one is the middle ` +
+        `founder <em>for that measure</em>, and those are different people — the founder in ` +
+        `the middle of the wage row is usually not the one in the middle of the total row. ` +
+        `They are three true answers to three questions, not three slices of one number. ` +
+        `Read each on its own.`;
 
       $("provenance").innerHTML = [
         `${nFounders.toLocaleString()} founders × ${Object.keys(result.arms).length} paths`,
