@@ -266,3 +266,68 @@ def test_null_control_removes_dilution_but_not_the_cash(cfg, draws):
     control_w = build_ledger(cfg, control)
     treated_w = build_ledger(cfg, treated)
     assert np.median(control_w.net) >= np.median(treated_w.net)
+
+
+# -- when the founder raises, not just whether (the Freedom Startup) ---------
+
+
+def test_a_delayed_first_raise_enters_the_ladder_higher(cfg, draws):
+    """PRD §5.1 extended: hold the ladder fixed and vary only *when* they start.
+
+    A company arriving with revenue skips the rounds it has outgrown. The early
+    rounds are the most expensive per dollar, so this is where the strategy earns
+    its keep — not by raising less, but by not buying the cheap seats.
+    """
+    lat, noise = draws
+    now = run_arm(cfg, lat, noise, Strategy("now", 5))
+    later = run_arm(cfg, lat, noise, Strategy("later", 5, min_arr_to_raise=100e3))
+
+    raised_now = now.first_stage >= 0
+    raised_later = later.first_stage >= 0
+    assert raised_now.all(), "the day-one arm should always clear the pre-seed gate"
+    assert 0.2 < raised_later.mean() < 0.9, "waiting must be a real filter, not a no-op"
+    assert later.first_stage[raised_later].mean() > now.first_stage[raised_now].mean()
+
+
+def test_waiting_leaves_the_founder_owning_more(cfg, draws):
+    lat, noise = draws
+    now = run_arm(cfg, lat, noise, Strategy("now", 5))
+    later = run_arm(cfg, lat, noise, Strategy("later", 5, min_arr_to_raise=100e3))
+    assert np.median(later.founder_pct) > np.median(now.founder_pct)
+    assert build_ledger(cfg, later).equity_zero.mean() < build_ledger(cfg, now).equity_zero.mean()
+
+
+def test_an_unreachable_threshold_is_exactly_bootstrapping(cfg, draws):
+    """The strategy collapses to its endpoints, which is how it should be read."""
+    lat, noise = draws
+    boot = run_arm(cfg, lat, noise, Strategy("boot", -1))
+    never_clears = run_arm(cfg, lat, noise, Strategy("wait", 5, min_arr_to_raise=1e12))
+    assert np.array_equal(boot.exit_value, never_clears.exit_value)
+    assert np.array_equal(boot.salary_cash, never_clears.salary_cash)
+
+
+def test_a_zero_threshold_is_exactly_raising_on_day_one(cfg, draws):
+    lat, noise = draws
+    a = run_arm(cfg, lat, noise, Strategy("std", 5))
+    b = run_arm(cfg, lat, noise, Strategy("std0", 5, min_arr_to_raise=0.0))
+    assert np.array_equal(a.exit_value, b.exit_value)
+    assert np.array_equal(a.max_stage, b.max_stage)
+
+
+def test_the_pre_seed_arr_price_never_binds_for_day_one_arms(cfg, draws):
+    """Pre-seed gained an ARR-based price to stop mispricing delayed entrants.
+
+    Every arm that raises on day one must be unaffected, because at zero revenue
+    the base price is what applies. If this fails, a calibrated result moved.
+    """
+    lat, noise = draws
+    terms = list(cfg.capital.stage_terms)
+    flat = [dict(t.__dict__) for t in terms]
+    flat[0]["arr_multiple"] = 0.0
+    without = cfg.replace(capital__stage_terms=flat)
+
+    for name in ("bootstrap", "friends_family", "seed_and_stop", "standard_venture", "max_venture"):
+        a = run_arm(cfg, lat, noise, BY_NAME[name])
+        b = run_arm(without, lat, noise, BY_NAME[name])
+        assert np.array_equal(a.exit_value, b.exit_value), name
+        assert np.array_equal(a.founder_pct, b.founder_pct), name

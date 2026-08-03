@@ -28,9 +28,14 @@ const BASELINE = "bootstrap";
 // probability points. They allow roughly four times the disagreement actually
 // observed, which is enough headroom for sampling noise across seeds and tight
 // enough that a real divergence fails rather than passing quietly.
+//
+// The config hashes moved when pre-seed gained an ARR-based price. Not one of
+// these numbers moved with them: no arm that raises on day one ever reaches that
+// row with revenue, and a Python test asserts the calibrated arms are
+// bit-identical across the change.
 const PYTHON = {
   smallcap: {
-    hash: "e9c960d0ef5d76f7",
+    hash: "b37d74e2b7e016da",
     checks: [
       ["bootstrap.netMedian", -461537, 60e3],
       ["bootstrap.ownMedian", 613732, 60e3],
@@ -47,7 +52,7 @@ const PYTHON = {
     ],
   },
   venture: {
-    hash: "109d8c1b20a92418",
+    hash: "f489a543e3928b5c",
     checks: [
       ["bootstrap.netMedian", -398005, 60e3],
       ["bootstrap.ownMedian", 705102, 70e3],
@@ -91,6 +96,14 @@ const INVARIANTS = [
     note: "every founder reaches an ending",
     check: (s, result) =>
       Object.values(result.arms).every((arm) => arm.rows.every((r) => r.died || r.exited)),
+  },
+  {
+    note: "delaying the first raise protects the founder's equity",
+    check: (s) => s.freedom.pEquityZero < s.standard_venture.pEquityZero,
+  },
+  {
+    note: "delaying means entering the ladder higher, so raising less in total",
+    check: (s) => s.freedom.meanRaised < s.standard_venture.meanRaised,
   },
   {
     note: "no NaNs anywhere",

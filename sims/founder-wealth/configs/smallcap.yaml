@@ -26,7 +26,7 @@ capital:
   secondary_min_stage: 4
   secondary_prob: 0.35
   stage_terms:
-  - arr_multiple: 0.0
+  - arr_multiple: 12.0
     founder_salary: 80000.0
     gate_arr: 0.0
     gate_growth: 0.0

@@ -40,7 +40,7 @@ const WORLDS = {
     "secondary_prob": 0.35,
     "stage_terms": [
      {
-      "arr_multiple": 0.0,
+      "arr_multiple": 12.0,
       "founder_salary": 80000.0,
       "gate_arr": 0.0,
       "gate_growth": 0.0,
@@ -138,7 +138,7 @@ const WORLDS = {
     "patient_spend_rate": 0.18
    }
   },
-  "hash": "e9c960d0ef5d76f7",
+  "hash": "b37d74e2b7e016da",
   "label": "Small-cap",
   "source": "configs/smallcap.yaml"
  },
@@ -175,7 +175,7 @@ const WORLDS = {
     "secondary_prob": 0.35,
     "stage_terms": [
      {
-      "arr_multiple": 0.0,
+      "arr_multiple": 12.0,
       "founder_salary": 90000.0,
       "gate_arr": 0.0,
       "gate_growth": 0.0,
@@ -291,7 +291,7 @@ const WORLDS = {
     "patient_spend_rate": 0.18
    }
   },
-  "hash": "109d8c1b20a92418",
+  "hash": "f489a543e3928b5c",
   "label": "Venture ladder",
   "source": "configs/frozen.yaml"
  }

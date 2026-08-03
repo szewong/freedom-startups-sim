@@ -231,12 +231,17 @@ const Engine = (() => {
 
   // -- one founder, one strategy -------------------------------------------
 
+  // `minArrToRaise` is the founder's own bar, distinct from the investors'. Zero
+  // means "raise as soon as anyone will fund you", which in practice means
+  // raising at $0 of revenue on day one. A positive threshold is a founder
+  // saying: prove it first, then decide.
   const STRATEGIES = [
-    { name: "bootstrap", label: "Bootstrap", maxStage: -1, raiseMultiple: 1 },
-    { name: "friends_family", label: "Friends & family", maxStage: 0, raiseMultiple: 1 },
-    { name: "seed_and_stop", label: "Seed and stop", maxStage: 1, raiseMultiple: 1 },
-    { name: "standard_venture", label: "Standard venture", maxStage: 5, raiseMultiple: 1 },
-    { name: "max_venture", label: "Maximum venture", maxStage: 5, raiseMultiple: 1.4 },
+    { name: "bootstrap", label: "Bootstrap", maxStage: -1, raiseMultiple: 1, minArrToRaise: 0 },
+    { name: "friends_family", label: "Friends & family", maxStage: 0, raiseMultiple: 1, minArrToRaise: 0 },
+    { name: "seed_and_stop", label: "Seed and stop", maxStage: 1, raiseMultiple: 1, minArrToRaise: 0 },
+    { name: "standard_venture", label: "Standard venture", maxStage: 5, raiseMultiple: 1, minArrToRaise: 0 },
+    { name: "max_venture", label: "Maximum venture", maxStage: 5, raiseMultiple: 1.4, minArrToRaise: 0 },
+    { name: "freedom", label: "Freedom startup", maxStage: 5, raiseMultiple: 1, minArrToRaise: 100e3 },
   ];
 
   function runArm(cfg, lat, noise, strat) {
@@ -271,6 +276,7 @@ const Engine = (() => {
     const active = new Array(horizon).fill(false);
 
     let exitValue = 0, exitYear = -1, died = false, exited = false, abandoned = false;
+    let firstStage = -1;
     let founderGross = 0, raised = 0, finalArr = 0, founderAtExit = 1;
 
     const baseChurn = churnRate(lat.fit, b);
@@ -279,15 +285,34 @@ const Engine = (() => {
     let profit = 0;
     let salary = 0;
 
+    /* A company raising its *first* round enters the ladder at the highest stage
+     * it qualifies for rather than always at pre-seed. A business with $2M of
+     * revenue raising its first round is raising a Series A, and forcing it
+     * through the early rounds would charge it ~19% of the company for money it
+     * does not need. Companies already on the ladder move one stage at a time.
+     *
+     * This changes nothing for the arms that raise on day one — at zero revenue
+     * the only gate that clears is pre-seed — and it is what makes a delayed
+     * first raise mean anything.
+     */
     function attemptRounds(eligible, t, growth) {
       if (!eligible) return;
-      for (let s = 0; s <= topStage; s++) {
-        if (stage !== s - 1) continue;
+      if (arr < (strat.minArrToRaise || 0)) return;
+      const entering = stage < 0;
+      const order = [];
+      if (entering) for (let s = topStage; s >= 0; s--) order.push(s);
+      else for (let s = 0; s <= topStage; s++) order.push(s);
+
+      for (const s of order) {
+        if (!entering && stage !== s - 1) continue;
         const term = terms[s];
         const sg = cap.gate_noise_sigma;
         const arrBar = term.gate_arr * Math.exp(sg * noise.gateArr[t] - 0.5 * sg * sg);
         const growthBar = term.gate_growth * Math.exp(sg * noise.gateGrowth[t] - 0.5 * sg * sg);
-        if (!(arr >= arrBar && growth >= growthBar)) return;
+        if (!(arr >= arrBar && growth >= growthBar)) {
+          if (entering) continue; // try the next stage down
+          return;
+        }
 
         const pn = cap.price_noise_sigma;
         const priceShock = Math.exp(pn * noise.price[t] - 0.5 * pn * pn);
@@ -311,6 +336,7 @@ const Engine = (() => {
         cash += amount;
         raised += amount;
         stage = s;
+        if (firstStage < 0) firstStage = s;
 
         if (s >= cap.secondary_min_stage && noise.secondary[t] < cap.secondary_prob) {
           let frac = Math.min(cap.secondary_frac, founderPct);
@@ -345,8 +371,12 @@ const Engine = (() => {
       active[t] = true;
 
       let growth = growthOf(arr, arrPrior);
+      // "More rounds ahead" has to mean money is actually coming, not merely
+      // intended: a founder still below their own bar lives within their means
+      // and takes distributions, exactly like one who never intends to raise.
+      const eligibleNow = arr >= (strat.minArrToRaise || 0);
       attemptRounds(stage < topStage, t, growth);
-      let moreRounds = stage < topStage;
+      let moreRounds = stage < topStage && eligibleNow;
 
       // 2. spend
       const expectedRevenue = Math.max(arr, customers * b.price);
@@ -498,6 +528,7 @@ const Engine = (() => {
       abandoned,
       exited,
       maxStage: stage,
+      firstStage,
       raised,
       exitValue,
       exitYear,
@@ -605,6 +636,8 @@ const Engine = (() => {
         pGaveUp: share(rows, (r) => r.abandoned),
         pRanDry: share(rows, (r) => r.died && !r.abandoned),
         pFailedWithNothing: share(rows, (r) => r.died && r.equityZero),
+        pEverRaised: share(rows, (r) => r.firstStage >= 0),
+        medianFounderPct: median(rows, "founderPct"),
         medianFailYear: (() => {
           const yrs = rows.filter((r) => r.died).map((r) => r.exitYear + 1).sort((a2, b2) => a2 - b2);
           return yrs.length ? percentile(yrs, 50) : 0;

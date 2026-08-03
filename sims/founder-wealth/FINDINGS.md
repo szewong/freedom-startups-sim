@@ -308,7 +308,7 @@ startups under $10M in enterprise value". Deals close in about 81 days.
 slower — 39% now take 3+ years against 19% in 2019. Of 4,369 US startups founded
 in 2018, 61.9% have closed.
 
-Sources in §14.
+Sources in §15.
 
 ### What changed in the model
 
@@ -469,7 +469,98 @@ being over it. All three numbers are model choices, and the middle one is swept 
 but a reader should know that this particular contrast is more fragile than the
 ownership results, which survive every sweep in §6.
 
-## 11. Retractions and exposures
+## 11. The Freedom Startup: raise late, not never
+
+Every venture arm above raises on day one, because the pre-seed gate is a gate in
+name only — it admits anyone. That is a strategy, but it is not the only one, and
+it is not the one this project is named after. So: hold the ladder, the terms and
+the ambition fixed, and vary only **when** the founder first takes money.
+
+    threshold $0        raise as soon as anyone will fund you
+    threshold $100k     bootstrap to first real revenue, then raise
+    threshold infinite  never raise (this is the bootstrap arm)
+
+### Two model changes it needed
+
+**A first round now enters the ladder at the stage the company qualifies for.**
+Previously every company began at pre-seed regardless of size, so a founder who
+waited was charged ~19% of the company for money they had already outgrown. A
+business with $2M of revenue raising its first round is raising a Series A.
+
+**Pre-seed gained an ARR-based price.** It was priced off a flat base, which is
+right at zero revenue and absurd for a company arriving with a business built.
+
+Both changes only bind for companies that delay. Every arm in the calibration
+raises at zero revenue, where neither applies, and a test asserts all five are
+**bit-identical** across both changes. No calibrated result moved.
+
+A third change was a defect the tests caught rather than a feature: a founder
+below their own bar was spending like a funded company and skipping
+distributions, because the model read "intends to raise" as "money is coming".
+Waiting to raise was silently changing how the company was run while it waited.
+
+### The result
+
+Same ladder, same terms, same ambition — only the start date changes:
+
+| | Median net | Ownership | Equity paid nothing | Ever raised | Failed |
+|---|---|---|---|---|---|
+| Bootstrap (never) | −$0.46M | **$0.62M** | **0.0%** | 0% | 45.1% |
+| **Freedom, $100k bar** | −$0.40M | $0.24M | **18.2%** | 61% | 47.7% |
+| **Freedom, $250k bar** | −$0.38M | $0.37M | **13.1%** | 61% | **42.5%** |
+| Standard venture | −$0.28M | $0.00M | 58.8% | 100% | 36.6% |
+| Maximum venture | −$0.16M | $0.15M | 75.6% | 100% | 29.6% |
+
+Roughly 39% never reach the bar, and for them the strategy *is* bootstrapping —
+their outcome is identical, founder for founder. So the median paired difference
+against bootstrapping is exactly zero, and the number that means something is the
+one measured on the founders the strategy actually applies to:
+
+| Among founders who did raise | Δ total wealth | **Δ ownership** | Beat bootstrapping |
+|---|---|---|---|
+| Freedom, $100k bar | **+$1.13M** | **+$0.68M** | **73.4%** |
+| Freedom, $250k bar | +$1.11M | **+$0.79M** | 76.9% |
+| Standard venture | +$0.10M | −$0.03M | 52.8% |
+| Maximum venture | −$0.03M | −$0.08M | 48.8% |
+
+**This is the first strategy in the study with a positive ownership gap.** Every
+other venture arm's shares are worth less than bootstrapping the same business.
+Delay the first round to $100k of revenue and the sign flips: +$0.68M, and it
+beats bootstrapping for 73% of the founders who get there.
+
+The mechanism is not "raise less money". It is skipping the most expensive round
+on the ladder. Of those who raise:
+
+| First raise at | Entered at | Took | Founder kept | Equity paid nothing |
+|---|---|---|---|---|
+| day one | **pre-seed** | $4.10M | 63.6% | 58.8% |
+| $50k ARR | pre-seed | $4.63M | 63.6% | 41.8% |
+| **$100k ARR** | **seed** | $3.75M | 63.6% | **29.8%** |
+| **$250k ARR** | seed | **$3.33M** | **78.3%** | **21.4%** |
+
+The transition between $50k and $100k is the whole effect: that is where the
+company stops buying the cheap seats.
+
+### Three cautions
+
+**The conditioning is real and must be stated.** "+$1.13M among those who raised"
+is a paired difference — the same founder, same luck, raising or not — so it is
+causal for that group. But the group is selected: these are the founders good
+enough to reach $100k. The strategy cannot tell you in advance that you are one.
+
+**Waiting longer is not monotonically better.** Past about $500k the curve
+reverses: companies that bootstrap that far and then raise enter higher, clear
+the later gates immediately, and end up taking *more* capital in total — a $20M
+median against $3.3M at the $250k bar, and half of them are wiped out. Timing has
+an optimum in this model and it is early, not late.
+
+**Stopping early is still the wrong half of the idea.** Raising at $100k and
+capping at seed gives −$0.62M, worse than never raising at all. The Freedom
+result comes from delaying the *start*, not from limiting the finish — which is
+the opposite of what "stay small" intuition suggests, and consistent with the
+seed-and-stop row being the worst outcome in the entire study.
+
+## 12. Retractions and exposures
 
 Kept on the record, per METHOD §10.
 
@@ -528,7 +619,7 @@ calibration targets do not identify it. Any claim that depends on the market
 size distribution should be treated as unresolved — which is one more reason to
 read §5's flat market-size curve carefully.
 
-## 12. What is not modelled
+## 13. What is not modelled
 
 Beyond the PRD §8 list, which stands:
 
@@ -549,7 +640,7 @@ Beyond the PRD §8 list, which stands:
   30% illiquidity discount and stopped. Venture outcomes have longer tails than
   that, so the top of the funded distribution is cut off.
 
-## 13. What would change the answer
+## 14. What would change the answer
 
 Stated in advance of the next run, so it cannot be chosen afterwards:
 
@@ -567,7 +658,7 @@ Stated in advance of the next run, so it cannot be chosen afterwards:
 
 ---
 
-## 14. Sources for the real-world figures
+## 15. Sources for the real-world figures
 
 Round sizes, valuations and dilution:
 

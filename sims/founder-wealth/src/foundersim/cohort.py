@@ -54,6 +54,7 @@ class ArmResult:
     abandoned: np.ndarray  # (n,) ... specifically, the founder gave up on it
     exited: np.ndarray  # (n,)
     max_stage: np.ndarray  # (n,) highest round closed, -1 = none
+    first_stage: np.ndarray  # (n,) stage the company entered the ladder at, -1 = never
     raised: np.ndarray  # (n,) total capital raised
     founder_pct: np.ndarray  # (n,) founder common at the liquidity event
     final_arr: np.ndarray  # (n,) ARR at the liquidity event
@@ -76,6 +77,7 @@ def run_arm(cfg: RunConfig, lat: Latents, noise: Noise, strat: Strategy) -> ArmR
     arr = np.zeros(n)  # ARR at the end of the previous year
     arr_prior = np.zeros(n)
     stage = np.full(n, -1, dtype=int)
+    first_stage = np.full(n, -1, dtype=int)
     alive = np.ones(n, dtype=bool)
     settled = np.zeros(n, dtype=bool)  # died or exited: the story is over
 
@@ -106,12 +108,46 @@ def run_arm(cfg: RunConfig, lat: Latents, noise: Noise, strat: Strategy) -> ArmR
         return current / np.maximum(prior, b.price)
 
     def attempt_rounds(eligible: np.ndarray, t: int, growth: np.ndarray) -> None:
-        """Close at most one round for every eligible company whose gate clears."""
+        """Close at most one round for every eligible company whose gate clears.
+
+        A company raising its *first* round enters the ladder at the highest
+        stage it qualifies for rather than always at pre-seed. A business with
+        $2M of revenue raising its first round is raising a Series A, not a
+        pre-seed, and forcing it through the early rounds would charge it ~19%
+        of the company for money it does not need. Companies already on the
+        ladder still move one stage at a time.
+
+        This changes nothing for the arms that raise on day one — at zero revenue
+        the only gate that clears is pre-seed — and it is what makes a delayed
+        first raise mean anything.
+        """
+        eligible = eligible & (arr >= strat.min_arr_to_raise)
         already = np.zeros(n, dtype=bool)
+        entering = stage < 0
+
+        for s in reversed(range(min(top_stage, N_STAGES - 1) + 1)):
+            take = eligible & ~already & entering
+            if take.any():
+                take &= clears_gate(
+                    s, arr, growth, cap, noise.gate_arr[:, t], noise.gate_growth[:, t]
+                )
+            if take.any():
+                pre, amount = price_round(s, arr, cap, noise.price[:, t])
+                amount = amount * strat.raise_multiple
+                apply_round(table, take, s, pre, amount, cap)
+                cash[take] += amount[take]
+                stage[take] = s
+                first_stage[take] = s
+                already |= take
+                if s >= cap.secondary_min_stage:
+                    selling = take & (noise.secondary[:, t] < cap.secondary_prob)
+                    proceeds = sell_secondary(table, selling, pre + amount, cap)
+                    capital_cash[:, t] += proceeds * (1.0 - led.tax_rate_capital)
+
         for s in range(N_STAGES):
             if s > top_stage:
                 break
-            take = eligible & ~already & (stage == s - 1)
+            take = eligible & ~already & (stage == s - 1) & ~entering
             if not take.any():
                 continue
             take &= clears_gate(s, arr, growth, cap, noise.gate_arr[:, t], noise.gate_growth[:, t])
@@ -123,6 +159,7 @@ def run_arm(cfg: RunConfig, lat: Latents, noise: Noise, strat: Strategy) -> ArmR
             apply_round(table, take, s, pre, amount, cap)
             cash[take] += amount[take]
             stage[take] = s
+            first_stage[take] = np.where(first_stage[take] < 0, s, first_stage[take])
             already |= take
 
             if s >= cap.secondary_min_stage:
@@ -159,11 +196,18 @@ def run_arm(cfg: RunConfig, lat: Latents, noise: Noise, strat: Strategy) -> ArmR
         active_log[:, t] = running
 
         growth = growth_of(arr, arr_prior)
-        more_rounds_ahead = stage < top_stage
+        # "More rounds ahead" has to mean money is actually coming, not merely
+        # intended. A founder still below their own bar cannot raise yet, so they
+        # live within their means and take distributions exactly like someone who
+        # never intends to raise — because that is their situation this year.
+        # Without this, waiting to raise silently changed how the company was run
+        # while it waited.
+        eligible_now = arr >= strat.min_arr_to_raise
+        more_rounds_ahead = (stage < top_stage) & eligible_now
 
         # 1. Rounds -----------------------------------------------------------
         attempt_rounds(running & more_rounds_ahead, t, growth)
-        more_rounds_ahead = stage < top_stage  # a round closed may exhaust it
+        more_rounds_ahead = (stage < top_stage) & eligible_now  # a round may exhaust it
 
         # 2. Spend ------------------------------------------------------------
         expected_revenue = np.maximum(arr, customers * b.price)
@@ -316,6 +360,7 @@ def run_arm(cfg: RunConfig, lat: Latents, noise: Noise, strat: Strategy) -> ArmR
         abandoned=abandoned,
         exited=exited,
         max_stage=stage,
+        first_stage=first_stage,
         raised=table.raised(),
         founder_pct=founder_at_exit,
         final_arr=final_arr,

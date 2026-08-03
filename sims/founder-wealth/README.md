@@ -119,6 +119,12 @@ src/foundersim/
 | `seed_and_stop` | Raise seed, then bootstrap to profitability. |
 | `standard_venture` | Raise at every gate cleared. |
 | `max_venture` | Raise the largest round available at every gate. |
+| `freedom` | Bootstrap to $100k ARR, **then** raise at every gate cleared. |
+
+The last one is the only strategy in the study whose shares are worth *more* than
+bootstrapping the same business (+$0.68M among those who reach the bar). It works
+by skipping the pre-seed — the most expensive round on the ladder — not by
+raising less. See [`FINDINGS.md`](FINDINGS.md) §11.
 
 ### What the model refuses to assume
 

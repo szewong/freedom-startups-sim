@@ -22,6 +22,16 @@ class Strategy:
     raise_multiple: float = 1.0  # round size relative to the stage's standard
     label: str = ""
 
+    # The founder's own bar, distinct from the investors'. Zero means "raise as
+    # soon as anyone will fund you", which is what every venture arm above does
+    # and which in practice means raising at $0 of revenue on day one. A positive
+    # threshold is a founder saying: prove it first, then decide.
+    #
+    # This is not the same as raising less. The company still goes up the same
+    # ladder on the same terms — it just arrives later, with revenue, and skips
+    # whichever early rounds it has already outgrown.
+    min_arr_to_raise: float = 0.0
+
 
 STRATEGIES: tuple[Strategy, ...] = (
     Strategy("bootstrap", -1, label="Never raise. Growth funded from gross profit."),
@@ -29,6 +39,12 @@ STRATEGIES: tuple[Strategy, ...] = (
     Strategy("seed_and_stop", 1, label="Raise seed, then bootstrap to profitability."),
     Strategy("standard_venture", 5, label="Raise at every gate cleared."),
     Strategy("max_venture", 5, 1.4, label="Raise the largest round available at every gate."),
+    Strategy(
+        "freedom",
+        5,
+        label="Bootstrap to $100k ARR, then raise at every gate cleared.",
+        min_arr_to_raise=100_000.0,
+    ),
 )
 
 BY_NAME = {s.name: s for s in STRATEGIES}

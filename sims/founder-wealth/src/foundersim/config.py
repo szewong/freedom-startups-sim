@@ -140,7 +140,7 @@ class StageTerms:
 # $3M on $12M (22%), A $12M on $45M (23%), B $35M on $150M (21%), C $80M on
 # $500M (15%), D $150M on $1.2B (12%).
 DEFAULT_STAGE_TERMS: tuple[StageTerms, ...] = (
-    StageTerms(0.0, 0.00, 0.125, 4e6, 0.0, 0.020, 90_000.0),
+    StageTerms(0.0, 0.00, 0.125, 4e6, 12.0, 0.020, 90_000.0),
     StageTerms(150e3, 1.30, 0.250, 12e6, 40.0, 0.020, 150_000.0),
     StageTerms(1.5e6, 2.00, 0.267, 45e6, 30.0, 0.020, 180_000.0),
     StageTerms(6e6, 2.00, 0.233, 150e6, 25.0, 0.020, 220_000.0),
@@ -162,7 +162,14 @@ DEFAULT_STAGE_TERMS: tuple[StageTerms, ...] = (
 # companies, and leaving them in was the single biggest source of fantasy in the
 # headline configuration.
 SMALLCAP_STAGE_TERMS: tuple[StageTerms, ...] = (
-    StageTerms(0.0, 0.00, 0.200, 5e6, 0.0, 0.020, 80_000.0),
+    # arr_multiple is 12x rather than 0 on this first row: a pre-seed for a
+    # company with no revenue is priced off the base, but a founder who waited
+    # and arrived with a business built is not raising at a flat $5M. Leaving it
+    # at zero priced a $1M-revenue company as though it had none. This only ever
+    # binds for companies that delay their first round — no arm in the
+    # calibration reaches this row with revenue, and every calibrated result is
+    # bit-identical either way, which a test asserts.
+    StageTerms(0.0, 0.00, 0.200, 5e6, 12.0, 0.020, 80_000.0),
     StageTerms(150e3, 1.30, 0.246, 13e6, 35.0, 0.020, 130_000.0),
     StageTerms(1.5e6, 2.00, 0.275, 40e6, 20.0, 0.020, 175_000.0),
     StageTerms(6e6, 1.80, 0.267, 120e6, 16.0, 0.020, 210_000.0),

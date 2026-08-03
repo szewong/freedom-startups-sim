@@ -21,8 +21,9 @@
     --arm-1: #2a78d6;  /* bootstrap */
     --arm-2: #eb6834;  /* standard venture */
     --arm-3: #1baf7a;  /* maximum venture */
-    --arm-4: #eda100;  /* friends & family */
-    --arm-5: #e87ba4;  /* seed and stop */
+    --arm-4: #eda100;  /* maximum venture */
+    --arm-5: #e87ba4;  /* friends & family */
+    --arm-6: #008300;  /* seed and stop */
 
     --band-0: #e34948;
     --band-1: #86b6ef;
@@ -37,7 +38,7 @@
       --ink: #f3f3f0; --ink-2: #c3c2b7; --ink-3: #8b8a82;
       --rule: #2c2c2a; --rule-strong: #3d3d3a;
       --arm-1: #3987e5; --arm-2: #d95926; --arm-3: #199e70;
-      --arm-4: #c98500; --arm-5: #d55181;
+      --arm-4: #c98500; --arm-5: #d55181; --arm-6: #008300;
       --band-0: #e66767; --band-1: #cde2fb; --band-2: #86b6ef;
       --band-3: #3987e5; --band-4: #184f95;
     }
@@ -48,7 +49,7 @@
     --ink: #f3f3f0; --ink-2: #c3c2b7; --ink-3: #8b8a82;
     --rule: #2c2c2a; --rule-strong: #3d3d3a;
     --arm-1: #3987e5; --arm-2: #d95926; --arm-3: #199e70;
-    --arm-4: #c98500; --arm-5: #d55181;
+    --arm-4: #c98500; --arm-5: #d55181; --arm-6: #008300;
     --band-0: #e66767; --band-1: #cde2fb; --band-2: #86b6ef;
     --band-3: #3987e5; --band-4: #184f95;
   }
@@ -226,6 +227,13 @@
           <div class="ctl-head"><label for="seed">Seed</label><output id="seed-out"></output></div>
           <input type="range" id="seed" min="1" max="40" step="1" value="1">
         </div>
+        <div class="ctl">
+          <div class="ctl-head">
+            <label for="freedomarr">Freedom startup raises after</label>
+            <output id="freedomarr-out"></output>
+          </div>
+          <input type="range" id="freedomarr" min="0" max="2000000" step="25000" value="100000">
+        </div>
       </fieldset>
 
       <fieldset>
@@ -369,8 +377,13 @@
   // line chart draws, because only the first three clear the all-pairs
   // colourblind gates; the other two appear solely in bar charts, where the
   // adjacent-pair gates apply and direct labels are always present.
+  // Slots 1-3 are the only trio that clears the colourblind all-pairs gates in
+  // both themes, and they go to the three arms the line chart draws. Freedom
+  // takes one because it is the arm the chart exists to show; maximum venture
+  // moves to a bar-only slot, where the adjacent-pair gates apply instead.
   const SLOT = {
-    bootstrap: 1, standard_venture: 2, max_venture: 3, friends_family: 4, seed_and_stop: 5,
+    bootstrap: 1, standard_venture: 2, freedom: 3,
+    max_venture: 4, friends_family: 5, seed_and_stop: 6,
   };
   const ARMS = Engine.STRATEGIES.map((s) => ({
     key: s.name, label: s.label, color: `var(--arm-${SLOT[s.name]})`,
@@ -378,7 +391,7 @@
   const BASELINE = "bootstrap";
   const VENTURE_ARMS = ARMS.filter((a) => a.key !== BASELINE);
   const byKey = (k) => ARMS.find((a) => a.key === k);
-  const LINE_ARMS = [byKey("bootstrap"), byKey("standard_venture"), byKey("max_venture")];
+  const LINE_ARMS = [byKey("bootstrap"), byKey("standard_venture"), byKey("freedom")];
 
   const NS = "http://www.w3.org/2000/svg";
   const el = (tag, attrs = {}) => {
@@ -428,6 +441,7 @@
   const CONTROLS = [
     { id: "founders", fmt: (v) => (+v).toLocaleString() },
     { id: "seed", fmt: (v) => "#" + v },
+    { id: "freedomarr", fmt: (v) => (+v === 0 ? "day one" : "$" + (+v / 1000).toFixed(0) + "k ARR") },
     { id: "pref", path: "capital.pref_multiple", fmt: (v) => (+v).toFixed(2) + "×" },
     { id: "carve", path: "capital.carve_out", fmt: (v) => pct(+v, 0) },
     { id: "secondary", path: "capital.secondary_prob", fmt: (v) => pct(+v, 0) },
@@ -779,7 +793,9 @@
       { n: "Wage gap", f: (s, k) => (k === BASELINE ? "—" : (s.gapLabour >= 0 ? "+" : "") + money(s.gapLabour)) },
       { n: "Founders better off", f: (s, k) => (k === BASELINE ? "—" : pct(s.pBeatsBaseline)) },
       { g: "The company" },
+      { n: "Ever raised anything", f: (s) => pct(s.pEverRaised) },
       { n: "Capital raised (mean)", f: (s) => money(s.meanRaised) },
+      { n: "Founder kept (median)", f: (s) => pct(s.medianFounderPct) },
       { n: "Company value (median)", f: (s) => money(s.medianExitValue) },
       { n: "Final ARR (median)", f: (s) => money(s.medianFinalArr) },
       { g: "How it ended" },
@@ -827,7 +843,11 @@
       const nFounders = parseInt($("founders").value, 10);
       const seed = parseInt($("seed").value, 10);
       const t0 = performance.now();
-      const result = Engine.simulate(cfg, { nFounders, seed });
+      const threshold = parseFloat($("freedomarr").value);
+      const strategies = Engine.STRATEGIES.map((st) =>
+        st.name === "freedom" ? { ...st, minArrToRaise: threshold } : st
+      );
+      const result = Engine.simulate(cfg, { nFounders, seed, strategies });
       const stats = Engine.summarise(result, BASELINE);
       const cross = Engine.crossing(result, result.quality, "ownership", 20);
       const ms = performance.now() - t0;
@@ -844,7 +864,7 @@
         `${pct(sv.pEquityZero, 0)} of those founders receive nothing at all for their equity.`;
 
       $("provenance").innerHTML = [
-        `${nFounders.toLocaleString()} founders × 5 paths`,
+        `${nFounders.toLocaleString()} founders × ${Object.keys(result.arms).length} paths`,
         `${cfg.exit.horizon_years}-year horizon`,
         "present value, after tax",
         `net of $${Math.round(cfg.ledger.opportunity_cost / 1000)}k/yr forgone salary`,
@@ -852,7 +872,8 @@
       ].map((s) => `<span>${s}</span>`).join("");
 
       status.dataset.busy = "0";
-      status.textContent = `${(nFounders * 5).toLocaleString()} simulated lifetimes in ${ms.toFixed(0)} ms`;
+      const lifetimes = nFounders * Object.keys(result.arms).length;
+      status.textContent = `${lifetimes.toLocaleString()} simulated lifetimes in ${ms.toFixed(0)} ms`;
     });
   }
 
