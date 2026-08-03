@@ -328,7 +328,7 @@
     <figure>
       <div class="fig-head">
         <h3>Share of founders by final wealth</h3>
-        <p>Present value, net of the salary they gave up. Centre line is breakeven with a salaried job.</p>
+        <p id="bands-sub">Present value, net of the salary they gave up.</p>
       </div>
       <div class="legend" id="legend-bands"></div>
       <div class="chart" id="chart-bands"></div>
@@ -1918,6 +1918,12 @@ if (typeof module !== "undefined" && module.exports) module.exports = Engine;
         `the middle of the wage row is usually not the one in the middle of the total row. ` +
         `They are three true answers to three questions, not three slices of one number. ` +
         `Read each on its own.`;
+
+      // "Worse than a job" depends entirely on which job. Say which one.
+      $("bands-sub").textContent =
+        "Present value, net of the salary they gave up. The centre line is breakeven with a " +
+        `$${Math.round(cfg.ledger.opportunity_cost / 1000)}k/yr salaried job — move that slider ` +
+        "and the whole picture shifts.";
 
       $("provenance").innerHTML = [
         `${nFounders.toLocaleString()} founders × ${Object.keys(result.arms).length} paths`,

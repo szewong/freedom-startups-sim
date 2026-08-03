@@ -308,7 +308,7 @@ startups under $10M in enterprise value". Deals close in about 81 days.
 slower — 39% now take 3+ years against 19% in 2019. Of 4,369 US startups founded
 in 2018, 61.9% have closed.
 
-Sources in §16.
+Sources in §17.
 
 ### What changed in the model
 
@@ -669,7 +669,64 @@ productive their hires would be. What it can say is that the answer is not very
 sensitive to it, which means the founder's instinct to argue about *that* number
 is aimed at the wrong variable.
 
-## 13. Retractions and exposures
+## 13. "Worse than a job" is a claim about which job
+
+Read off the outcome chart, 54-70% of founders in every path end up worse than a
+salaried job. That is what the model says, and the natural conclusion — nobody
+should start a business — is worth taking seriously rather than explaining away.
+Real evidence points the same direction: the entrepreneurship literature has
+found median self-employment earnings well below salaried equivalents for
+decades.
+
+But that headline is almost entirely a statement about the **$300k/year** the
+model charges every founder for the job they turned down. Vary only that:
+
+| If the job you turned down pays | Bootstrap worse off | Standard venture worse off |
+|---|---|---|
+| $100k | **33.7%** | **7.2%** |
+| $150k | 45.0% | 37.3% |
+| $200k | 56.1% | 46.9% |
+| $250k | 65.2% | 50.8% |
+| **$300k** (the default) | **72.5%** | **55.2%** |
+| $400k | 81.8% | 60.0% |
+
+At $100k, two thirds of bootstrapped founders come out **ahead**. The result
+flips somewhere between $150k and $200k. So "most founders are worse off" is not
+a fact about founding — it is a fact about founders who could have earned $300k
+elsewhere, which is a specific and unusual person.
+
+What the median founder actually takes home, before deducting any forgone salary
+(present value, after tax, over twelve years):
+
+| | Median | Mean | P90 | P99 | Median per year |
+|---|---|---|---|---|---|
+| Bootstrap | $0.80M | $1.12M | $2.64M | $6.27M | **~$67k/yr** |
+| Standard venture | $0.97M | $3.63M | $9.15M | $34.50M | **~$81k/yr** |
+| Freedom, $100k bar | $0.70M | $2.85M | $7.66M | $25.55M | ~$58k/yr |
+
+That is the honest number to compare against your own alternative: **founding
+pays the median person about $58-81k a year**, and the mean is three to four
+times the median because the top 1% of founders capture 7-15% of all the money.
+
+Three things the model does not count, all of which push the same way:
+
+- **A second attempt.** A failed founder here returns to a salaried job. In
+  reality failure often improves the next opportunity, and the option to try
+  again is worth something this model sets to zero.
+- **Everything that is not money.** Autonomy, control over your time, what you
+  learn. The model is a wealth calculator and says nothing about any of it.
+- **Selection.** Founders are drawn here from a distribution where most ideas
+  are mediocre by construction. Real founders choose their idea, though they are
+  also systematically overconfident about it, so this cuts both ways.
+
+The defensible reading is therefore narrower than the chart suggests: **founding
+is a bad way to beat a high salary and a reasonable way to beat a median one**,
+and in every case it converts a predictable income into a highly skewed one.
+
+The live page now names the salary it is comparing against in the chart subtitle,
+because "worse than a job" without saying which job is close to meaningless.
+
+## 14. Retractions and exposures
 
 Kept on the record, per METHOD §10.
 
@@ -728,7 +785,7 @@ calibration targets do not identify it. Any claim that depends on the market
 size distribution should be treated as unresolved — which is one more reason to
 read §5's flat market-size curve carefully.
 
-## 14. What is not modelled
+## 15. What is not modelled
 
 Beyond the PRD §8 list, which stands:
 
@@ -749,7 +806,7 @@ Beyond the PRD §8 list, which stands:
   30% illiquidity discount and stopped. Venture outcomes have longer tails than
   that, so the top of the funded distribution is cut off.
 
-## 15. What would change the answer
+## 16. What would change the answer
 
 Stated in advance of the next run, so it cannot be chosen afterwards:
 
@@ -767,7 +824,7 @@ Stated in advance of the next run, so it cannot be chosen afterwards:
 
 ---
 
-## 16. Sources for the real-world figures
+## 17. Sources for the real-world figures
 
 Round sizes, valuations and dilution:
 
