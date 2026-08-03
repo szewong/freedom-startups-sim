@@ -489,7 +489,9 @@
       { name: "Wage", k: "gapLabour" },
     ];
     const labelW = Math.min(150, Math.max(96, width * 0.17));
-    const padR = 78, padT = 6, padB = 30, rowH = 22, barH = 11, groupGap = 22;
+    // padT leaves room for the two direction labels: without them the zero line
+    // is just a line, and a reader cannot tell which way is good.
+    const padR = 78, padT = 30, padB = 34, rowH = 22, barH = 11, groupGap = 22;
     const plotW = width - labelW - padR;
     const h = padT + groups.length * (rowH * VENTURE_ARMS.length + groupGap) + padB;
 
@@ -503,9 +505,21 @@
       "Median paired difference against bootstrapping, split into ownership and wages";
 
     const zx = x(0);
-    svg.appendChild(el("line", { x1: zx, x2: zx, y1: padT, y2: h - padB, stroke: "var(--rule-strong)", "stroke-width": 1 }));
-    const zl = el("text", { x: zx, y: h - padB + 18, "text-anchor": "middle", "font-size": 11.5, fill: "var(--ink-3)" });
-    zl.textContent = "same as bootstrapping";
+    svg.appendChild(el("line", { x1: zx, x2: zx, y1: padT - 8, y2: h - padB, stroke: "var(--ink-3)", "stroke-width": 1.5 }));
+
+    // Which way is which. Bootstrapping is not a bar here — it IS the zero line,
+    // and every bar is measured from it.
+    const worse = el("text", { x: zx - 10, y: padT - 15, "text-anchor": "end", "font-size": 11.5, fill: "var(--ink-2)" });
+    worse.textContent = "◀ worse than bootstrapping";
+    svg.appendChild(worse);
+    const better = el("text", { x: zx + 10, y: padT - 15, "text-anchor": "start", "font-size": 11.5, fill: "var(--ink-2)" });
+    better.textContent = "better than bootstrapping ▶";
+    svg.appendChild(better);
+
+    const zsw = el("rect", { x: zx - 22, y: h - padB + 8, width: 9, height: 9, rx: 2, fill: "var(--arm-1)" });
+    svg.appendChild(zsw);
+    const zl = el("text", { x: zx - 9, y: h - padB + 17, "text-anchor": "start", "font-size": 11.5, fill: "var(--ink-2)" });
+    zl.textContent = "Bootstrap = 0";
     svg.appendChild(zl);
 
     let y = padT;
@@ -564,23 +578,34 @@
 
     const zx = x(0);
     svg.appendChild(el("line", { x1: zx, x2: zx, y1: padT - 2, y2: h - padB + 4, stroke: "var(--rule-strong)", "stroke-width": 1 }));
-    const zl = el("text", { x: zx, y: h - padB + 20, "text-anchor": "middle", "font-size": 11.5, fill: "var(--ink-3)" });
-    zl.textContent = "breakeven with a salaried job";
+    const zl = el("text", { x: zx, y: h - padB + 20, "text-anchor": "middle", "font-size": 11.5, fill: "var(--ink-2)" });
+    zl.textContent = "▲ breakeven with a salaried job";
     svg.appendChild(zl);
+    // Pushed out to the plot edges: at the centre they collide with the
+    // breakeven label, which is the one thing that must stay under the line.
+    const lworse = el("text", { x: labelW, y: h - padB + 20, "text-anchor": "start", "font-size": 11.5, fill: "var(--ink-3)" });
+    lworse.textContent = "◀ ended up poorer";
+    svg.appendChild(lworse);
+    const lbetter = el("text", { x: width - padR, y: h - padB + 20, "text-anchor": "end", "font-size": 11.5, fill: "var(--ink-3)" });
+    lbetter.textContent = "ended up richer ▶";
+    svg.appendChild(lbetter);
 
     ARMS.forEach((arm, i) => {
       const s = stats[arm.key];
       const b = s.bands;
       const cy = padT + i * rowH + rowH / 2;
 
-      const name = el("text", { x: labelW - 12, y: cy - 6, "text-anchor": "end", "font-size": 12.5, fill: "var(--ink)", "dominant-baseline": "middle" });
+      // Left-aligned with the arm's own colour beside it, so the rows here can
+      // be matched to the same arms in the other charts at a glance.
+      svg.appendChild(el("rect", { x: 0, y: cy - 11, width: 9, height: 9, rx: 2, fill: arm.color }));
+      const name = el("text", { x: 15, y: cy - 6, "font-size": 12.5, fill: "var(--ink)", "dominant-baseline": "middle" });
       name.textContent = arm.label;
       svg.appendChild(name);
       const sub = el("text", {
-        x: labelW - 12, y: cy + 11, "text-anchor": "end", "font-size": 11, fill: "var(--ink-3)",
+        x: 15, y: cy + 11, "font-size": 11, fill: "var(--ink-3)",
         "dominant-baseline": "middle", "font-family": "ui-monospace, Menlo, Consolas, monospace",
       });
-      sub.textContent = money(s.netMedian);
+      sub.textContent = "median " + money(s.netMedian);
       svg.appendChild(sub);
 
       const negW = Math.max((b[0] / (hi - lo)) * plotW - 2, 0);
@@ -619,7 +644,9 @@
   }
 
   function chartCross(width, rows) {
-    const padL = 60, padR = Math.min(120, Math.max(74, width * 0.14)), padT = 12, padB = 42;
+    // Wider right margin: each line is named where it ends, not just coloured,
+    // so the chart is readable without going back to the legend.
+    const padL = 60, padR = Math.min(168, Math.max(112, width * 0.2)), padT = 12, padB = 42;
     const h = Math.max(250, Math.min(320, width * 0.4));
     const plotW = width - padL - padR;
     const plotH = h - padT - padB;
@@ -653,16 +680,39 @@
     ax.textContent = "percentile of founder quality  (fit × skill)";
     svg.appendChild(ax);
 
+    const last = rows[rows.length - 1];
     for (const a of LINE_ARMS) {
       const d = rows.map((r, i) => (i ? "L" : "M") + x(r.pctHi) + " " + y(r[a.key])).join(" ");
       svg.appendChild(el("path", { d, fill: "none", stroke: a.color, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }));
-      const last = rows[rows.length - 1];
-      const lab = el("text", {
-        x: x(last.pctHi) + 9, y: y(last[a.key]) + 4, "font-size": 11.5, fill: "var(--ink-2)",
+    }
+
+    // Name each line at its end. Endpoints can converge as the sliders move, so
+    // the labels are pushed apart rather than allowed to overlap.
+    const ends = LINE_ARMS
+      .map((a) => ({ arm: a, v: last[a.key], y: y(last[a.key]) }))
+      .sort((p, q) => p.y - q.y);
+    const MIN_GAP = 30;
+    for (let i = 1; i < ends.length; i++) {
+      if (ends[i].y - ends[i - 1].y < MIN_GAP) ends[i].y = ends[i - 1].y + MIN_GAP;
+    }
+    const overflow = ends.length ? ends[ends.length - 1].y - (padT + plotH) : 0;
+    if (overflow > 0) for (const e of ends) e.y -= overflow;
+
+    for (const e of ends) {
+      const lx = x(last.pctHi) + 10;
+      svg.appendChild(el("line", {
+        x1: x(last.pctHi), y1: y(e.v), x2: lx - 3, y2: e.y - 4,
+        stroke: e.arm.color, "stroke-width": 1, opacity: 0.55,
+      }));
+      const nm = el("text", { x: lx, y: e.y - 6, "font-size": 11.5, fill: "var(--ink)" });
+      nm.textContent = e.arm.label;
+      svg.appendChild(nm);
+      const vl = el("text", {
+        x: lx, y: e.y + 7, "font-size": 11.5, fill: "var(--ink-3)",
         "font-family": "ui-monospace, Menlo, Consolas, monospace",
       });
-      lab.textContent = money(last[a.key]);
-      svg.appendChild(lab);
+      vl.textContent = money(e.v);
+      svg.appendChild(vl);
     }
 
     const cross = el("line", { x1: 0, x2: 0, y1: padT, y2: padT + plotH, stroke: "var(--rule-strong)", "stroke-width": 1, opacity: 0 });
