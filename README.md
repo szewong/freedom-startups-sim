@@ -29,7 +29,7 @@ It also retracted three claims along the way, which are on the record in
 browser and press Run. No install — it simulates live.
 Then [`PAPER.md`](sims/incentive-evolution/PAPER.md).
 
-### [`sims/founder-wealth`](sims/founder-wealth) — specified, not yet built
+### [`sims/founder-wealth`](sims/founder-wealth) — built, first run, provisional
 
 > **Does raising big rounds make founders wealthier than grinding it out alone?**
 
@@ -37,9 +37,20 @@ Not "does it build bigger companies" — that answer is known. The question is t
 founder's own take-home, after dilution, after liquidation preferences, after
 years of below-market salary, and after counting the companies that die.
 
-Design is complete in [`PRD.md`](sims/founder-wealth/PRD.md), including how
-failure emerges rather than being asserted, and what would falsify the
-hypothesis. To be built clean in its own session.
+The same founder, the same idea, the same luck, forked at the capital decision:
+5,000 founders run down five financing strategies over twelve years, plus a null
+control that gives the cash without the dilution or the preferences.
+
+The hypothesis it was built to test — that raising does not make the median
+founder wealthier — **did not survive**. The median venture founder ends up
+ahead. But **half of them receive nothing at all for their equity**, so the
+advantage is payroll rather than ownership: a salary underwritten by investors in
+a company that has not yet earned it. Against the null control, capital structure
+costs the median heavily-funded founder $8.3M relative to the same cash on
+neutral terms. The cash helps; the terms take most of it back.
+
+Design: [`PRD.md`](sims/founder-wealth/PRD.md). Results, caveats and the
+retraction: [`FINDINGS.md`](sims/founder-wealth/FINDINGS.md).
 
 ---
 

@@ -1,0 +1,70 @@
+config hash 41c9859507b7312a  |  11 sweeps  |  3000 founders x 4 replicates
+
+preference_height: How much of the founder's downside is the term sheet rather than the business?
+  1.0x               median net: boot $ -0.40M  venture $  0.17M  | paired gap: standard $ +0.61M  max $ +2.32M
+  1.5x               median net: boot $ -0.40M  venture $ -0.12M  | paired gap: standard $ +0.32M  max $ +1.43M
+  2.0x               median net: boot $ -0.40M  venture $ -0.30M  | paired gap: standard $ +0.18M  max $ +0.70M
+  3.0x               median net: boot $ -0.40M  venture $ -0.38M  | paired gap: standard $ +0.03M  max $ +0.40M
+  1x participating   median net: boot $ -0.40M  venture $  0.03M  | paired gap: standard $ +0.47M  max $ +1.73M
+
+payoff_shape: Does replacing the step with a ramp matter more than lowering the step?
+  no carve-out       median net: boot $ -0.40M  venture $  0.17M  | paired gap: standard $ +0.61M  max $ +2.32M
+  5%                 median net: boot $ -0.40M  venture $  0.26M  | paired gap: standard $ +0.67M  max $ +3.45M
+  10%                median net: boot $ -0.40M  venture $  0.32M  | paired gap: standard $ +0.70M  max $ +4.02M
+  20%                median net: boot $ -0.40M  venture $  0.36M  | paired gap: standard $ +0.73M  max $ +4.56M
+
+capital_upside: Does the answer survive letting capital genuinely improve the business?
+  none               median net: boot $ -0.40M  venture $  0.05M  | paired gap: standard $ +0.57M  max $ +1.92M
+  0.15               median net: boot $ -0.40M  venture $  0.17M  | paired gap: standard $ +0.61M  max $ +2.32M
+  0.40               median net: boot $ -0.40M  venture $  0.35M  | paired gap: standard $ +0.69M  max $ +2.83M
+  0.80               median net: boot $ -0.40M  venture $  0.52M  | paired gap: standard $ +0.80M  max $ +3.38M
+
+speed_premium: How much does the market punish being slow?
+  no decay           median net: boot $ -0.39M  venture $  0.20M  | paired gap: standard $ +0.62M  max $ +2.42M
+  6%/yr              median net: boot $ -0.40M  venture $  0.17M  | paired gap: standard $ +0.61M  max $ +2.32M
+  15%/yr             median net: boot $ -0.40M  venture $  0.05M  | paired gap: standard $ +0.55M  max $ +2.09M
+  30%/yr             median net: boot $ -0.41M  venture $ -0.05M  | paired gap: standard $ +0.38M  max $ +1.42M
+
+market_tail: Does raising only pay for founders in genuinely huge markets?
+  sigma 1.2          median net: boot $ -0.40M  venture $  0.17M  | paired gap: standard $ +0.61M  max $ +2.32M
+  sigma 1.6          median net: boot $ -0.40M  venture $  0.08M  | paired gap: standard $ +0.57M  max $ +2.09M
+  sigma 2.0          median net: boot $ -0.40M  venture $  0.02M  | paired gap: standard $ +0.52M  max $ +1.78M
+  sigma 2.4          median net: boot $ -0.40M  venture $ -0.01M  | paired gap: standard $ +0.47M  max $ +1.48M
+
+exit_regime: Is the answer regime-dependent? Almost certainly.
+  deep bear 0.5x     median net: boot $ -0.60M  venture $ -0.32M  | paired gap: standard $ +0.45M  max $ +0.95M
+  bear 0.75x         median net: boot $ -0.51M  venture $ -0.07M  | paired gap: standard $ +0.49M  max $ +1.71M
+  neutral            median net: boot $ -0.40M  venture $  0.17M  | paired gap: standard $ +0.61M  max $ +2.32M
+  bull 1.5x          median net: boot $ -0.11M  venture $  1.16M  | paired gap: standard $ +1.03M  max $ +3.25M
+  bubble 2.5x        median net: boot $  0.53M  venture $  2.88M  | paired gap: standard $ +1.91M  max $ +5.10M
+
+opportunity_cost: How much of the bootstrapper's advantage is simply being paid?
+  $150k              median net: boot $  0.21M  venture $  0.74M  | paired gap: standard $ +0.56M  max $ +2.20M
+  $250k              median net: boot $ -0.21M  venture $  0.36M  | paired gap: standard $ +0.58M  max $ +2.29M
+  $300k              median net: boot $ -0.40M  venture $  0.17M  | paired gap: standard $ +0.61M  max $ +2.32M
+  $400k              median net: boot $ -0.72M  venture $ -0.20M  | paired gap: standard $ +0.68M  max $ +2.39M
+
+secondary: Does partial liquidity change the calculus materially?
+  none               median net: boot $ -0.40M  venture $  0.15M  | paired gap: standard $ +0.57M  max $ +1.65M
+  35%                median net: boot $ -0.40M  venture $  0.17M  | paired gap: standard $ +0.61M  max $ +2.32M
+  80%                median net: boot $ -0.40M  venture $  0.20M  | paired gap: standard $ +0.64M  max $ +3.72M
+  80%, $25M cap      median net: boot $ -0.40M  venture $  0.20M  | paired gap: standard $ +0.65M  max $ +3.89M
+
+bootstrapper_ceiling: The self-funded growth ceiling is a modelling choice (PRD §8) — sweep it.
+  organic 1.8        median net: boot $ -0.47M  venture $ -0.37M  | paired gap: standard $ +0.18M  max $ +1.16M
+  organic 2.6        median net: boot $ -0.43M  venture $ -0.09M  | paired gap: standard $ +0.35M  max $ +1.84M
+  organic 3.4        median net: boot $ -0.39M  venture $  0.25M  | paired gap: standard $ +0.65M  max $ +2.39M
+  staffing pain 0    median net: boot $ -0.19M  venture $  2.38M  | paired gap: standard $ +2.18M  max $ +4.25M
+  staffing pain 0.5  median net: boot $ -0.46M  venture $ -0.46M  | paired gap: standard $ +0.08M  max $ +0.78M
+
+investor_noise: Gates encode a theory of investors (PRD §8). Is the conclusion sensitive to it?
+  hard threshold     median net: boot $ -0.40M  venture $  0.01M  | paired gap: standard $ +0.44M  max $ +1.95M
+  sigma 0.35         median net: boot $ -0.40M  venture $  0.90M  | paired gap: standard $ +1.09M  max $ +3.35M
+  sigma 0.70         median net: boot $ -0.40M  venture $  3.72M  | paired gap: standard $ +3.83M  max $ +5.51M
+
+founder_patience: When founders give up drives the bootstrapped failure rate — sweep it.
+  quit after 2y      median net: boot $ -0.05M  venture $  0.17M  | paired gap: standard $ +0.25M  max $ +2.04M
+  quit after 4y      median net: boot $ -0.40M  venture $  0.17M  | paired gap: standard $ +0.61M  max $ +2.32M
+  quit after 6y      median net: boot $ -0.58M  venture $  0.17M  | paired gap: standard $ +0.76M  max $ +2.40M
+
+wrote results/sweeps.json

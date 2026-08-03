@@ -1,0 +1,29 @@
+searching 300 trials at n=2500 over 2 arms
+  random   0  score 12.2205
+  random   6  score 5.2070
+  random   7  score 4.5930
+  random  15  score 3.5684
+  random  21  score 3.2464
+  random  43  score 2.8211
+  random 132  score 2.6339
+  random 194  score 2.1286
+  random 261  score 1.9666
+  refine   2  score 1.4791  growth_scale=812  organic_scale=2.58  effort_scale=6.41  market_sigma=1.7  exec_sigma=0.25  funded_spend_rate=0.249  offer_prob=0.1  gate_noise_sigma=0.365  market_median=5.43e+08
+  refine  23  score 1.3100  growth_scale=921  organic_scale=4.06  effort_scale=4.6  market_sigma=1.54  exec_sigma=0.303  funded_spend_rate=0.2  offer_prob=0.108  gate_noise_sigma=0.242  market_median=7e+08
+  refine  24  score 1.2678  growth_scale=1.01e+03  organic_scale=3.8  effort_scale=4.27  market_sigma=1.48  exec_sigma=0.273  funded_spend_rate=0.2  offer_prob=0.108  gate_noise_sigma=0.21  market_median=6.3e+08
+  refine  31  score 1.1513  growth_scale=1.4e+03  organic_scale=4.33  effort_scale=4.76  market_sigma=1.69  exec_sigma=0.25  funded_spend_rate=0.2  offer_prob=0.112  gate_noise_sigma=0.203  market_median=7e+08
+  refine  41  score 1.0499  growth_scale=1.4e+03  organic_scale=4.04  effort_scale=4  market_sigma=1.2  exec_sigma=0.288  funded_spend_rate=0.202  offer_prob=0.114  gate_noise_sigma=0.206  market_median=7e+08
+  refine  94  score 1.0138  growth_scale=1.4e+03  organic_scale=3.58  effort_scale=4  market_sigma=1.4  exec_sigma=0.275  funded_spend_rate=0.2  offer_prob=0.115  gate_noise_sigma=0.206  market_median=6.86e+08
+  refine 108  score 0.9786  growth_scale=1.4e+03  organic_scale=3.36  effort_scale=4  market_sigma=1.2  exec_sigma=0.253  funded_spend_rate=0.204  offer_prob=0.125  gate_noise_sigma=0.206  market_median=6.63e+08
+  refine 139  score 0.9137  growth_scale=1.4e+03  organic_scale=3.3  effort_scale=4  market_sigma=1.2  exec_sigma=0.25  funded_spend_rate=0.2  offer_prob=0.103  gate_noise_sigma=0.206  market_median=6.43e+08
+
+best search score 0.9137; at n=10000: 1.2501
+
+  OK   p_exit_gt_1b             want   0.010  got   0.004   (VC-backed reaching $1B+)
+  OK   p_exit_gt_100m           want   0.100  got   0.134   (VC-backed reaching $100M+)
+  OK   seed_to_a_graduation     want   0.220  got   0.288   (Seed -> Series A)
+  MISS p_below_1x_capital       want   0.700  got   0.497   (Returning < 1x capital)
+  OK   median_exit_year_big     want   8.000  got   6.667   (Time to a real exit)
+  OK   p_survive_5y             want   0.600  got   0.716   (Bootstrapped 5-year survival)
+
+frozen -> configs/frozen.yaml   config hash 9fb906b9abdb110e
