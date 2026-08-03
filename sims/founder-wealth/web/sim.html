@@ -20,7 +20,7 @@
     /* categorical slots 1-5, assigned to arms in web/sim.html by SLOT */
     --arm-1: #2a78d6;  /* bootstrap */
     --arm-2: #eb6834;  /* standard venture */
-    --arm-3: #1baf7a;  /* maximum venture */
+    --arm-3: #1baf7a;  /* freedom startup */
     --arm-4: #eda100;  /* maximum venture */
     --arm-5: #e87ba4;  /* friends & family */
     --arm-6: #008300;  /* seed and stop */
@@ -129,6 +129,7 @@
   }
   button.secondary { background: transparent; color: var(--ink); border-color: var(--rule-strong); }
   button:hover { opacity: .88; }
+  button:disabled { opacity: .45; cursor: progress; }
   .status { font-size: 12.5px; color: var(--ink-3); }
   .status[data-busy="1"] { color: var(--arm-2); }
 
@@ -204,7 +205,7 @@
     <div class="eyebrow">Founder Wealth Simulator · live</div>
     <h1>The same founder, forked at the capital decision</h1>
     <p class="standfirst">
-      Every founder below is run down all five financing paths with the same idea
+      Every founder below is run down all six financing paths with the same idea
       and the same luck. Nothing is replayed — the model runs in your browser
       when you press Run.
     </p>
@@ -306,7 +307,7 @@
     </div>
 
     <div class="actions">
-      <button id="run">Run</button>
+      <button id="run">Run again</button>
       <button id="reset" class="secondary">Reset to frozen</button>
       <label style="font-size:13px;color:var(--ink-2);display:inline-flex;align-items:center;gap:6px">
         <input type="checkbox" id="auto" checked> re-run on change
@@ -853,8 +854,13 @@
     status.dataset.busy = "1";
     status.textContent = "simulating…";
 
-    // Yield a frame so the busy state paints before the loop blocks.
-    requestAnimationFrame(() => {
+    const button = $("run");
+    button.disabled = true;
+
+    // setTimeout rather than requestAnimationFrame: rAF is throttled, and in an
+    // offscreen or backgrounded iframe may never fire at all, which would make
+    // the button genuinely do nothing. A timeout always runs.
+    setTimeout(() => {
       const { cfg, world } = currentConfig();
       const nFounders = parseInt($("founders").value, 10);
       const seed = parseInt($("seed").value, 10);
@@ -887,10 +893,12 @@
         `config ${world.hash}`,
       ].map((s) => `<span>${s}</span>`).join("");
 
+      button.disabled = false;
       status.dataset.busy = "0";
       const lifetimes = nFounders * Object.keys(result.arms).length;
-      status.textContent = `${lifetimes.toLocaleString()} simulated lifetimes in ${ms.toFixed(0)} ms`;
-    });
+      status.textContent =
+        `sample #${seed} · ${lifetimes.toLocaleString()} simulated lifetimes in ${ms.toFixed(0)} ms`;
+    }, 16);
   }
 
   // -- wiring --------------------------------------------------------------
@@ -916,7 +924,14 @@
   }
   for (const t of TOGGLES) $(t.id).addEventListener("change", schedule);
   worldSelect.addEventListener("change", () => { resetControls(); run(); });
-  $("run").addEventListener("click", run);
+  // "Run again" draws a *new* sample. Recomputing the same seed with the same
+  // parameters returns the identical picture — which reads as a broken button.
+  $("run").addEventListener("click", () => {
+    const seed = $("seed");
+    seed.value = String((parseInt(seed.value, 10) % parseInt(seed.max, 10)) + 1);
+    syncOutputs();
+    run();
+  });
   $("reset").addEventListener("click", () => { resetControls(); run(); });
 
   let raf = null;

@@ -45,6 +45,8 @@ def main() -> None:
 
     OUT.write_text(html)
     print(f"wrote {OUT} ({len(html):,} bytes, {n} scripts inlined)")
+    print("  check the BUNDLE, not web/sim.html — they are different files and")
+    print("  only this one is what gets published.")
 
 
 if __name__ == "__main__":
