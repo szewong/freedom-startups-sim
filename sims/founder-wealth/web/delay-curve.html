@@ -116,11 +116,23 @@
     <figure>
       <div class="fig-head">
         <h3>Delay protects ownership, monotonically</h3>
-        <p>Median outcome by raise trigger. Both lines are dollars, on one axis that includes zero — total wealth is negative throughout because it is net of the salary given up.</p>
+        <p id="fig-a-sub">Median outcome by raise trigger, in dollars of present value.</p>
       </div>
       <div class="legend" id="legend-a"></div>
       <div class="chart" id="chart-a"></div>
       <p class="fig-note">
+        <strong>What the two lines are.</strong> The blue line is what the founder's
+        <em>shares</em> returned — distributions along the way plus exit and secondary
+        proceeds. It excludes salary entirely. The grey line is everything:
+        <span class="mono">salary drawn + shares − the salary given up by not taking a job</span>.
+        It is negative throughout because that last term is large: about
+        <span class="mono">$1.4M</span> of present value over twelve years at $300k/yr.
+        <br><br>
+        For the never-raise column the grey line is
+        <span class="mono">+$0.18M salary + $0.61M shares − $1.40M forgone = −$0.46M</span>.
+        For day one it is <span class="mono">+$0.60M + $0.00M − $1.32M = −$0.28M</span> —
+        three times the salary, none of the shares.
+        <br><br>
         The step between <span class="mono">$10k</span> and <span class="mono">$100k</span> is
         where a company stops entering at the pre-seed and starts entering at the seed — the
         single most expensive round on the ladder, skipped.
@@ -336,10 +348,10 @@ function renderAll() {
     title: "Median ownership return and total wealth, by raise trigger",
     fmt: (v) => "$" + (v / 1e6).toFixed(2) + "M",
     series: [
-      { name: "Ownership kept", get: (r) => r.own, color: "var(--own)" },
+      { name: "What the shares paid", get: (r) => r.own, color: "var(--own)" },
       { name: "Total wealth", get: (r) => r.net, color: "var(--flat)" },
     ],
-    tip: (r) => [["Ownership return", money(r.own)], ["Total wealth", money(r.net)],
+    tip: (r) => [["What the shares paid", money(r.own)], ["Total wealth (incl. salary)", money(r.net)],
                  ["Equity paid nothing", pct(r.eq0, 1)], ["Ever raised", pct(r.ever, 1)]],
   });
   panel("chart-b", {
@@ -356,8 +368,8 @@ function renderAll() {
   });
 }
 
-legend("legend-a", [{ n: "Ownership kept", c: "var(--own)" },
-                    { n: "Total wealth", c: "var(--flat)" }]);
+legend("legend-a", [{ n: "What the shares paid", c: "var(--own)" },
+                    { n: "Total wealth — salary + shares − the salary given up", c: "var(--flat)" }]);
 legend("legend-b", [{ n: "Equity paid nothing", c: "var(--wipe)" },
                     { n: "Company failed", c: "var(--died)" },
                     { n: "Reached profitability", c: "var(--prof)" }]);
@@ -378,7 +390,7 @@ $("prov").innerHTML = [
 (function table() {
   const cols = [
     ["Raise trigger", (r) => r.t, false],
-    ["Ownership", (r) => money(r.own), true],
+    ["What the shares paid", (r) => money(r.own), true],
     ["Equity paid nothing", (r) => pct(r.eq0, 1), true],
     ["Ever raised", (r) => pct(r.ever, 1), true],
     ["Founder kept", (r) => pct(r.kept, 1), true],
