@@ -541,6 +541,45 @@ on the ladder. Of those who raise:
 The transition between $50k and $100k is the whole effect: that is where the
 company stops buying the cheap seats.
 
+### Correction: that headline was a conditional statistic hiding a spread
+
+The numbers above are the ones I led with, and they were incomplete in the way
+METHOD §1 exists to prevent. "+$1.13M, beats bootstrapping for 73%" is measured
+on founders who raised, on *total wealth*, and reported as a median. Look at the
+distribution and the story changes:
+
+| Percentile of ownership return | Bootstrap | Freedom, $100k bar |
+|---|---|---|
+| p25 | $0.10M | $0.04M |
+| p40 | $0.35M | $0.11M |
+| **p50** | **$0.60M** | **$0.24M** |
+| p60 | $0.84M | $0.78M |
+| p75 | $1.30M | **$2.59M** |
+| p90 | $2.35M | **$6.92M** |
+| p99 | $5.66M | **$24.16M** |
+
+**The two curves cross at about the 62nd percentile.** Below it bootstrapping
+returns more ownership — three times more at the 40th. Above it raising after
+traction returns far more — three times at the 90th, four times at the 99th.
+
+Across all founders, delaying-then-raising leaves **37.7% better off on
+ownership and 23.1% worse off**, the rest unchanged because they never reach the
+bar. Among those who do raise, 38% *lose* ownership, and they lose it hard: the
+preference stack takes them to zero. The median gain is real and it coexists with
+a large minority being wiped.
+
+And the median founder's total-wealth advantage under Freedom is once again
+**wages**: net median improves from −$0.46M to −$0.40M while ownership median
+falls from $0.60M to $0.24M. Only 44.6% of founders are better off on total
+wealth, and only 37.8% on ownership.
+
+So the honest statement is not "delaying makes raising pay". It is:
+
+> **Delaying the raise converts a modest, reliable ownership outcome into a
+> volatile one with a much higher ceiling.** It is a variance decision, not a
+> wealth decision — which is the same thing the sibling simulation found about
+> thresholds, arriving here by a completely different route (§7).
+
 ### Three cautions
 
 **The conditioning is real and must be stated.** "+$1.13M among those who raised"
