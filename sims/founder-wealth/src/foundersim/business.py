@@ -81,12 +81,24 @@ def decay_ceiling(ceiling: np.ndarray, customers: np.ndarray, cfg: BusinessConfi
     return customers + unclaimed * (1.0 - cfg.market_decay)
 
 
-def revenue_multiple(growth: np.ndarray, noise: np.ndarray, cfg: ExitConfig) -> np.ndarray:
-    """What an acquirer pays per dollar of ARR: base plus a premium for growth."""
-    base = cfg.base_revenue_multiple + cfg.growth_premium * np.clip(growth - 1.0, 0.0, None)
-    base = np.minimum(base, cfg.max_revenue_multiple)
+def revenue_multiple(
+    growth: np.ndarray, noise: np.ndarray, cfg: ExitConfig, arr: np.ndarray | None = None
+) -> np.ndarray:
+    """What an acquirer pays per dollar of ARR.
+
+    Three terms: a base, a premium for growth, and a premium for size. The last
+    one exists because the buyer pool does — a business too small for a private
+    equity platform is sold to whoever will write a personal cheque, and it
+    clears at a fraction of the multiple an identical, larger business would.
+    Setting `scale_premium` to zero recovers a size-blind market.
+    """
+    mult = cfg.base_revenue_multiple + cfg.growth_premium * np.clip(growth - 1.0, 0.0, None)
+    if cfg.scale_premium and arr is not None:
+        decades = np.log10(np.maximum(arr, 1.0) / cfg.scale_pivot_arr)
+        mult = mult + cfg.scale_premium * decades
+    mult = np.clip(mult, cfg.min_revenue_multiple, cfg.max_revenue_multiple)
     shock = np.exp(cfg.exit_noise_sigma * noise - 0.5 * cfg.exit_noise_sigma**2)
-    return base * cfg.regime * shock
+    return mult * cfg.regime * shock
 
 
 def enterprise_value(
@@ -102,6 +114,6 @@ def enterprise_value(
     is worth a multiple of earnings. Taking the maximum is what stops the model
     from pricing a $5M-profit bootstrapped business at nothing.
     """
-    rev_value = revenue_multiple(growth, noise, cfg) * arr
+    rev_value = revenue_multiple(growth, noise, cfg, arr) * arr
     profit_value = cfg.ebitda_multiple * np.maximum(profit, 0.0)
     return np.maximum(rev_value, profit_value)

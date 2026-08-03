@@ -29,6 +29,29 @@ Results, caveats and retractions: [`FINDINGS.md`](FINDINGS.md).
 | 6 | Null control and sweeps | done |
 | 7 | Write-up and interactive explorer | write-up in FINDINGS.md; explorer not built |
 
+## Two worlds
+
+The model ships with two calibrated configurations, because the answer depends
+on which one you are in.
+
+| | `configs/frozen.yaml` | `configs/smallcap.yaml` |
+|---|---|---|
+| Ladder | pre-seed → Series D | pre-seed → **Series B** |
+| Largest round | $150M | $32M |
+| Typical exit | $4.7M median, $154M at P90 | **$4.0M median, $46M at P90** |
+| Exit multiple | growth-driven only | **scales with company size** |
+| Max venture vs bootstrap | **+$2.27M** | **−$0.03M** |
+
+The second is grounded on published 2025-26 round sizes, graduation rates and
+lower-middle-market SaaS multiples, for companies that top out near $50M of
+revenue. Raising the largest round available wins comfortably in the first world
+and loses in the second. See [`FINDINGS.md`](FINDINGS.md) §8.
+
+```bash
+.venv/bin/python scripts/calibrate.py --world smallcap --out configs/smallcap.yaml
+.venv/bin/python scripts/counterfactual.py --config configs/smallcap.yaml
+```
+
 ## Run it
 
 ```bash

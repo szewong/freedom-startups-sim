@@ -1,0 +1,36 @@
+world=smallcap  320 trials at n=2500 over 2 arms
+  random   0  score 18.1287
+  random   1  score 11.1999
+  random   6  score 10.2845
+  random  16  score 9.9533
+  random  19  score 6.0764
+  random  49  score 5.5371
+  random  52  score 5.0260
+  random 114  score 3.9532
+  random 305  score 3.9450
+  refine   1  score 3.4985  growth_scale=280  organic_scale=4.5  effort_scale=5.68  market_sigma=1.16  exec_sigma=0.271  market_median=1.01e+08  funded_spend_rate=0.237  offer_prob=0.4  gate_noise_sigma=0.533  base_revenue_multiple=4  scale_premium=0.969  max_revenue_multiple=6.85  growth_premium=4
+  refine  10  score 3.3723  growth_scale=250  organic_scale=4.37  effort_scale=9.61  market_sigma=1.19  exec_sigma=0.25  market_median=8.91e+07  funded_spend_rate=0.207  offer_prob=0.298  gate_noise_sigma=0.556  base_revenue_multiple=4  scale_premium=0.919  max_revenue_multiple=6.1  growth_premium=2.71
+  refine  16  score 3.3443  growth_scale=250  organic_scale=4.5  effort_scale=7.42  market_sigma=1.55  exec_sigma=0.25  market_median=1.1e+08  funded_spend_rate=0.2  offer_prob=0.258  gate_noise_sigma=0.527  base_revenue_multiple=3.86  scale_premium=0.679  max_revenue_multiple=6.12  growth_premium=3.23
+  refine  21  score 3.2314  growth_scale=250  organic_scale=4.32  effort_scale=7.37  market_sigma=1.37  exec_sigma=0.25  market_median=8.46e+07  funded_spend_rate=0.2  offer_prob=0.232  gate_noise_sigma=0.485  base_revenue_multiple=3.75  scale_premium=0.669  max_revenue_multiple=6  growth_premium=3.57
+  refine  36  score 3.0655  growth_scale=254  organic_scale=4.5  effort_scale=8.79  market_sigma=1.32  exec_sigma=0.25  market_median=8.01e+07  funded_spend_rate=0.2  offer_prob=0.192  gate_noise_sigma=0.536  base_revenue_multiple=4  scale_premium=0.73  max_revenue_multiple=6.28  growth_premium=3.75
+  refine  39  score 2.9842  growth_scale=256  organic_scale=3.6  effort_scale=10.8  market_sigma=1.2  exec_sigma=0.312  market_median=1.2e+08  funded_spend_rate=0.221  offer_prob=0.139  gate_noise_sigma=0.529  base_revenue_multiple=4  scale_premium=1.43  max_revenue_multiple=6  growth_premium=3.09
+  refine  40  score 2.3012  growth_scale=284  organic_scale=4.5  effort_scale=12.7  market_sigma=1.54  exec_sigma=0.25  market_median=9.18e+07  funded_spend_rate=0.227  offer_prob=0.179  gate_noise_sigma=0.42  base_revenue_multiple=4  scale_premium=2.25  max_revenue_multiple=6  growth_premium=3.3
+  refine  44  score 1.9357  growth_scale=324  organic_scale=4.5  effort_scale=11.1  market_sigma=1.9  exec_sigma=0.25  market_median=8.81e+07  funded_spend_rate=0.2  offer_prob=0.173  gate_noise_sigma=0.342  base_revenue_multiple=3.49  scale_premium=1.66  max_revenue_multiple=6  growth_premium=4
+  refine  45  score 1.8954  growth_scale=393  organic_scale=3.92  effort_scale=11.1  market_sigma=1.94  exec_sigma=0.258  market_median=1.18e+08  funded_spend_rate=0.2  offer_prob=0.156  gate_noise_sigma=0.35  base_revenue_multiple=4  scale_premium=1.71  max_revenue_multiple=6  growth_premium=4
+  refine  61  score 1.6576  growth_scale=403  organic_scale=4.26  effort_scale=18  market_sigma=1.8  exec_sigma=0.259  market_median=1.2e+08  funded_spend_rate=0.221  offer_prob=0.153  gate_noise_sigma=0.342  base_revenue_multiple=4  scale_premium=2.41  max_revenue_multiple=6.05  growth_premium=3.14
+  refine  68  score 1.3276  growth_scale=397  organic_scale=4.5  effort_scale=12.3  market_sigma=2.08  exec_sigma=0.268  market_median=1e+08  funded_spend_rate=0.203  offer_prob=0.147  gate_noise_sigma=0.261  base_revenue_multiple=4  scale_premium=2.33  max_revenue_multiple=6.53  growth_premium=4
+  refine  70  score 1.1332  growth_scale=331  organic_scale=4.5  effort_scale=12.1  market_sigma=1.43  exec_sigma=0.25  market_median=1.1e+08  funded_spend_rate=0.2  offer_prob=0.13  gate_noise_sigma=0.221  base_revenue_multiple=4  scale_premium=2.13  max_revenue_multiple=8.36  growth_premium=4
+  refine  89  score 0.8873  growth_scale=484  organic_scale=4.31  effort_scale=11.7  market_sigma=1.86  exec_sigma=0.296  market_median=1.2e+08  funded_spend_rate=0.23  offer_prob=0.0842  gate_noise_sigma=0.194  base_revenue_multiple=4  scale_premium=2.01  max_revenue_multiple=12  growth_premium=3.67
+  refine  92  score 0.8130  growth_scale=475  organic_scale=4.5  effort_scale=10  market_sigma=1.52  exec_sigma=0.284  market_median=1.2e+08  funded_spend_rate=0.253  offer_prob=0.08  gate_noise_sigma=0.204  base_revenue_multiple=4  scale_premium=2.1  max_revenue_multiple=12  growth_premium=3.55
+
+best search score 0.8130; at n=10000: 0.8419
+
+  OK   median_exit_of_exits     want 10000000.000  got 12216027.105   (Typical exit lands near $10M)
+  OK   p_exit_gt_50m            want   0.120  got   0.098   (Few clear $50M (>80% of exits are below it))
+  MISS p99_final_arr            want 50000000.000  got 28158874.413   (Revenue tops out around $50M)
+  OK   seed_to_a_graduation     want   0.220  got   0.231   (Seed -> Series A)
+  MISS p_below_1x_capital       want   0.700  got   0.514   (Returning < 1x capital)
+  OK   median_exit_year_material want   8.000  got   9.000   (Time to an exit over $10M)
+  OK   p_survive_5y             want   0.600  got   0.622   (Bootstrapped 5-year survival)
+
+frozen -> configs/smallcap.yaml   config hash 55c37ed3a963cad2

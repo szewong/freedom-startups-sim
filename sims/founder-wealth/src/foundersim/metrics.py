@@ -80,6 +80,17 @@ def calibration(arm: ArmResult, horizon: int) -> dict[str, float]:
         "p_died_cohort": float(arm.died[cohort].mean()) if cohort.any() else 0.0,
         "p_exit_gt_1b": share(cohort & (arm.exit_value > 1e9)),
         "p_exit_gt_100m": share(cohort & (arm.exit_value > 100e6)),
+        "p_exit_gt_50m": share(cohort & (arm.exit_value > 50e6)),
+        "p_exit_gt_10m": share(cohort & (arm.exit_value > 10e6)),
+        "median_exit_of_exits": (
+            float(np.median(arm.exit_value[arm.exited & cohort]))
+            if (arm.exited & cohort).any()
+            else 0.0
+        ),
+        "p99_final_arr": float(np.percentile(arm.final_arr, 99)),
+        "median_final_arr_exits": (
+            float(np.median(arm.final_arr[arm.exited])) if arm.exited.any() else 0.0
+        ),
         "p_below_1x_capital": share(cohort & (arm.exit_value < arm.raised)),
         "seed_to_a_graduation": _graduation(arm, 1, 2),
         "preseed_to_seed_graduation": _graduation(arm, 0, 1),
@@ -92,6 +103,13 @@ def calibration(arm: ArmResult, horizon: int) -> dict[str, float]:
         ),
         "median_exit_year": (
             float(np.median(arm.exit_year[arm.exited])) if arm.exited.any() else -1.0
+        ),
+        # "A real exit" has to mean something different in a world where $100M
+        # outcomes barely exist, so both thresholds are reported.
+        "median_exit_year_material": (
+            float(np.median(arm.exit_year[arm.exited & (arm.exit_value > 10e6)]))
+            if (arm.exited & (arm.exit_value > 10e6)).any()
+            else -1.0
         ),
         "median_exit_year_big": (
             float(np.median(arm.exit_year[arm.exit_value > 100e6]))

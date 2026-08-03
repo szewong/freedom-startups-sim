@@ -95,6 +95,9 @@ def run_arm(cfg: RunConfig, lat: Latents, noise: Noise, strat: Strategy) -> ArmR
 
     base_churn = business.churn_rate(lat.fit, b)
     stage_salary = np.array([term.founder_salary for term in cap.stage_terms])
+    # A strategy may name a stage the table does not have: the small-cap ladder
+    # stops at Series B, and "raise at every gate" then means "up to B".
+    top_stage = min(strat.max_stage, len(cap.stage_terms) - 1)
     profit = np.zeros(n)
 
     def growth_of(current: np.ndarray, prior: np.ndarray) -> np.ndarray:
@@ -105,7 +108,7 @@ def run_arm(cfg: RunConfig, lat: Latents, noise: Noise, strat: Strategy) -> ArmR
         """Close at most one round for every eligible company whose gate clears."""
         already = np.zeros(n, dtype=bool)
         for s in range(N_STAGES):
-            if s > strat.max_stage:
+            if s > top_stage:
                 break
             take = eligible & ~already & (stage == s - 1)
             if not take.any():
@@ -155,11 +158,11 @@ def run_arm(cfg: RunConfig, lat: Latents, noise: Noise, strat: Strategy) -> ArmR
         active_log[:, t] = running
 
         growth = growth_of(arr, arr_prior)
-        more_rounds_ahead = stage < strat.max_stage
+        more_rounds_ahead = stage < top_stage
 
         # 1. Rounds -----------------------------------------------------------
         attempt_rounds(running & more_rounds_ahead, t, growth)
-        more_rounds_ahead = stage < strat.max_stage  # a round closed may exhaust it
+        more_rounds_ahead = stage < top_stage  # a round closed may exhaust it
 
         # 2. Spend ------------------------------------------------------------
         expected_revenue = np.maximum(arr, customers * b.price)
@@ -186,7 +189,7 @@ def run_arm(cfg: RunConfig, lat: Latents, noise: Noise, strat: Strategy) -> ArmR
         )
         salary_target = np.where(
             stage >= 0,
-            np.maximum(market_salary, stage_salary[np.clip(stage, 0, N_STAGES - 1)]),
+            np.maximum(market_salary, stage_salary[np.clip(stage, 0, len(cap.stage_terms) - 1)]),
             market_salary,
         )
         # The founder is paid what the company can pay, which is often nothing.
@@ -235,7 +238,7 @@ def run_arm(cfg: RunConfig, lat: Latents, noise: Noise, strat: Strategy) -> ArmR
         # 7. Out of cash: rescue round, acquihire, or death --------------------
         broke = running & (cash < 0)
         if broke.any():
-            attempt_rounds(broke & (stage < strat.max_stage), t, growth_of(arr, arr_prior))
+            attempt_rounds(broke & (stage < top_stage), t, growth_of(arr, arr_prior))
             still_broke = broke & (cash < 0)
             if still_broke.any():
                 p_acquihire = np.minimum(

@@ -149,6 +149,26 @@ DEFAULT_STAGE_TERMS: tuple[StageTerms, ...] = (
 )
 
 
+# The same table for the small-cap world: companies that top out around $50M of
+# revenue, where a $100M round does not exist. Grounded in 2025-26 medians
+# rather than on the headline venture ladder above.
+#
+#   pre-seed  $1.0M on $5.0M pre    16.7% + 2% pool = 18.7%   (real: 15-20%)
+#   seed      $3.2M on $13.0M pre   19.8% + 2%      = 21.8%   (Carta: ~19.5% + pool)
+#   series A  $11M  on $40M pre     21.6% + 2%      = 23.6%   (real: 18-22% + pool)
+#   series B  $32M  on $120M pre    21.1% + 2%      = 23.1%   (real: 20-25%)
+#
+# Series C and D are removed entirely: they are not reachable for these
+# companies, and leaving them in was the single biggest source of fantasy in the
+# headline configuration.
+SMALLCAP_STAGE_TERMS: tuple[StageTerms, ...] = (
+    StageTerms(0.0, 0.00, 0.200, 5e6, 0.0, 0.020, 80_000.0),
+    StageTerms(150e3, 1.30, 0.246, 13e6, 35.0, 0.020, 130_000.0),
+    StageTerms(1.5e6, 2.00, 0.275, 40e6, 20.0, 0.020, 175_000.0),
+    StageTerms(6e6, 1.80, 0.267, 120e6, 16.0, 0.020, 210_000.0),
+)
+
+
 @dataclass(frozen=True)
 class CapitalConfig:
     """Rounds, dilution, preferences (PRD §3.3)."""
@@ -191,6 +211,18 @@ class ExitConfig:
     # Revenue multiple: base for a flat company, rising with growth.
     base_revenue_multiple: float = 3.5  # [fit]
     growth_premium: float = 4.0  # [fit] multiple added per 1.0 of YoY growth above flat
+
+    # The multiple also scales with the company, because the buyer pool does. At
+    # $1-3M ARR the only bidders are individuals and search funds, and deals
+    # clear at 2-4x ARR; by $5-15M, private equity platforms compete and 5-8x is
+    # reachable on the same growth rate. Added per base-10 decade of ARR above
+    # `scale_pivot_arr`. Zero recovers a size-blind market, which is what the
+    # first version of this model assumed and is wrong for small companies.
+    #   source: lower-middle-market SaaS multiple surveys, 2025-26
+    scale_premium: float = 0.0  # [fit]
+    scale_pivot_arr: float = 1e6
+
+    min_revenue_multiple: float = 1.0  # [fit]
     max_revenue_multiple: float = 16.0  # [fit]
     ebitda_multiple: float = 6.0  # [fit] the SMB alternative valuation
     exit_noise_sigma: float = 0.45  # [fit]
