@@ -1,0 +1,1085 @@
+<title>VC-funded vs bootstrapped — founder outcomes</title>
+
+<style>
+  :root {
+    color-scheme: light;
+    --paper:        #f3f4f3;
+    --surface:      #fcfcfb;
+    --ink:          #14171a;
+    --ink-2:        #52514e;
+    --ink-3:        #86857f;
+    --rule:         #e0e2e2;
+    --rule-strong:  #c8cccc;
+
+    --boot:  #2a78d6;
+    --std:   #eb6834;
+    --maxv:  #1baf7a;
+
+    --band-0: #e34948;
+    --band-1: #86b6ef;
+    --band-2: #5598e7;
+    --band-3: #2a78d6;
+    --band-4: #184f95;
+
+    --shadow: 0 1px 2px rgba(20, 23, 26, .05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --paper:        #121212;
+      --surface:      #1a1a19;
+      --ink:          #f3f3f0;
+      --ink-2:        #c3c2b7;
+      --ink-3:        #8b8a82;
+      --rule:         #2c2c2a;
+      --rule-strong:  #3d3d3a;
+
+      --boot:  #3987e5;
+      --std:   #d95926;
+      --maxv:  #199e70;
+
+      --band-0: #e66767;
+      --band-1: #cde2fb;
+      --band-2: #86b6ef;
+      --band-3: #3987e5;
+      --band-4: #184f95;
+
+      --shadow: none;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper:        #121212;
+    --surface:      #1a1a19;
+    --ink:          #f3f3f0;
+    --ink-2:        #c3c2b7;
+    --ink-3:        #8b8a82;
+    --rule:         #2c2c2a;
+    --rule-strong:  #3d3d3a;
+
+    --boot:  #3987e5;
+    --std:   #d95926;
+    --maxv:  #199e70;
+
+    --band-0: #e66767;
+    --band-1: #cde2fb;
+    --band-2: #86b6ef;
+    --band-3: #3987e5;
+    --band-4: #184f95;
+
+    --shadow: none;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: clamp(28px, 5vw, 64px) clamp(18px, 4vw, 40px) 80px;
+  }
+
+  .prose { max-width: 68ch; }
+
+  /* -- type roles ------------------------------------------------------ */
+  .serif {
+    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    font-weight: 400;
+  }
+  .mono, .num {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+    font-size: 11px;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  h1 {
+    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    font-weight: 400;
+    font-size: clamp(30px, 5vw, 46px);
+    line-height: 1.12;
+    letter-spacing: -.015em;
+    margin: 14px 0 0;
+    text-wrap: balance;
+  }
+  h2 {
+    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    font-weight: 400;
+    font-size: clamp(22px, 3.2vw, 29px);
+    line-height: 1.2;
+    letter-spacing: -.01em;
+    margin: 0 0 10px;
+    text-wrap: balance;
+  }
+  h3 {
+    font-size: 15px;
+    font-weight: 650;
+    letter-spacing: -.005em;
+    margin: 0 0 6px;
+  }
+  p { margin: 0 0 16px; }
+  strong { font-weight: 650; }
+
+  .standfirst {
+    font-size: clamp(17px, 2.2vw, 19px);
+    line-height: 1.5;
+    color: var(--ink-2);
+    margin: 18px 0 0;
+    max-width: 60ch;
+  }
+
+  .provenance {
+    margin-top: 26px;
+    padding-top: 14px;
+    border-top: 1px solid var(--rule);
+    font-size: 12px;
+    color: var(--ink-3);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 22px;
+  }
+
+  /* -- sections -------------------------------------------------------- */
+  section { margin-top: 56px; }
+  section > .prose > p:last-child { margin-bottom: 0; }
+  .rule { height: 1px; background: var(--rule); margin: 56px 0 0; }
+
+  .section-head { margin-bottom: 22px; }
+  .section-head .eyebrow { display: block; margin-bottom: 10px; }
+
+  /* -- KPI row --------------------------------------------------------- */
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 40px;
+  }
+  .kpi {
+    background: var(--surface);
+    padding: 18px 20px 20px;
+  }
+  .kpi .label {
+    font-size: 12px;
+    color: var(--ink-2);
+    line-height: 1.35;
+    min-height: 2.7em;
+  }
+  .kpi .value {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: clamp(26px, 3.6vw, 33px);
+    letter-spacing: -.02em;
+    line-height: 1.1;
+    margin-top: 12px;
+  }
+  .kpi .foot {
+    font-size: 11.5px;
+    color: var(--ink-3);
+    margin-top: 6px;
+  }
+  .swatch {
+    display: inline-block;
+    width: 9px; height: 9px;
+    border-radius: 2px;
+    margin-right: 6px;
+    vertical-align: baseline;
+    position: relative;
+    top: 0;
+  }
+
+  /* -- figures --------------------------------------------------------- */
+  figure {
+    margin: 24px 0 0;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 20px 20px 16px;
+    box-shadow: var(--shadow);
+  }
+  .fig-head { margin-bottom: 16px; }
+  .fig-note {
+    font-size: 12.5px;
+    color: var(--ink-3);
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--rule);
+    line-height: 1.5;
+  }
+  .chart { width: 100%; overflow-x: auto; }
+  .chart svg { display: block; }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    font-size: 12.5px;
+    color: var(--ink-2);
+    margin-bottom: 14px;
+  }
+  .legend span.item { display: inline-flex; align-items: center; }
+
+  /* -- table ----------------------------------------------------------- */
+  .table-wrap { overflow-x: auto; margin-top: 22px; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 13.5px;
+    min-width: 560px;
+  }
+  caption {
+    text-align: left;
+    font-size: 12.5px;
+    color: var(--ink-3);
+    padding-bottom: 10px;
+  }
+  th, td {
+    text-align: right;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--rule);
+    white-space: nowrap;
+  }
+  th:first-child, td:first-child { text-align: left; }
+  thead th {
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--ink-2);
+    border-bottom: 1px solid var(--rule-strong);
+  }
+  tbody td.num, tbody th.num {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  tbody tr:hover td { background: color-mix(in srgb, var(--ink) 3%, transparent); }
+  tr.group-row td, tr.group-row th {
+    font-size: 11px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    border-bottom: 1px solid var(--rule-strong);
+    padding-top: 20px;
+  }
+
+  /* -- callout --------------------------------------------------------- */
+  .callout {
+    border-left: 2px solid var(--ink-3);
+    padding: 2px 0 2px 18px;
+    margin: 24px 0;
+    max-width: 62ch;
+  }
+  .callout p { margin: 0; color: var(--ink-2); }
+  .callout p + p { margin-top: 12px; }
+
+  /* -- tooltip --------------------------------------------------------- */
+  #tip {
+    position: fixed;
+    z-index: 50;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .09s ease;
+    background: var(--surface);
+    border: 1px solid var(--rule-strong);
+    border-radius: 3px;
+    padding: 9px 11px;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--ink);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .14);
+    max-width: 260px;
+  }
+  #tip .t-title { font-weight: 650; margin-bottom: 3px; }
+  #tip .t-row { color: var(--ink-2); display: flex; justify-content: space-between; gap: 14px; }
+  #tip .t-row b {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  footer {
+    margin-top: 64px;
+    padding-top: 22px;
+    border-top: 1px solid var(--rule);
+    font-size: 13px;
+    color: var(--ink-3);
+    max-width: 68ch;
+  }
+  footer p { margin-bottom: 12px; }
+
+  a { color: inherit; text-underline-offset: 2px; }
+  :focus-visible { outline: 2px solid var(--boot); outline-offset: 2px; border-radius: 2px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+
+<div class="page">
+
+  <header>
+    <div class="eyebrow">Founder Wealth Simulator · head to head</div>
+    <h1>Venture capital against bootstrapping, for the same founder</h1>
+    <p class="standfirst">
+      Five thousand founders, each run down both paths with the same idea and the
+      same luck, over twelve years. The venture founder ends up with more money.
+      Almost none of it comes from owning the company.
+    </p>
+    <div class="provenance mono">
+      <span>5,000 founders × 8 replicates</span>
+      <span>12-year horizon</span>
+      <span>present value, after tax</span>
+      <span>net of $300k/yr forgone salary</span>
+      <span>config 9fb906b9abdb110e</span>
+    </div>
+  </header>
+
+  <div class="kpis" id="kpis"></div>
+
+  <section>
+    <div class="section-head prose">
+      <span class="eyebrow">The result</span>
+      <h2>More money, worthless shares</h2>
+    </div>
+    <div class="prose">
+      <p>
+        Because both paths are run for the <em>same</em> founder — same market, same
+        product/market fit, same skill, same annual luck — every number here is a
+        paired difference. Nothing is comparing one population against another.
+      </p>
+      <p>
+        The founder's ledger splits cleanly in two, and the halves answer different
+        questions. <strong>The wage</strong> is what you were paid for twelve years of
+        work, minus the salaried job you turned down. <strong>Ownership</strong> is what
+        the shares actually returned: distributions along the way, plus whatever
+        survived the liquidation preference stack at the end.
+      </p>
+    </div>
+
+    <figure>
+      <div class="fig-head prose">
+        <h3>Where the venture advantage comes from</h3>
+        <p style="font-size:13.5px;color:var(--ink-2);margin:0">
+          Median paired difference against bootstrapping the identical business.
+        </p>
+      </div>
+      <div class="legend" id="legend-gaps"></div>
+      <div class="chart" id="chart-gaps"></div>
+      <p class="fig-note">
+        Bars are medians of the per-founder difference across 40,000 paired runs.
+        Standard venture's ownership gap is −$0.02M with a 95% replicate interval of
+        [−0.03, −0.02] — it is not merely small, it is slightly negative.
+      </p>
+    </figure>
+
+    <div class="callout prose">
+      <p>
+        Raising at every gate you clear leaves the median founder <strong>$0.59M</strong>
+        ahead. Split it apart and <strong>every dollar is wages</strong>: the ownership
+        gap is −$0.02M, and fewer than half of those founders (47.8%) did better on
+        ownership than they would have alone.
+      </p>
+      <p>
+        Only the founders who take the largest round available every time get a real
+        ownership gain — <strong>+$1.39M</strong> — and even for them, 40% of the total
+        advantage is still the paycheck.
+      </p>
+    </div>
+  </section>
+
+  <div class="rule"></div>
+
+  <section>
+    <div class="section-head prose">
+      <span class="eyebrow">Distribution</span>
+      <h2>Twelve years later, where does everyone land?</h2>
+    </div>
+    <div class="prose">
+      <p>
+        Averages are useless here — venture outcomes are power-law and bootstrapped
+        outcomes are not. This is the whole cohort, sorted into bands. Everything left
+        of the centre line did worse than taking a salaried job for the same twelve
+        years.
+      </p>
+    </div>
+
+    <figure>
+      <div class="fig-head prose">
+        <h3>Share of founders by final wealth</h3>
+        <p style="font-size:13.5px;color:var(--ink-2);margin:0">
+          Present value, net of the salary they gave up. Centre line is breakeven.
+        </p>
+      </div>
+      <div class="legend" id="legend-bands"></div>
+      <div class="chart" id="chart-bands"></div>
+      <p class="fig-note">
+        Bootstrapping is the only path where nobody's shares are cancelled by a
+        preference stack — but its ceiling is low: 0.01% clear $10M, and none clear
+        $100M. Venture inverts both: fewer founders below breakeven, and a real tail.
+      </p>
+    </figure>
+  </section>
+
+  <div class="rule"></div>
+
+  <section>
+    <div class="section-head prose">
+      <span class="eyebrow">The mechanism</span>
+      <h2>Venture equity is a step function. Bootstrapped equity is a ramp.</h2>
+    </div>
+    <div class="prose">
+      <p>
+        Sort founders by how good they actually were — product/market fit multiplied by
+        execution skill, both drawn at founding and never observed by anyone — and the
+        two paths pay ownership in completely different shapes.
+      </p>
+      <p>
+        A bootstrapper's shares are worth something almost immediately and rise
+        steadily, because there is nobody standing in front of them at the exit. The
+        venture founder's shares are worth <em>exactly zero</em> until roughly the 55th
+        percentile of quality, then rise very fast.
+      </p>
+    </div>
+
+    <figure>
+      <div class="fig-head prose">
+        <h3>Median ownership return by founder quality</h3>
+        <p style="font-size:13.5px;color:var(--ink-2);margin:0">
+          Distributions, secondary sales and exit proceeds. Salary excluded entirely.
+        </p>
+      </div>
+      <div class="legend" id="legend-cross"></div>
+      <div class="chart" id="chart-cross"></div>
+      <p class="fig-note">
+        51.6% of standard-venture founders and 60.2% of maximum-venture founders receive
+        nothing at all for their equity. For bootstrappers that figure is 0%.
+      </p>
+    </figure>
+  </section>
+
+  <div class="rule"></div>
+
+  <section>
+    <div class="section-head prose">
+      <span class="eyebrow">The ledger</span>
+      <h2>Follow the money for the median founder</h2>
+    </div>
+    <div class="prose">
+      <p>
+        Three sources make up everything a founder banks. The venture founder is paid
+        3.2× more salary. Their median <em>exit</em> — the thing the whole argument is
+        supposedly about — pays them a third of what the bootstrapper's does.
+      </p>
+    </div>
+
+    <figure>
+      <div class="fig-head prose">
+        <h3>Median present value by source</h3>
+        <p style="font-size:13.5px;color:var(--ink-2);margin:0">
+          After tax, discounted at 8%. Before deducting the salary they gave up.
+        </p>
+      </div>
+      <div class="legend" id="legend-src"></div>
+      <div class="chart" id="chart-src"></div>
+      <p class="fig-note">
+        Distributions are $0 for both venture arms by construction: a company still
+        raising rounds does not pay its profits out. The bootstrapper's $42k is thin
+        too — a known weakness of the model, and one that understates the side that
+        already wins on ownership.
+      </p>
+    </figure>
+  </section>
+
+  <div class="rule"></div>
+
+  <section>
+    <div class="section-head prose">
+      <span class="eyebrow">Everything else</span>
+      <h2>The full comparison</h2>
+    </div>
+    <div class="table-wrap">
+      <table id="table">
+        <caption>
+          Every figure is the mean across 8 replicates of 5,000 paired founders.
+          Wealth is present value, after tax, net of forgone salary unless noted.
+        </caption>
+      </table>
+    </div>
+  </section>
+
+  <footer class="prose">
+    <p>
+      <strong>What this is.</strong> A simulation, not data. Its value is the
+      counterfactual — the same founder down both paths — which no observational study
+      can produce, because the founders who raise are not the founders who don't.
+    </p>
+    <p>
+      <strong>What to distrust.</strong> The model produces too few companies that
+      return less than the capital they raised (49.7% against a real ~70%), which
+      flatters the venture arm. Two parameters nobody has measured — how noisy investor
+      funding decisions are, and how much being understaffed hurts a lean company —
+      move the venture advantage more than the headline does. And an earlier run was
+      inspected before a defect was found in it, so the parameters were re-fitted after
+      a result had been seen.
+    </p>
+    <p>
+      Full method, sweeps and retractions live in <span class="mono">FINDINGS.md</span>
+      alongside the code that produced this page.
+    </p>
+  </footer>
+</div>
+
+<div id="tip" role="status" aria-live="polite"></div>
+
+<script>
+const DATA = {"meta":{"n":5000,"reps":8,"horizon":12,"opp":300000.0,"hash":"9fb906b9abdb110e"},"bands":["worse than a job","$0 - $1M","$1M - $10M","$10M - $100M","over $100M"],"arms":{"bootstrap":{"bands":[0.73523,0.173,0.0917,8e-05,0.0],"sources":{"salary":194700.9,"distributions":42333.4,"exit_and_secondary":662780.4},"net":{"10":-723073.7,"25":-575715.0,"50":-398101.3,"75":46036.8,"90":911279.8,"99":3725589.9},"own":{"10":82770.3,"25":298583.5,"50":705480.7,"75":1222331.4,"90":2027527.6,"99":4726408.7},"labour_med":-1166018.0,"stats":{"p_died":0.4443,"p_equity_zero":0.0,"p_worse_than_job":0.73523,"median_years_active":11.0,"median_exit_year":10.0,"median_founder_pct":1.0,"mean_raised":0.0,"median_company_value":1910359.87058,"p90_company_value":5570951.13988,"median_final_arr":742896.36408,"years_to_million":12.0},"gapNet":{"med":0.0,"lo":0.0,"hi":0.0,"better":0.0},"gapOwn":{"med":0.0,"lo":0.0,"hi":0.0,"better":0.0},"gapLab":{"med":0.0,"lo":0.0,"hi":0.0,"better":0.0}},"standard_venture":{"bands":[0.48657,0.08995,0.30585,0.10095,0.01668],"sources":{"salary":631046.4,"distributions":0.0,"exit_and_secondary":232211.4},"net":{"10":-771150.1,"25":-589055.3,"50":83681.6,"75":3721581.0,"90":12368717.0,"99":129631585.2},"own":{"10":0.0,"25":0.0,"50":540260.7,"75":4018028.8,"90":12416550.3,"99":129809655.0},"labour_med":-428486.3,"stats":{"p_died":0.38885,"p_equity_zero":0.516,"p_worse_than_job":0.48657,"median_years_active":8.0,"median_exit_year":7.0,"median_founder_pct":0.67773,"mean_raised":37510424.40226,"median_company_value":4661342.65617,"p90_company_value":154403089.84375,"median_final_arr":2175555.58204,"years_to_million":8.0},"gapNet":{"med":584869.3,"lo":554346.8,"hi":615391.8,"better":0.663},"gapOwn":{"med":-22052.9,"lo":-25314.0,"hi":-18791.8,"better":0.478},"gapLab":{"med":737697.7,"lo":732905.5,"hi":742489.9,"better":0.8323}},"max_venture":{"bands":[0.37045,0.06143,0.33103,0.16718,0.06993],"sources":{"salary":703724.7,"distributions":0.0,"exit_and_secondary":929009.6},"net":{"10":-695351.9,"25":-415629.3,"50":2180993.8,"75":9313358.0,"90":70135557.2,"99":274369457.0},"own":{"10":0.0,"25":0.0,"50":2412897.5,"75":9407577.1,"90":70279389.8,"99":274502642.9},"labour_med":-208512.0,"stats":{"p_died":0.26797,"p_equity_zero":0.60235,"p_worse_than_job":0.37045,"median_years_active":8.0,"median_exit_year":7.0,"median_founder_pct":0.42402,"mean_raised":202644849.51392,"median_company_value":19703213.87471,"p90_company_value":570893703.34772,"median_final_arr":7862830.03958,"years_to_million":6.0},"gapNet":{"med":2267049.2,"lo":2188911.0,"hi":2345187.4,"better":0.7608},"gapOwn":{"med":1387544.6,"lo":1303509.7,"hi":1471579.4,"better":0.5971},"gapLab":{"med":906005.9,"lo":898541.9,"hi":913469.9,"better":0.8751}}},"crossOwn":[{"p":5,"boot":27548.5,"std":0.0,"max":0.0},{"p":10,"boot":69723.2,"std":0.0,"max":0.0},{"p":15,"boot":109370.1,"std":0.0,"max":0.0},{"p":20,"boot":156972.2,"std":0.0,"max":0.0},{"p":25,"boot":259777.0,"std":0.0,"max":0.0},{"p":30,"boot":446085.2,"std":0.0,"max":0.0},{"p":35,"boot":631437.7,"std":0.0,"max":428870.3},{"p":40,"boot":701023.8,"std":0.0,"max":1795477.2},{"p":45,"boot":712703.5,"std":0.0,"max":2331225.5},{"p":50,"boot":689169.5,"std":0.0,"max":3206559.8},{"p":55,"boot":698596.1,"std":185938.9,"max":3902721.6},{"p":60,"boot":732224.8,"std":805544.6,"max":4606085.8},{"p":65,"boot":792920.3,"std":1234567.3,"max":4876744.5},{"p":70,"boot":883217.4,"std":1949986.5,"max":5835156.2},{"p":75,"boot":1018950.5,"std":2564842.0,"max":6121405.6},{"p":80,"boot":1176598.2,"std":3213418.7,"max":6420503.6},{"p":85,"boot":1349198.4,"std":3827648.0,"max":6907227.8},{"p":90,"boot":1578201.3,"std":4769403.2,"max":8292909.1},{"p":95,"boot":1914806.7,"std":6078821.6,"max":9567728.2},{"p":100,"boot":2666883.5,"std":9600987.3,"max":12300838.9}],"crossNet":[{"p":5,"boot":-611650.5,"std":-870207.7,"max":-879247.1},{"p":10,"boot":-559172.7,"std":-810149.6,"max":-802334.1},{"p":15,"boot":-510981.7,"std":-683541.7,"max":-600734.9},{"p":20,"boot":-456998.1,"std":-600734.9,"max":-438463.5},{"p":25,"boot":-384738.6,"std":-540843.7,"max":-139930.2},{"p":30,"boot":-383772.5,"std":-488967.8,"max":-33603.9},{"p":35,"boot":-446231.5,"std":-416129.1,"max":72809.5},{"p":40,"boot":-476918.4,"std":-289246.0,"max":1544338.2},{"p":45,"boot":-492264.6,"std":-165550.2,"max":2121458.6},{"p":50,"boot":-546761.0,"std":-33603.9,"max":3013664.2},{"p":55,"boot":-553548.9,"std":-3278.0,"max":3745837.8},{"p":60,"boot":-519666.2,"std":373341.1,"max":4550668.4},{"p":65,"boot":-456602.4,"std":821991.8,"max":4788448.8},{"p":70,"boot":-352373.7,"std":1541691.5,"max":5698049.5},{"p":75,"boot":-194275.3,"std":2183934.8,"max":6027618.6},{"p":80,"boot":-23271.5,"std":2895212.3,"max":6318253.0},{"p":85,"boot":194536.6,"std":3482208.3,"max":6875783.6},{"p":90,"boot":458406.2,"std":4513899.4,"max":8162302.9},{"p":95,"boot":842456.0,"std":5827056.5,"max":9467505.0},{"p":100,"boot":1688322.4,"std":9446217.5,"max":12234995.3}]};
+
+const ARMS = [
+  { key: "bootstrap",        name: "Bootstrap",        color: "var(--boot)", short: "Bootstrap" },
+  { key: "standard_venture", name: "Standard venture", color: "var(--std)",  short: "Standard VC" },
+  { key: "max_venture",      name: "Maximum venture",  color: "var(--maxv)", short: "Maximum VC" },
+];
+
+const NS = "http://www.w3.org/2000/svg";
+const el = (tag, attrs = {}) => {
+  const n = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+  return n;
+};
+
+const money = (v, dp) => {
+  const m = v / 1e6;
+  const d = dp !== undefined ? dp : (Math.abs(m) >= 10 ? 1 : 2);
+  const s = Math.abs(m).toFixed(d);
+  return (v < 0 ? "−$" : "$") + s + "M";
+};
+const moneyK = (v) => {
+  if (Math.abs(v) >= 1e6) return money(v);
+  return (v < 0 ? "−$" : "$") + Math.round(Math.abs(v) / 1e3) + "k";
+};
+const pct = (v, dp = 1) => (v * 100).toFixed(dp) + "%";
+
+/* ---- tooltip ---------------------------------------------------------- */
+const tip = document.getElementById("tip");
+function showTip(evt, title, rows) {
+  tip.innerHTML =
+    '<div class="t-title">' + title + "</div>" +
+    rows.map((r) => '<div class="t-row"><span>' + r[0] + "</span><b>" + r[1] + "</b></div>").join("");
+  tip.style.opacity = "1";
+  moveTip(evt);
+}
+function moveTip(evt) {
+  const pad = 14;
+  const r = tip.getBoundingClientRect();
+  let x = evt.clientX + pad;
+  let y = evt.clientY + pad;
+  if (x + r.width > window.innerWidth - 8) x = evt.clientX - r.width - pad;
+  if (y + r.height > window.innerHeight - 8) y = evt.clientY - r.height - pad;
+  tip.style.left = Math.max(8, x) + "px";
+  tip.style.top = Math.max(8, y) + "px";
+}
+const hideTip = () => { tip.style.opacity = "0"; };
+
+function hoverable(node, title, rows) {
+  node.addEventListener("mouseenter", (e) => showTip(e, title, rows));
+  node.addEventListener("mousemove", moveTip);
+  node.addEventListener("mouseleave", hideTip);
+}
+
+/* ---- legends ---------------------------------------------------------- */
+function legend(id, items) {
+  const box = document.getElementById(id);
+  box.innerHTML = items
+    .map((i) => '<span class="item"><span class="swatch" style="background:' + i.color + '"></span>' + i.name + "</span>")
+    .join("");
+}
+
+/* ---- KPI row ---------------------------------------------------------- */
+(function kpis() {
+  const sv = DATA.arms.standard_venture;
+  const bs = DATA.arms.bootstrap;
+  const cards = [
+    {
+      label: "Median wealth gap, standard venture vs bootstrapping the same idea",
+      value: "+" + money(sv.gapNet.med),
+      foot: "66.3% of founders ahead",
+      color: "var(--std)",
+    },
+    {
+      label: "…of which the shares are responsible for",
+      value: money(sv.gapOwn.med),
+      foot: "the rest is wages",
+      color: "var(--std)",
+    },
+    {
+      label: "Standard-venture founders whose equity paid them nothing",
+      value: pct(sv.stats.p_equity_zero, 0),
+      foot: "60% at maximum venture",
+      color: "var(--band-0)",
+    },
+    {
+      label: "Bootstrappers whose equity paid them nothing",
+      value: pct(bs.stats.p_equity_zero, 0),
+      foot: "no preference stack in front of them",
+      color: "var(--boot)",
+    },
+  ];
+  document.getElementById("kpis").innerHTML = cards
+    .map(
+      (c) =>
+        '<div class="kpi"><div class="label">' + c.label + "</div>" +
+        '<div class="value" style="color:' + c.color + '">' + c.value + "</div>" +
+        '<div class="foot">' + c.foot + "</div></div>"
+    )
+    .join("");
+})();
+
+/* ---- chart: paired gaps ----------------------------------------------- */
+function chartGaps(width) {
+  const groups = [
+    { name: "Total wealth", k: "gapNet" },
+    { name: "Ownership", k: "gapOwn" },
+    { name: "Wage", k: "gapLab" },
+  ];
+  const series = [ARMS[1], ARMS[2]];
+
+  const labelW = Math.min(230, Math.max(120, width * 0.26));
+  const padR = 74, padT = 6, padB = 30;
+  const rowH = 30, barH = 12, groupGap = 26;
+  const plotW = width - labelW - padR;
+  const h = padT + groups.length * (rowH * series.length + groupGap) + padB;
+
+  const vals = groups.flatMap((g) => series.map((s) => DATA.arms[s.key][g.k].med));
+  const hi = Math.max(...vals) * 1.12;
+  // Always keep a gutter left of zero: the ownership bar is nearly zero, and its
+  // value label needs somewhere to sit that is not on top of the row label.
+  const lo = Math.min(0, ...vals) - hi * 0.11;
+  const x = (v) => labelW + ((v - lo) / (hi - lo)) * plotW;
+
+  const svg = el("svg", { width, height: h, viewBox: `0 0 ${width} ${h}`, role: "img" });
+  svg.appendChild(el("title", {})).textContent =
+    "Median paired wealth difference against bootstrapping, split into ownership and wages";
+
+  // zero rule
+  const zx = x(0);
+  svg.appendChild(el("line", {
+    x1: zx, x2: zx, y1: padT, y2: h - padB,
+    stroke: "var(--rule-strong)", "stroke-width": 1,
+  }));
+  const zl = el("text", { x: zx, y: h - padB + 18, "text-anchor": "middle",
+    "font-size": 11.5, fill: "var(--ink-3)" });
+  zl.textContent = "same as bootstrapping";
+  svg.appendChild(zl);
+
+  let y = padT;
+  groups.forEach((g) => {
+    const gLabel = el("text", {
+      x: labelW - 14, y: y + rowH * series.length / 2 + 1,
+      "text-anchor": "end", "font-size": 13, fill: "var(--ink)",
+      "dominant-baseline": "middle",
+    });
+    gLabel.textContent = g.name;
+    svg.appendChild(gLabel);
+
+    series.forEach((s) => {
+      const v = DATA.arms[s.key][g.k];
+      const cy = y + rowH / 2;
+      const x0 = Math.min(x(0), x(v.med));
+      const w = Math.max(Math.abs(x(v.med) - x(0)), 1.5);
+      const bar = el("rect", {
+        x: x0, y: cy - barH / 2, width: w, height: barH,
+        rx: 3, fill: s.color,
+      });
+      hoverable(bar, s.name + " — " + g.name, [
+        ["Median difference", money(v.med)],
+        ["95% interval", money(v.lo) + " to " + money(v.hi)],
+        ["Founders ahead", pct(v.better)],
+      ]);
+      svg.appendChild(bar);
+
+      const positive = v.med >= 0;
+      const t = el("text", {
+        x: positive ? x0 + w + 8 : x0 - 8,
+        y: cy + 1,
+        "text-anchor": positive ? "start" : "end",
+        "font-size": 12.5, fill: "var(--ink-2)",
+        "dominant-baseline": "middle",
+        "font-family": "ui-monospace, Menlo, Consolas, monospace",
+      });
+      t.textContent = (positive ? "+" : "") + money(v.med);
+      svg.appendChild(t);
+      y += rowH;
+    });
+    y += groupGap;
+  });
+
+  return svg;
+}
+
+/* ---- chart: outcome bands (diverging stack) --------------------------- */
+function chartBands(width) {
+  const bandColors = ["var(--band-0)", "var(--band-1)", "var(--band-2)", "var(--band-3)", "var(--band-4)"];
+  const labelW = Math.min(200, Math.max(104, width * 0.22));
+  const padR = Math.min(150, Math.max(94, width * 0.16));
+  const terse = width < 560;
+  const padT = 10, padB = 34;
+  const rowH = 54, barH = 26;
+  const plotW = width - labelW - padR;
+  const h = padT + ARMS.length * rowH + padB;
+
+  const maxLeft = Math.max(...ARMS.map((a) => DATA.arms[a.key].bands[0]));
+  const maxRight = Math.max(...ARMS.map((a) => DATA.arms[a.key].bands.slice(1).reduce((s, v) => s + v, 0)));
+  // 0.12 rather than a hairline: the longest red bar has to stop well short of
+  // the row labels, or "74%" lands on top of "Bootstrap".
+  const lo = -(maxLeft + 0.12), hi = maxRight + 0.04;
+  const x = (v) => labelW + ((v - lo) / (hi - lo)) * plotW;
+
+  const svg = el("svg", { width, height: h, viewBox: `0 0 ${width} ${h}`, role: "img" });
+  svg.appendChild(el("title", {})).textContent = "Share of founders by final wealth band, for each path";
+
+  const zx = x(0);
+  svg.appendChild(el("line", {
+    x1: zx, x2: zx, y1: padT - 2, y2: h - padB + 4,
+    stroke: "var(--rule-strong)", "stroke-width": 1,
+  }));
+  const zl = el("text", { x: zx, y: h - padB + 22, "text-anchor": "middle",
+    "font-size": 11.5, fill: "var(--ink-3)" });
+  zl.textContent = "breakeven with a salaried job";
+  svg.appendChild(zl);
+
+  ARMS.forEach((arm, i) => {
+    const b = DATA.arms[arm.key].bands;
+    const cy = padT + i * rowH + rowH / 2;
+
+    const name = el("text", {
+      x: labelW - 14, y: cy - 6, "text-anchor": "end",
+      "font-size": 13.5, fill: "var(--ink)", "dominant-baseline": "middle",
+    });
+    name.textContent = arm.name;
+    svg.appendChild(name);
+
+    const sub = el("text", {
+      x: labelW - 14, y: cy + 12, "text-anchor": "end",
+      "font-size": 11.5, fill: "var(--ink-3)", "dominant-baseline": "middle",
+      "font-family": "ui-monospace, Menlo, Consolas, monospace",
+    });
+    sub.textContent = "median " + money(DATA.arms[arm.key].net[50]);
+    svg.appendChild(sub);
+
+    // negative band, growing leftward from zero
+    const negW = Math.max((b[0] / (hi - lo)) * plotW - 2, 0);
+    const neg = el("rect", {
+      x: zx - negW - 1, y: cy - barH / 2, width: negW, height: barH,
+      fill: bandColors[0], rx: 3,
+    });
+    hoverable(neg, arm.name, [[DATA.bands[0], pct(b[0])]]);
+    svg.appendChild(neg);
+
+    const negLabel = el("text", {
+      x: zx - negW - 11, y: cy + 1, "text-anchor": "end",
+      "font-size": 12.5, fill: "var(--ink-2)", "dominant-baseline": "middle",
+      "font-family": "ui-monospace, Menlo, Consolas, monospace",
+    });
+    negLabel.textContent = pct(b[0], 0);
+    svg.appendChild(negLabel);
+
+    // positive bands, stacking rightward
+    let acc = 0;
+    for (let k = 1; k < b.length; k++) {
+      const w = Math.max((b[k] / (hi - lo)) * plotW - 2, b[k] > 0 ? 1 : 0);
+      if (w <= 0) { acc += b[k]; continue; }
+      const x0 = x(acc) + 1;
+      const isLast = k === b.length - 1 || b.slice(k + 1).every((v) => v === 0);
+      const seg = el("rect", {
+        x: x0, y: cy - barH / 2, width: w, height: barH,
+        fill: bandColors[k], rx: isLast || k === 1 ? 3 : 0,
+      });
+      hoverable(seg, arm.name, [[DATA.bands[k], pct(b[k])]]);
+      svg.appendChild(seg);
+      acc += b[k];
+    }
+
+    const over1m = b.slice(2).reduce((s, v) => s + v, 0);
+    const posLabel = el("text", {
+      x: x(acc) + 12, y: cy + 1, "text-anchor": "start",
+      "font-size": 12.5, fill: "var(--ink-2)", "dominant-baseline": "middle",
+      "font-family": "ui-monospace, Menlo, Consolas, monospace",
+    });
+    posLabel.textContent = pct(over1m, 0) + (terse ? "" : " over $1M");
+    svg.appendChild(posLabel);
+  });
+
+  return svg;
+}
+
+/* ---- chart: ownership by founder quality ------------------------------ */
+function chartCross(width) {
+  const rows = DATA.crossOwn;
+  const padL = 62, padR = Math.min(128, Math.max(78, width * 0.15)), padT = 14, padB = 44;
+  const h = Math.max(268, Math.min(340, width * 0.44));
+  const plotW = width - padL - padR;
+  const plotH = h - padT - padB;
+
+  const series = [
+    { key: "boot", arm: ARMS[0] },
+    { key: "std", arm: ARMS[1] },
+    { key: "max", arm: ARMS[2] },
+  ];
+  const maxY = Math.max(...rows.flatMap((r) => series.map((s) => r[s.key]))) * 1.08;
+  const x = (p) => padL + ((p - 5) / 95) * plotW;
+  const y = (v) => padT + plotH - (v / maxY) * plotH;
+
+  const svg = el("svg", { width, height: h, viewBox: `0 0 ${width} ${h}`, role: "img" });
+  svg.appendChild(el("title", {})).textContent =
+    "Median ownership return by percentile of founder quality, for each path";
+
+  // gridlines
+  const ticks = 4;
+  for (let i = 0; i <= ticks; i++) {
+    const v = (maxY / ticks) * i;
+    svg.appendChild(el("line", {
+      x1: padL, x2: padL + plotW, y1: y(v), y2: y(v),
+      stroke: "var(--rule)", "stroke-width": 1,
+    }));
+    const t = el("text", {
+      x: padL - 10, y: y(v) + 4, "text-anchor": "end",
+      "font-size": 11.5, fill: "var(--ink-3)",
+      "font-family": "ui-monospace, Menlo, Consolas, monospace",
+    });
+    t.textContent = money(v, v >= 1e7 ? 0 : 1);
+    svg.appendChild(t);
+  }
+
+  // x axis labels
+  [5, 25, 50, 75, 100].forEach((p) => {
+    const t = el("text", {
+      x: x(p), y: h - padB + 20, "text-anchor": "middle",
+      "font-size": 11.5, fill: "var(--ink-3)",
+      "font-family": "ui-monospace, Menlo, Consolas, monospace",
+    });
+    t.textContent = String(p);
+    svg.appendChild(t);
+  });
+  const ax = el("text", {
+    x: padL + plotW / 2, y: h - 6, "text-anchor": "middle",
+    "font-size": 12, fill: "var(--ink-2)",
+  });
+  ax.textContent = "percentile of founder quality  (product-market fit × skill)";
+  svg.appendChild(ax);
+
+  // lines
+  series.forEach((s) => {
+    const d = rows.map((r, i) => (i ? "L" : "M") + x(r.p) + " " + y(r[s.key])).join(" ");
+    svg.appendChild(el("path", {
+      d, fill: "none", stroke: s.arm.color, "stroke-width": 2,
+      "stroke-linejoin": "round", "stroke-linecap": "round",
+    }));
+    const last = rows[rows.length - 1];
+    const lab = el("text", {
+      x: x(last.p) + 10, y: y(last[s.key]) + 4,
+      "font-size": 12, fill: "var(--ink-2)",
+      "font-family": "ui-monospace, Menlo, Consolas, monospace",
+    });
+    lab.textContent = money(last[s.key]);
+    svg.appendChild(lab);
+  });
+
+  // crosshair + hit areas
+  const cross = el("line", {
+    x1: 0, x2: 0, y1: padT, y2: padT + plotH,
+    stroke: "var(--rule-strong)", "stroke-width": 1, opacity: 0,
+  });
+  svg.appendChild(cross);
+  const dots = series.map((s) => {
+    const c = el("circle", { r: 4.5, fill: s.arm.color, stroke: "var(--surface)", "stroke-width": 2, opacity: 0 });
+    svg.appendChild(c);
+    return c;
+  });
+
+  const band = plotW / rows.length;
+  rows.forEach((r, i) => {
+    const hit = el("rect", {
+      x: padL + i * band, y: padT, width: band, height: plotH,
+      fill: "transparent",
+    });
+    hit.addEventListener("mouseenter", (e) => {
+      cross.setAttribute("x1", x(r.p));
+      cross.setAttribute("x2", x(r.p));
+      cross.setAttribute("opacity", 1);
+      series.forEach((s, k) => {
+        dots[k].setAttribute("cx", x(r.p));
+        dots[k].setAttribute("cy", y(r[s.key]));
+        dots[k].setAttribute("opacity", 1);
+      });
+      showTip(e, "Founder quality: " + (r.p - 5) + "–" + r.p + "th percentile",
+        series.map((s) => [s.arm.name, money(r[s.key])]));
+    });
+    hit.addEventListener("mousemove", moveTip);
+    hit.addEventListener("mouseleave", () => {
+      cross.setAttribute("opacity", 0);
+      dots.forEach((d) => d.setAttribute("opacity", 0));
+      hideTip();
+    });
+    svg.appendChild(hit);
+  });
+
+  return svg;
+}
+
+/* ---- chart: sources ---------------------------------------------------- */
+function chartSources(width) {
+  const groups = [
+    { name: "Salary", k: "salary" },
+    { name: "Distributions", k: "distributions" },
+    { name: "Exit & secondary", k: "exit_and_secondary" },
+  ];
+  const labelW = Math.min(200, Math.max(112, width * 0.22));
+  const padR = 78, padT = 6, padB = 12;
+  const rowH = 26, barH = 12, groupGap = 24;
+  const plotW = width - labelW - padR;
+  const h = padT + groups.length * (rowH * ARMS.length + groupGap) + padB;
+
+  const maxV = Math.max(...groups.flatMap((g) => ARMS.map((a) => DATA.arms[a.key].sources[g.k])));
+  const x = (v) => labelW + (v / (maxV * 1.06)) * plotW;
+
+  const svg = el("svg", { width, height: h, viewBox: `0 0 ${width} ${h}`, role: "img" });
+  svg.appendChild(el("title", {})).textContent = "Median present value by source of money, for each path";
+
+  let y = padT;
+  groups.forEach((g) => {
+    const gLabel = el("text", {
+      x: labelW - 14, y: y + (rowH * ARMS.length) / 2 + 1,
+      "text-anchor": "end", "font-size": 13, fill: "var(--ink)",
+      "dominant-baseline": "middle",
+    });
+    gLabel.textContent = g.name;
+    svg.appendChild(gLabel);
+
+    ARMS.forEach((a) => {
+      const v = DATA.arms[a.key].sources[g.k];
+      const cy = y + rowH / 2;
+      const w = Math.max(x(v) - labelW, v > 0 ? 1.5 : 0);
+      if (w > 0) {
+        const bar = el("rect", {
+          x: labelW, y: cy - barH / 2, width: w, height: barH, rx: 3, fill: a.color,
+        });
+        hoverable(bar, a.name + " — " + g.name, [["Median present value", moneyK(v)]]);
+        svg.appendChild(bar);
+      }
+      const t = el("text", {
+        x: labelW + Math.max(w, 0) + 9, y: cy + 1,
+        "font-size": 12.5, fill: "var(--ink-2)", "dominant-baseline": "middle",
+        "font-family": "ui-monospace, Menlo, Consolas, monospace",
+      });
+      t.textContent = moneyK(v);
+      svg.appendChild(t);
+      y += rowH;
+    });
+    y += groupGap;
+  });
+
+  return svg;
+}
+
+/* ---- table ------------------------------------------------------------ */
+(function table() {
+  const t = document.getElementById("table");
+  const rows = [
+    { g: "Wealth, net of forgone salary" },
+    { n: "Median", f: (a) => money(a.net[50]) },
+    { n: "10th percentile", f: (a) => money(a.net[10]) },
+    { n: "90th percentile", f: (a) => money(a.net[90]) },
+    { n: "99th percentile", f: (a) => money(a.net[99]) },
+    { n: "Worse than a salaried job", f: (a) => pct(a.stats.p_worse_than_job) },
+
+    { g: "Split apart" },
+    { n: "Ownership return (median)", f: (a) => money(a.own[50]) },
+    { n: "Wage, net of the job given up", f: (a) => money(a.labour_med) },
+    { n: "Equity paid nothing", f: (a) => pct(a.stats.p_equity_zero) },
+
+    { g: "Paired against bootstrapping" },
+    { n: "Total wealth gap", f: (a, k) => (k === "bootstrap" ? "—" : (a.gapNet.med >= 0 ? "+" : "") + money(a.gapNet.med)) },
+    { n: "Ownership gap", f: (a, k) => (k === "bootstrap" ? "—" : (a.gapOwn.med >= 0 ? "+" : "") + money(a.gapOwn.med)) },
+    { n: "Wage gap", f: (a, k) => (k === "bootstrap" ? "—" : (a.gapLab.med >= 0 ? "+" : "") + money(a.gapLab.med)) },
+    { n: "Founders better off", f: (a, k) => (k === "bootstrap" ? "—" : pct(a.gapNet.better)) },
+
+    { g: "The company" },
+    { n: "Capital raised (mean)", f: (a) => money(a.stats.mean_raised) },
+    { n: "Founder ownership at the end", f: (a) => pct(a.stats.median_founder_pct, 0) },
+    { n: "Company value (median)", f: (a) => money(a.stats.median_company_value) },
+    { n: "Company value (90th pct)", f: (a) => money(a.stats.p90_company_value) },
+    { n: "Company failed", f: (a) => pct(a.stats.p_died) },
+    { n: "Years running it (median)", f: (a) => a.stats.median_years_active.toFixed(0) },
+  ];
+
+  const head =
+    "<thead><tr><th></th>" +
+    ARMS.map((a) => '<th><span class="swatch" style="background:' + a.color + '"></span>' + a.short + "</th>").join("") +
+    "</tr></thead>";
+
+  const body =
+    "<tbody>" +
+    rows
+      .map((r) => {
+        if (r.g) return '<tr class="group-row"><td colspan="4">' + r.g + "</td></tr>";
+        return (
+          "<tr><th scope=\"row\" style=\"font-weight:400\">" + r.n + "</th>" +
+          ARMS.map((a) => '<td class="num">' + r.f(DATA.arms[a.key], a.key) + "</td>").join("") +
+          "</tr>"
+        );
+      })
+      .join("") +
+    "</tbody>";
+
+  t.innerHTML = head + body;
+})();
+
+/* ---- render & resize --------------------------------------------------- */
+legend("legend-gaps", [ARMS[1], ARMS[2]].map((a) => ({ name: a.name, color: a.color })));
+legend("legend-src", ARMS.map((a) => ({ name: a.name, color: a.color })));
+legend("legend-cross", ARMS.map((a) => ({ name: a.name, color: a.color })));
+legend("legend-bands", DATA.bands.map((b, i) => ({
+  name: i === 0 ? "Worse than a job" : b,
+  color: "var(--band-" + i + ")",
+})));
+
+const CHARTS = [
+  ["chart-gaps", chartGaps],
+  ["chart-bands", chartBands],
+  ["chart-cross", chartCross],
+  ["chart-src", chartSources],
+];
+
+function renderAll() {
+  CHARTS.forEach(([id, fn]) => {
+    const host = document.getElementById(id);
+    const w = Math.max(320, Math.floor(host.clientWidth || host.parentElement.clientWidth));
+    host.innerHTML = "";
+    host.appendChild(fn(w));
+  });
+}
+
+renderAll();
+let raf = null;
+window.addEventListener("resize", () => {
+  if (raf) cancelAnimationFrame(raf);
+  raf = requestAnimationFrame(renderAll);
+});
+window.addEventListener("scroll", hideTip, { passive: true });
+</script>
