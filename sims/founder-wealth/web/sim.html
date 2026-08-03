@@ -782,7 +782,13 @@
       { n: "Capital raised (mean)", f: (s) => money(s.meanRaised) },
       { n: "Company value (median)", f: (s) => money(s.medianExitValue) },
       { n: "Final ARR (median)", f: (s) => money(s.medianFinalArr) },
+      { g: "How it ended" },
       { n: "Company failed", f: (s) => pct(s.pDied) },
+      { n: "…founder gave up on it", f: (s) => pct(s.pGaveUp) },
+      { n: "…it ran out of money", f: (s) => pct(s.pRanDry) },
+      { n: "Failed, founder got nothing", f: (s) => pct(s.pFailedWithNothing) },
+      { n: "Typical year it ended", f: (s) => (s.medianFailYear ? "year " + s.medianFailYear.toFixed(0) : "—") },
+      { n: "Sold for (median, failures)", f: (s) => money(s.medianFailValue) },
     ];
     const head = "<thead><tr><th></th>" + ARMS.map((a) =>
       `<th><span class="swatch" style="background:${a.color}"></span>${a.label}</th>`).join("") + "</tr></thead>";

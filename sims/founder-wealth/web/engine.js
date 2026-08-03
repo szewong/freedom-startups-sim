@@ -270,7 +270,7 @@ const Engine = (() => {
     const capitalCash = new Array(horizon).fill(0);
     const active = new Array(horizon).fill(false);
 
-    let exitValue = 0, exitYear = -1, died = false, exited = false;
+    let exitValue = 0, exitYear = -1, died = false, exited = false, abandoned = false;
     let founderGross = 0, raised = 0, finalArr = 0, founderAtExit = 1;
 
     const baseChurn = churnRate(lat.fit, b);
@@ -431,6 +431,7 @@ const Engine = (() => {
           enterpriseValue(arr, profit, growthOf(arr, arrPrior), noise.exitMult[t], ex, salary), t
         );
         died = true;
+        abandoned = true;
         continue;
       }
 
@@ -490,6 +491,11 @@ const Engine = (() => {
       yearsToMillion,
       equityZero: founderGross <= 0,
       died,
+      // Two different endings wear the word "failed", and they are not
+      // comparable: `abandoned` is a founder walking away from a small business
+      // they usually still sell, `died && !abandoned` is a company burning
+      // through its capital and leaving the founder nothing.
+      abandoned,
       exited,
       maxStage: stage,
       raised,
@@ -596,6 +602,17 @@ const Engine = (() => {
         labourMedian: median(rows, "labour"),
         pEquityZero: share(rows, (r) => r.equityZero),
         pDied: share(rows, (r) => r.died),
+        pGaveUp: share(rows, (r) => r.abandoned),
+        pRanDry: share(rows, (r) => r.died && !r.abandoned),
+        pFailedWithNothing: share(rows, (r) => r.died && r.equityZero),
+        medianFailYear: (() => {
+          const yrs = rows.filter((r) => r.died).map((r) => r.exitYear + 1).sort((a2, b2) => a2 - b2);
+          return yrs.length ? percentile(yrs, 50) : 0;
+        })(),
+        medianFailValue: (() => {
+          const v = rows.filter((r) => r.died).map((r) => r.exitValue).sort((a2, b2) => a2 - b2);
+          return v.length ? percentile(v, 50) : 0;
+        })(),
         pWorseThanJob: share(rows, (r) => r.net < 0),
         pGt1m: share(rows, (r) => r.net > 1e6),
         pGt10m: share(rows, (r) => r.net > 10e6),

@@ -308,7 +308,7 @@ startups under $10M in enterprise value". Deals close in about 81 days.
 slower — 39% now take 3+ years against 19% in 2019. Of 4,369 US startups founded
 in 2018, 61.9% have closed.
 
-Sources in §13.
+Sources in §14.
 
 ### What changed in the model
 
@@ -425,7 +425,51 @@ a clean counterfactual are therefore guaranteed by the loop structure in one and
 by careful array reuse in the other — and they still agree, which is the specific
 thing that would have broken had the pairing been wrong.
 
-## 10. Retractions and exposures
+## 10. "Failed" means two different things, and the word was hiding it
+
+A reader looking at the live page asked whether they had read the failure rate
+correctly — 45.7% of bootstrapped companies. They had, and the number was
+correct, but the label was doing far too much work. In the small-cap world:
+
+| | Failed | …founder gave up | …ran out of money | Founder got nothing | Typical year | Sold for |
+|---|---|---|---|---|---|---|
+| Bootstrap | 45.7% | **45.7%** | 0.0% | **0.0%** | year 4 | $111k |
+| Friends & family | 6.4% | 6.4% | 0.0% | **6.4%** | year 4 | $161k |
+| Standard venture | 37.4% | 2.1% | **35.3%** | 36.5% | year 10 | $0 |
+| Maximum venture | 29.9% | 1.4% | **28.6%** | 29.0% | year 10 | $0 |
+
+Bootstrapped companies do not run out of money — there is no burn to run out of.
+They end when the founder gives up, typically in year 4, and they are almost
+always **sold**, for a median of $111k that the founder keeps in full. Venture
+companies end by exhausting their capital around year 10, and 97% of those
+founders receive nothing.
+
+The friends & family row is the sharpest illustration of the whole model. Those
+companies fail rarely, and sell for *more* than the bootstrapped ones — $161k
+against $111k — and yet **every one of those founders receives nothing**, because
+a $1M preference sits in front of a $161k sale. A better business, a better
+price, and a worse outcome for the person who built it.
+
+The table on the live page now splits these rather than summing them under one
+word.
+
+### Two things this exposed that are not fixed
+
+**Bootstrapped failures cluster at exactly the give-up parameter.** The median is
+year 4 because `abandon_years` is 4: any founder starving from year 0 quits at
+the first moment the rule allows, so the *timing* of bootstrapped failure is set
+by a parameter rather than emerging from the business. The level is calibrated
+(five-year survival 60.9% against a 60% target) but the shape is not.
+
+**The failure rate hinges on two constants sitting either side of a threshold.**
+A bootstrapper who cannot pay themselves draws the salary floor, $40k. A founder
+who raised a pre-seed draws that stage's salary, $80k. The give-up rule fires
+below $60k. So 45.7% versus 6.4% is, mechanically, $40k being under $60k and $80k
+being over it. All three numbers are model choices, and the middle one is swept —
+but a reader should know that this particular contrast is more fragile than the
+ownership results, which survive every sweep in §6.
+
+## 11. Retractions and exposures
 
 Kept on the record, per METHOD §10.
 
@@ -484,7 +528,7 @@ calibration targets do not identify it. Any claim that depends on the market
 size distribution should be treated as unresolved — which is one more reason to
 read §5's flat market-size curve carefully.
 
-## 11. What is not modelled
+## 12. What is not modelled
 
 Beyond the PRD §8 list, which stands:
 
@@ -505,7 +549,7 @@ Beyond the PRD §8 list, which stands:
   30% illiquidity discount and stopped. Venture outcomes have longer tails than
   that, so the top of the funded distribution is cut off.
 
-## 12. What would change the answer
+## 13. What would change the answer
 
 Stated in advance of the next run, so it cannot be chosen afterwards:
 
@@ -523,7 +567,7 @@ Stated in advance of the next run, so it cannot be chosen afterwards:
 
 ---
 
-## 13. Sources for the real-world figures
+## 14. Sources for the real-world figures
 
 Round sizes, valuations and dilution:
 
