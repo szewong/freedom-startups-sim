@@ -1,7 +1,7 @@
 # Founder Wealth Simulator — findings, v0.1
 
-**Status: first complete run. Provisional.** Phases 0–6 of PRD §7 are built and
-have run end to end; the interactive explorer (phase 7) is not built. One
+**Status: first complete run. Provisional.** All seven phases of PRD §7 are
+built and have run end to end, including the live explorer at `web/sim.html`. One
 calibration target is still missed and one defect was found *by looking at a
 counterfactual*, which is recorded below as the p-hacking exposure it is.
 
@@ -308,7 +308,7 @@ startups under $10M in enterprise value". Deals close in about 81 days.
 slower — 39% now take 3+ years against 19% in 2019. Of 4,369 US startups founded
 in 2018, 61.9% have closed.
 
-Sources in §12.
+Sources in §13.
 
 ### What changed in the model
 
@@ -398,7 +398,34 @@ are the arms that win in that world. Every headline-world number in §1-§6 shou
 be read as generous to venture, and the fix — fitting `scale_premium` in both
 worlds — has not been run.
 
-## 9. Retractions and exposures
+## 9. The second implementation agrees
+
+METHOD §7 asks for two implementations, because the browser port of the sibling
+simulation caught three defects the Python had carried for hours. The port is at
+`web/engine.js` and `scripts/validate_js_engine.cjs` compares the two engines at
+both frozen configurations.
+
+They agree. Across 24,000 founders per world, the largest disagreement on any
+headline statistic was **$58k on a $1.39M median** — well inside sampling noise,
+and the structural invariants (a bootstrapper's equity is never cancelled;
+raising more leaves the founder owning less; the ledger decomposes exactly) hold
+in both. The tolerances are set at roughly four times the disagreement actually
+observed, so a real divergence fails the check rather than passing quietly.
+
+This is weaker evidence than a disagreement would have been informative. It rules
+out transcription and arithmetic errors in the model as written; it cannot rule
+out the model being wrong in the same way twice, since one engine was written
+from the other. What it does buy is confidence that the interactive page and the
+numbers above come from the same model.
+
+The port also differs structurally in a way worth noting: the Python runs
+vectorised across founders one arm at a time, while the JavaScript runs one
+founder at a time through every arm. The common random numbers that make the fork
+a clean counterfactual are therefore guaranteed by the loop structure in one and
+by careful array reuse in the other — and they still agree, which is the specific
+thing that would have broken had the pairing been wrong.
+
+## 10. Retractions and exposures
 
 Kept on the record, per METHOD §10.
 
@@ -457,7 +484,7 @@ calibration targets do not identify it. Any claim that depends on the market
 size distribution should be treated as unresolved — which is one more reason to
 read §5's flat market-size curve carefully.
 
-## 10. What is not modelled
+## 11. What is not modelled
 
 Beyond the PRD §8 list, which stands:
 
@@ -478,7 +505,7 @@ Beyond the PRD §8 list, which stands:
   30% illiquidity discount and stopped. Venture outcomes have longer tails than
   that, so the top of the funded distribution is cut off.
 
-## 11. What would change the answer
+## 12. What would change the answer
 
 Stated in advance of the next run, so it cannot be chosen afterwards:
 
@@ -496,7 +523,7 @@ Stated in advance of the next run, so it cannot be chosen afterwards:
 
 ---
 
-## 12. Sources for the real-world figures
+## 13. Sources for the real-world figures
 
 Round sizes, valuations and dilution:
 

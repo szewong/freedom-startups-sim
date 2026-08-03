@@ -27,7 +27,23 @@ Results, caveats and retractions: [`FINDINGS.md`](FINDINGS.md).
 | 4 | **Calibration** | done, with misses recorded in `configs/frozen.yaml.fit.json` |
 | 5 | Paired counterfactual | done |
 | 6 | Null control and sweeps | done |
-| 7 | Write-up and interactive explorer | write-up in FINDINGS.md; explorer not built |
+| 7 | Write-up and interactive explorer | done — [`web/sim.html`](web/sim.html), cross-checked against Python |
+
+## Start here
+
+Open [`web/sim.html`](web/sim.html) in a browser and press Run. No install — it
+simulates live: 5,000 founders down five financing paths, in about a quarter of a
+second, with every uncertain parameter on a slider.
+
+The page runs a **second implementation** of the model, in JavaScript.
+[`scripts/validate_js_engine.cjs`](scripts/validate_js_engine.cjs) runs both
+engines at both frozen configurations and fails if they disagree, so the live
+numbers cannot quietly drift away from the ones in FINDINGS.md.
+
+```bash
+node scripts/validate_js_engine.cjs     # JS vs Python, both worlds
+.venv/bin/python scripts/build_web.py   # regenerate web/worlds.js after calibration
+```
 
 ## Two worlds
 
