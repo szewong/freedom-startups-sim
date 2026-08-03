@@ -1,5 +1,5 @@
 {
-  "config_hash": "9fb906b9abdb110e",
+  "config_hash": "109d8c1b20a92418",
   "targets": [
     {
       "target": "p_exit_gt_1b",
@@ -14,8 +14,8 @@
       "target": "p_exit_gt_100m",
       "arm": "standard_venture",
       "want": 0.1,
-      "got": 0.1341397764478244,
-      "rel_error": 0.341397764478244,
+      "got": 0.1344171282603255,
+      "rel_error": 0.344171282603255,
       "hit": true,
       "note": "VC-backed reaching $100M+"
     },
@@ -56,7 +56,7 @@
       "note": "Bootstrapped 5-year survival"
     }
   ],
-  "score": 1.2500722442430616,
+  "score": 1.2518986296555592,
   "stats": {
     "bootstrap": {
       "n": 10000.0,
@@ -66,6 +66,11 @@
       "p_died_cohort": 0.0,
       "p_exit_gt_1b": 0.0,
       "p_exit_gt_100m": 0.0,
+      "p_exit_gt_50m": 0.0,
+      "p_exit_gt_10m": 0.0,
+      "median_exit_of_exits": 0.0,
+      "p99_final_arr": 3063430.7745932066,
+      "median_final_arr_exits": 1087214.3779485396,
       "p_below_1x_capital": 0.0,
       "seed_to_a_graduation": 0.0,
       "preseed_to_seed_graduation": 0.0,
@@ -73,6 +78,7 @@
       "median_exit_value_cohort": 0.0,
       "median_founder_gross_cohort": 0.0,
       "median_exit_year": 11.0,
+      "median_exit_year_material": 11.0,
       "median_exit_year_big": -1.0,
       "p_survive_5y": 0.7163333333333334,
       "mean_raised_cohort": 0.0,
@@ -85,14 +91,20 @@
       "p_abandoned": 0.0098,
       "p_died_cohort": 0.3668647699459835,
       "p_exit_gt_1b": 0.0043008686665352396,
-      "p_exit_gt_100m": 0.1341397764478244,
+      "p_exit_gt_100m": 0.1344171282603255,
+      "p_exit_gt_50m": 0.1790843818418642,
+      "p_exit_gt_10m": 0.36388868102712996,
+      "median_exit_of_exits": 12383789.192057729,
+      "p99_final_arr": 114198179.04616627,
+      "median_final_arr_exits": 3396226.0773076443,
       "p_below_1x_capital": 0.4970148362908119,
       "seed_to_a_graduation": 0.28825351441325325,
       "preseed_to_seed_graduation": 0.9612,
       "a_to_b_graduation": 0.5652910480166685,
-      "median_exit_value_cohort": 5266765.367571054,
+      "median_exit_value_cohort": 5266521.106800439,
       "median_founder_gross_cohort": 117318.61295926396,
       "median_exit_year": 6.0,
+      "median_exit_year_material": 7.0,
       "median_exit_year_big": 6.666666666666668,
       "p_survive_5y": 0.9995333333333334,
       "mean_raised_cohort": 38680105.16436519,

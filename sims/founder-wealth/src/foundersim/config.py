@@ -224,7 +224,35 @@ class ExitConfig:
 
     min_revenue_multiple: float = 1.0  # [fit]
     max_revenue_multiple: float = 16.0  # [fit]
-    ebitda_multiple: float = 6.0  # [fit] the SMB alternative valuation
+
+    # --- the low end of the market -----------------------------------------
+    # Below roughly $10M of enterprise value the market does not price on
+    # revenue at all; it prices on earnings, and the multiple it pays climbs
+    # steeply with size. IBBA/M&A Source Market Pulse Q3 2025 medians:
+    #
+    #     < $500K    2.0x        }
+    #     $500K-$1M  2.5x        }  of SELLER'S DISCRETIONARY EARNINGS
+    #     $1M-$2M    3.0x        }
+    #     $2M-$5M    4.0x        }  of EBITDA
+    #     $5M-$50M   6.5x        }
+    #
+    # The break at $2M is a real convention, not a smoothing artefact: below it
+    # the buyer is an individual purchasing an owner-operated business, and the
+    # quoted earnings figure adds the owner's salary back. Above it the buyer is
+    # an institution that will hire a manager, and it does not.
+    #
+    # Modelled as a log-linear multiple in earnings, which reproduces three of
+    # those four points within 0.1x:
+    #     multiple = base + slope * log10(earnings / pivot)
+    earnings_pivot: float = 250_000.0
+    base_earnings_multiple: float = 2.0  # [fit]
+    earnings_multiple_slope: float = 3.0  # [fit] per decade of earnings
+    min_earnings_multiple: float = 1.5
+    max_earnings_multiple: float = 8.0  # [fit]
+
+    # Below this valuation the seller's-discretionary-earnings convention
+    # applies and the founder's own salary is added back.
+    sde_ceiling: float = 2e6
     exit_noise_sigma: float = 0.45  # [fit]
     regime: float = 1.0  # [sweep] bull/bear multiple regime
 

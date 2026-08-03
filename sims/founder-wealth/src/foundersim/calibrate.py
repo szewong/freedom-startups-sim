@@ -115,6 +115,10 @@ SEARCH_SPACE_SMALLCAP: tuple[tuple[str, float, float], ...] = (
     ("exit__scale_premium", 0.3, 2.5),
     ("exit__max_revenue_multiple", 6.0, 12.0),
     ("exit__growth_premium", 0.8, 4.0),
+    # The low end of the market: how steeply the earnings multiple climbs with
+    # size is the parameter that decides what a small company is worth.
+    ("exit__base_earnings_multiple", 1.6, 3.2),
+    ("exit__earnings_multiple_slope", 1.8, 4.0),
 )
 
 TARGET_SETS: dict[str, tuple[Target, ...]] = {

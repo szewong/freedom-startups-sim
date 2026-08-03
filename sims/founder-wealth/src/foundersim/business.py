@@ -101,19 +101,50 @@ def revenue_multiple(
     return mult * cfg.regime * shock
 
 
+def earnings_multiple(earnings: np.ndarray, cfg: ExitConfig) -> np.ndarray:
+    """What a buyer pays per dollar of earnings, which depends on size.
+
+    A business earning $200k is bought by a person, for about 2x. A business
+    earning $8M is bought by an institution, for about 6.5x. That climb is the
+    single most important feature of the low end of the market, and treating it
+    as one flat multiple — as this model originally did — badly overprices the
+    smallest companies and underprices the largest.
+    """
+    decades = np.log10(np.maximum(earnings, 1.0) / cfg.earnings_pivot)
+    mult = cfg.base_earnings_multiple + cfg.earnings_multiple_slope * decades
+    return np.clip(mult, cfg.min_earnings_multiple, cfg.max_earnings_multiple)
+
+
 def enterprise_value(
     arr: np.ndarray,
     profit: np.ndarray,
     growth: np.ndarray,
     noise: np.ndarray,
     cfg: ExitConfig,
+    owner_comp: np.ndarray | None = None,
 ) -> np.ndarray:
     """Exit value: the better of a revenue multiple and an earnings multiple.
 
     A hypergrowth company is worth a multiple of revenue; a profitable, slow one
-    is worth a multiple of earnings. Taking the maximum is what stops the model
-    from pricing a $5M-profit bootstrapped business at nothing.
+    is worth a multiple of its earnings. Taking the maximum is what stops the
+    model pricing a profitable bootstrapped business at nothing.
+
+    Two earnings figures, because the market uses two. Under the SDE ceiling the
+    quoted earnings add the owner's pay back, since the buyer is purchasing the
+    owner's job along with the business; above it they do not. The model takes
+    the seller's-discretionary valuation only while it stays under the ceiling,
+    which is exactly the convention the published multiples are quoted on.
     """
     rev_value = revenue_multiple(growth, noise, cfg, arr) * arr
-    profit_value = cfg.ebitda_multiple * np.maximum(profit, 0.0)
-    return np.maximum(rev_value, profit_value)
+
+    ebitda = np.maximum(profit, 0.0)
+    ebitda_value = earnings_multiple(ebitda, cfg) * ebitda
+
+    if owner_comp is not None:
+        sde = np.maximum(profit + owner_comp, 0.0)
+        sde_value = earnings_multiple(sde, cfg) * sde
+        earn_value = np.where(sde_value <= cfg.sde_ceiling, sde_value, ebitda_value)
+    else:
+        earn_value = ebitda_value
+
+    return np.maximum(rev_value, earn_value)

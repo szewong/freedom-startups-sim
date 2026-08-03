@@ -99,6 +99,7 @@ def run_arm(cfg: RunConfig, lat: Latents, noise: Noise, strat: Strategy) -> ArmR
     # stops at Series B, and "raise at every gate" then means "up to B".
     top_stage = min(strat.max_stage, len(cap.stage_terms) - 1)
     profit = np.zeros(n)
+    salary = np.zeros(n)
 
     def growth_of(current: np.ndarray, prior: np.ndarray) -> np.ndarray:
         """YoY revenue multiple, guarded against a zero base."""
@@ -265,7 +266,7 @@ def run_arm(cfg: RunConfig, lat: Latents, noise: Noise, strat: Strategy) -> ArmR
         quitting = running & (starving_years >= ex.abandon_years)
         if quitting.any():
             value = business.enterprise_value(
-                arr, profit, growth_of(arr, arr_prior), noise.exit_multiple[:, t], ex
+                arr, profit, growth_of(arr, arr_prior), noise.exit_multiple[:, t], ex, salary
             )
             liquidate(quitting, value, t)
             died[quitting] = True
@@ -282,7 +283,7 @@ def run_arm(cfg: RunConfig, lat: Latents, noise: Noise, strat: Strategy) -> ArmR
         )
         if offered.any():
             value = business.enterprise_value(
-                arr, profit, growth_of(arr, arr_prior), noise.exit_multiple[:, t], ex
+                arr, profit, growth_of(arr, arr_prior), noise.exit_multiple[:, t], ex, salary
             )
             liquidate(offered, value, t)
             exited[offered] = True
@@ -295,7 +296,7 @@ def run_arm(cfg: RunConfig, lat: Latents, noise: Noise, strat: Strategy) -> ArmR
     survivors = alive & ~settled
     if survivors.any():
         value = business.enterprise_value(
-            arr, profit, growth_of(arr, arr_prior), noise.exit_multiple[:, last], ex
+            arr, profit, growth_of(arr, arr_prior), noise.exit_multiple[:, last], ex, salary
         )
         # No buyer was found in twelve years; the position is illiquid and marked
         # down accordingly, in every arm alike.

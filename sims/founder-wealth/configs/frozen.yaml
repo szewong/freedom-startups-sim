@@ -75,18 +75,26 @@ exit:
   acquihire_prob_cap: 0.3
   acquihire_prob_per_head: 0.004
   acquihire_value_per_head: 750000.0
+  base_earnings_multiple: 2.0
   base_revenue_multiple: 3.5
-  ebitda_multiple: 6.0
+  earnings_multiple_slope: 3.0
+  earnings_pivot: 250000.0
   exit_noise_sigma: 0.45
   growth_premium: 4.0
   horizon_illiquidity_discount: 0.3
   horizon_years: 12
   large_liquidity_arr: 25000000.0
   large_liquidity_prob: 0.22
+  max_earnings_multiple: 8.0
   max_revenue_multiple: 16.0
+  min_earnings_multiple: 1.5
+  min_revenue_multiple: 1.0
   offer_min_arr: 1000000.0
   offer_prob: 0.10274855135721547
   regime: 1.0
+  scale_pivot_arr: 1000000.0
+  scale_premium: 0.0
+  sde_ceiling: 2000000.0
   stall_growth: 1.35
 latents:
   exec_sigma: 0.25

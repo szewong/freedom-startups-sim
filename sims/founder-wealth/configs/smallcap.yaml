@@ -4,10 +4,10 @@ business:
   churn_hi: 0.28
   cost_per_head: 190000.0
   customers_per_head: 15.0
-  effort_scale: 10.025610089167643
+  effort_scale: 8.514855170591556
   founder_savings: 50000.0
   gross_margin: 0.78
-  growth_scale: 474.7605567021332
+  growth_scale: 549.6768230081966
   market_decay: 0.06
   organic_scale: 4.5
   price: 12000.0
@@ -16,7 +16,7 @@ business:
   understaffing_growth: 1.0
 capital:
   carve_out: 0.0
-  gate_noise_sigma: 0.20427085448805946
+  gate_noise_sigma: 0.1
   null_control: false
   participating: false
   pref_multiple: 1.0
@@ -61,28 +61,33 @@ exit:
   acquihire_prob_cap: 0.3
   acquihire_prob_per_head: 0.004
   acquihire_value_per_head: 750000.0
+  base_earnings_multiple: 1.8927597049337974
   base_revenue_multiple: 4.0
-  ebitda_multiple: 6.0
+  earnings_multiple_slope: 2.684819306573681
+  earnings_pivot: 250000.0
   exit_noise_sigma: 0.45
-  growth_premium: 3.5505418069610513
+  growth_premium: 2.0664978723879335
   horizon_illiquidity_discount: 0.3
   horizon_years: 12
   large_liquidity_arr: 25000000.0
   large_liquidity_prob: 0.22
+  max_earnings_multiple: 8.0
   max_revenue_multiple: 12.0
+  min_earnings_multiple: 1.5
   min_revenue_multiple: 1.0
   offer_min_arr: 1000000.0
   offer_prob: 0.08
   regime: 1.0
   scale_pivot_arr: 1000000.0
-  scale_premium: 2.1039458957625468
+  scale_premium: 1.7300402099583732
+  sde_ceiling: 2000000.0
   stall_growth: 1.35
 latents:
-  exec_sigma: 0.2842282299739261
+  exec_sigma: 0.39948530696757767
   fit_a: 2.0
   fit_b: 5.0
-  market_median: 120000000.0
-  market_sigma: 1.5193621210331485
+  market_median: 112091333.20166673
+  market_sigma: 2.2
   skill_a: 5.0
   skill_b: 5.0
 ledger:
@@ -103,5 +108,5 @@ spend:
   boot_reinvest_frac: 0.6
   boot_reserve_months: 6.0
   funded_burn_frac: 0.5
-  funded_spend_rate: 0.25271340161392825
+  funded_spend_rate: 0.2
   patient_spend_rate: 0.18

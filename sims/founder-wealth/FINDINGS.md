@@ -264,6 +264,8 @@ model was re-grounded on published 2025-26 figures and re-run.
 
 ### What the real numbers say
 
+**Rounds** (2025-26 medians):
+
 | | Round | Post-money | Dilution |
 |---|---|---|---|
 | Pre-seed | $1.0M | $4-6M | 15-20% |
@@ -271,73 +273,130 @@ model was re-grounded on published 2025-26 figures and re-run.
 | Series A | $10-15M | $40-55M | 18-22% |
 | Series B | $30-40M | $120-160M | 20-25% |
 
-- **Over 80% of US tech startups are acquired for under $50M.** The median
-  *disclosed* exit is $71M, but disclosure is exactly the bias: in most small
-  deals the buyer never says what they paid.
-- **Multiples scale with size, because the buyer pool does.** $1-3M ARR clears
-  2-4x (individuals and search funds); $3-5M, 3-6x; $5-15M, 5-8x once private
-  equity platforms compete; 7-9x for the top decile. Private lower-middle-market
-  SaaS trades at a 30-50% discount to public peers.
-- **Seed to Series A: 30.6%** for the 2018 cohort, **~15%** for 2022 — and
-  slower, with 39% now taking 3+ years against 19% in 2019.
-- Of 4,369 US startups founded in 2018, **61.9% have closed.**
+**Exits.** Over 80% of US tech startups are acquired for under $50M. The median
+*disclosed* exit is $71M, but disclosure is exactly the bias: in most small deals
+the buyer never says what they paid.
 
-Sources are listed in §11.
+**The low end, where most companies actually sell.** Published venture statistics
+see nothing below about $10M, so the numbers have to come from the people who
+broker those deals. IBBA / M&A Source Market Pulse, Q3 2025 medians:
+
+| Business value | Multiple | Of what |
+|---|---|---|
+| < $500K | **2.0x** | seller's discretionary earnings |
+| $500K - $1M | **2.5x** | " |
+| $1M - $2M | **3.0x** | " |
+| $2M - $5M | **4.0x** | EBITDA |
+| $5M - $50M | **6.5x** | EBITDA |
+
+Two things in that table matter more than the numbers:
+
+1. **The multiple climbs steeply with size, because the buyer pool does.** A
+   business earning $200k is bought by a person; one earning $8M is bought by an
+   institution. Same business, three times the multiple.
+2. **The break at $2M is a change of convention, not a smooth curve.** Below it
+   the market quotes *seller's discretionary earnings* — profit with the owner's
+   salary added back, because the buyer is purchasing the owner's job along with
+   the business. Above it, the buyer will hire a manager and does not add it back.
+
+Acquire.com's marketplace data agrees on the mechanism: bootstrapped SaaS sold at
+a median **3.9x TTM profit** in both 2024 and 2025, and the market there "has
+decisively shifted from revenue-based to profit-based valuations for bootstrapped
+startups under $10M in enterprise value". Deals close in about 81 days.
+
+**Graduation.** Seed to Series A: 30.6% for the 2018 cohort, ~15% for 2022, and
+slower — 39% now take 3+ years against 19% in 2019. Of 4,369 US startups founded
+in 2018, 61.9% have closed.
+
+Sources in §12.
 
 ### What changed in the model
 
-Three things, and the second was the real error:
+Four things. The second and third were errors, not re-parameterisations:
 
-1. **Series C and D deleted.** They are not reachable for these companies, and
-   leaving them in was the biggest single piece of fantasy in the headline
-   configuration. The ladder now stops at Series B.
+1. **Series C and D deleted.** Not reachable for these companies, and leaving
+   them in was the largest single piece of fantasy in the headline configuration.
 2. **The exit multiple now scales with company size.** The original model paid a
    $2M-ARR business the same multiple as a $30M-ARR business at the same growth
-   rate. That is wrong in a way that flattered every venture arm, because it let
-   small companies exit at large-company prices.
-3. **Markets shrunk** so revenue tops out where it really does.
+   rate.
+3. **The earnings multiple is a ladder, not a constant**, and the
+   seller's-discretionary convention applies below $2M — the founder's own salary
+   is added back, because that is what the quoted multiples are quoted on. The
+   model previously used one flat 6x EBITDA at every size, which overpriced the
+   smallest companies and underpriced the largest.
+4. **Markets shrunk** so revenue tops out where it really does.
 
-`configs/smallcap.yaml`, hash `55c37ed3a963cad2`. Five of seven targets hit: a
-median exit of $12.2M against a $10M target, 9.8% clearing $50M, seed-to-A at
-23.1%, an exit over $10M arriving at year 9, bootstrapped five-year survival at
-62%. Revenue tops out at $28M rather than $50M (conservative), and the
-`< 1x capital` target misses in this world too.
+`configs/smallcap.yaml`, hash `e9c960d0ef5d76f7`. **Six of seven targets hit** —
+the best fit this model has achieved in either world: a median exit of $10.3M
+against a $10M target, 8.8% clearing $50M, seed-to-A at 23.6%, an exit over $10M
+arriving at year 8 exactly, bootstrapped five-year survival at 60.9%. Revenue
+tops out at $29.8M rather than $50M, which is the one miss and is conservative.
+
+Worth noting which target that fixed. `< 1x capital` had missed in *every*
+previous calibration, in both worlds, by the same 20 points. Adding the earnings
+ladder fixed it without being aimed at it. Overpricing small companies was what
+had been making too many of them look like they returned their investors' money.
 
 ### The result flips
 
-Median paired difference against bootstrapping the same idea:
+Median paired difference against bootstrapping the same idea, same founder, same
+luck:
 
 | Strategy | Headline world | **Small-cap world** |
 |---|---|---|
-| Standard venture — total | +$0.59M | **+$0.17M** |
-| Standard venture — ownership | −$0.02M | **−$0.02M** |
+| Standard venture — total | +$0.59M | **+$0.10M** |
+| Standard venture — ownership | −$0.02M | **−$0.03M** |
 | Maximum venture — total | +$2.27M | **−$0.03M** |
-| Maximum venture — ownership | +$1.39M | **−$0.07M** |
+| Maximum venture — ownership | +$1.39M | **−$0.08M** |
 
-**Raising the largest round available stops paying entirely.** In the headline
-world it was the best strategy by a distance; here it is no better than never
-raising at all, and its ownership return is worse. The share of founders whose
-equity pays nothing rises from 60.2% to **70.4%**.
+And the levels:
 
-The mechanism is arithmetic and it is the PRD's own example. Maximum venture
-raises $27.3M on average into a world where its median company exits at $2.1M.
-The stack swamps the outcome. Standard venture raises $9.7M — a third as much —
-and does better on every measure including the size of its exits.
+| Strategy | Median net | Ownership (median) | Equity paid nothing | Raised | Median exit |
+|---|---|---|---|---|---|
+| Bootstrap | −$0.46M | **$0.61M** | **0.0%** | $0 | $1.68M |
+| Friends & family | −$0.63M | $0.45M | 30.0% | ~$1M | — |
+| Seed and stop | −$0.89M | $0.27M | 92.5% | ~$3M | — |
+| Standard venture | −$0.28M | **$0.00M** | 58.7% | $9.5M | $2.51M |
+| Maximum venture | −$0.16M | $0.16M | **75.6%** | $29.7M | $1.84M |
 
-Two things did *not* change. Bootstrapped founders still receive something for
-their equity **100%** of the time, and their median ownership return ($0.70M)
-still beats standard venture's ($0.32M) and maximum venture's ($0.41M). And
-standard venture's ownership gap is −$0.02M in both worlds: whatever the ladder
-looks like, the shares are not where the median venture founder's money is.
+**No venture strategy beats bootstrapping on ownership in this world.** Every
+ownership gap is negative. The median standard-venture founder's shares return
+**exactly zero**, because more than half of them get nothing at all.
+
+Raising the largest round available stops paying entirely: it was the best
+strategy by a distance in the headline world, and here it is no better than never
+raising. The mechanism is arithmetic and it is the PRD's own example — maximum
+venture raises **$29.7M on average into a world where its median company exits at
+$1.84M.** The stack swamps the outcome. Standard venture raises a third as much
+and does better on almost every measure.
+
+Two things did not change between the worlds. Bootstrapped founders are paid
+something for their equity **100%** of the time, and standard venture's ownership
+gap is about −$0.03M in both: whatever the ladder looks like, the shares are not
+where the median venture founder's money is.
 
 ### The practical reading
 
-If your companies top out near $50M of revenue and a realistic exit is $10M,
-this model says the amount you raise has an optimum and it is low. Raising
-enough to buy a salary and some runway (standard venture, ~$10M across the
-ladder) is mildly better than bootstrapping. Raising everything on offer is
-worse than bootstrapping, because you cannot grow into a preference stack that a
-small exit market will never clear.
+If your companies top out near $50M of revenue and a realistic exit is $10M, this
+model says the amount to raise has an optimum and it is low. Raising enough to
+buy a salary and some runway is marginally better than bootstrapping, and it is
+better *only* as salary. Raising everything on offer is worse than bootstrapping,
+because you cannot grow into a preference stack that a small exit market will
+never clear.
+
+### A defect this exposed in the headline configuration
+
+Refitting the headline world after the valuation change produced **byte-identical
+parameters**, which is the wrong kind of stable. The reason is that its revenue
+multiple is size-blind (`scale_premium = 0`), so a $0.7M-ARR business is still
+priced at 3.5x revenue and the earnings ladder never binds for it. The headline
+configuration therefore continues to overprice small outcomes, and the small-cap
+configuration is the more trustworthy of the two.
+
+The direction matters: overpricing small exits flatters the venture arms, which
+are the arms that win in that world. Every headline-world number in §1-§6 should
+be read as generous to venture, and the fix — fitting `scale_premium` in both
+worlds — has not been run.
 
 ## 9. Retractions and exposures
 
@@ -445,6 +504,13 @@ Round sizes, valuations and dilution:
 - [Carta, State of Pre-Seed 2025](https://carta.com/data/state-of-pre-seed-2025/)
 - [Average pre-seed, seed & Series A round sizes: 2026 medians](https://valueaddvc.com/blog/startup-funding-rounds-in-2025-whats-normal-at-pre-seed-seed-a-and-b)
 - [Seed valuations 2026, on Carta data](https://www.flowjam.com/blog/seed-round-valuation-2025-complete-founders-guide)
+
+The low end of the market (below ~$10M, where published venture data sees nothing):
+
+- [IBBA / M&A Source Market Pulse, Q3 2025 highlights](https://www.ibba.org/wp-content/uploads/2025/11/market-pulse-highlights-q3-2025.pdf) — median multiples by deal-size band, SDE below $2M and EBITDA above
+- [IBBA / M&A Source Market Pulse Q3 2025 survey results](https://www.prnewswire.com/news-releases/the-ibba-and-ma-source-announce-the-results-of-the-market-pulse-q3-2025-survey-302617915.html)
+- [Acquire.com biannual acquisition multiples report, Jan 2026](https://blog.acquire.com/acquire-com-biannual-acquisition-multiples-report-jan-2026/) — bootstrapped SaaS at a median 3.9x TTM profit, 2024 and 2025
+- [Acquire.com acquisition multiples report, 2025 findings](https://blog.acquire.com/acquisition-multiples-report-2025-findings-webinar-recap/)
 
 Exit sizes and multiples:
 

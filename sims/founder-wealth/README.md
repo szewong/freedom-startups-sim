@@ -38,9 +38,11 @@ on which one you are in.
 |---|---|---|
 | Ladder | pre-seed → Series D | pre-seed → **Series B** |
 | Largest round | $150M | $32M |
-| Typical exit | $4.7M median, $154M at P90 | **$4.0M median, $46M at P90** |
-| Exit multiple | growth-driven only | **scales with company size** |
+| Typical exit | $4.7M median, $154M at P90 | **$2.5M median, $41M at P90** |
+| Exit multiple | growth-driven, size-blind | **scales with size; SDE ladder below $2M** |
 | Max venture vs bootstrap | **+$2.27M** | **−$0.03M** |
+| ... on ownership alone | +$1.39M | **−$0.08M** |
+| Calibration targets hit | 5 of 6 | **6 of 7** |
 
 The second is grounded on published 2025-26 round sizes, graduation rates and
 lower-middle-market SaaS multiples, for companies that top out near $50M of
