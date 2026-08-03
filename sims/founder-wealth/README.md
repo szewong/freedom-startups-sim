@@ -35,6 +35,10 @@ Open [`web/sim.html`](web/sim.html) in a browser and press Run. No install — i
 simulates live: 5,000 founders down five financing paths, in about a quarter of a
 second, with every uncertain parameter on a slider.
 
+`scripts/bundle_sim.py` inlines that page into `web/sim.bundle.html`, a single
+self-contained file for hosting where external requests are blocked. Regenerate
+it after any change to the page, the engine, or the frozen configs.
+
 The page runs a **second implementation** of the model, in JavaScript.
 [`scripts/validate_js_engine.cjs`](scripts/validate_js_engine.cjs) runs both
 engines at both frozen configurations and fails if they disagree, so the live

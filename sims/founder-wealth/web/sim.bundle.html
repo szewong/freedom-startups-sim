@@ -1,0 +1,1801 @@
+<title>Founder Wealth Simulator — live</title>
+
+<style>
+  :root {
+    color-scheme: light;
+    --paper:        #f3f4f3;
+    --surface:      #fcfcfb;
+    --panel:        #eef0ef;
+    --ink:          #14171a;
+    --ink-2:        #52514e;
+    --ink-3:        #86857f;
+    --rule:         #e0e2e2;
+    --rule-strong:  #c8cccc;
+
+    /* categorical slots 1-5, assigned to arms in web/sim.html by SLOT */
+    --arm-1: #2a78d6;  /* bootstrap */
+    --arm-2: #eb6834;  /* standard venture */
+    --arm-3: #1baf7a;  /* maximum venture */
+    --arm-4: #eda100;  /* friends & family */
+    --arm-5: #e87ba4;  /* seed and stop */
+
+    --band-0: #e34948;
+    --band-1: #86b6ef;
+    --band-2: #5598e7;
+    --band-3: #2a78d6;
+    --band-4: #184f95;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --paper: #121212; --surface: #1a1a19; --panel: #202020;
+      --ink: #f3f3f0; --ink-2: #c3c2b7; --ink-3: #8b8a82;
+      --rule: #2c2c2a; --rule-strong: #3d3d3a;
+      --arm-1: #3987e5; --arm-2: #d95926; --arm-3: #199e70;
+      --arm-4: #c98500; --arm-5: #d55181;
+      --band-0: #e66767; --band-1: #cde2fb; --band-2: #86b6ef;
+      --band-3: #3987e5; --band-4: #184f95;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper: #121212; --surface: #1a1a19; --panel: #202020;
+    --ink: #f3f3f0; --ink-2: #c3c2b7; --ink-3: #8b8a82;
+    --rule: #2c2c2a; --rule-strong: #3d3d3a;
+    --arm-1: #3987e5; --arm-2: #d95926; --arm-3: #199e70;
+    --arm-4: #c98500; --arm-5: #d55181;
+    --band-0: #e66767; --band-1: #cde2fb; --band-2: #86b6ef;
+    --band-3: #3987e5; --band-4: #184f95;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 1080px; margin: 0 auto; padding: clamp(24px,4vw,52px) clamp(16px,3vw,36px) 72px; }
+  .prose { max-width: 68ch; }
+
+  .mono, .num {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+    font-size: 11px; letter-spacing: .13em; text-transform: uppercase; color: var(--ink-3);
+  }
+  h1 {
+    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; font-weight: 400;
+    font-size: clamp(28px,4.4vw,42px); line-height: 1.12; letter-spacing: -.015em;
+    margin: 12px 0 0; text-wrap: balance;
+  }
+  h2 {
+    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; font-weight: 400;
+    font-size: clamp(20px,2.8vw,26px); line-height: 1.2; margin: 0 0 8px; text-wrap: balance;
+  }
+  h3 { font-size: 14.5px; font-weight: 650; margin: 0 0 4px; }
+  p { margin: 0 0 14px; }
+  .standfirst { font-size: clamp(16px,2vw,18px); color: var(--ink-2); margin: 14px 0 0; max-width: 62ch; }
+
+  .provenance {
+    margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--rule);
+    font-size: 12px; color: var(--ink-3); display: flex; flex-wrap: wrap; gap: 4px 20px;
+  }
+
+  /* -- controls ---------------------------------------------------------- */
+  .controls {
+    margin-top: 28px; background: var(--panel); border: 1px solid var(--rule);
+    border-radius: 4px; padding: 18px 20px 20px;
+  }
+  .control-groups {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); gap: 20px 28px;
+  }
+  fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+  legend {
+    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 10.5px;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3);
+    padding: 0 0 8px; margin: 0;
+  }
+  .ctl { margin-bottom: 12px; }
+  .ctl-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .ctl label { font-size: 13px; color: var(--ink-2); }
+  .ctl output {
+    font-family: ui-monospace, Menlo, Consolas, monospace; font-variant-numeric: tabular-nums;
+    font-size: 12.5px; color: var(--ink);
+  }
+  input[type=range] { width: 100%; margin: 4px 0 0; accent-color: var(--arm-1); }
+  select, input[type=number] {
+    font: inherit; font-size: 13px; padding: 5px 8px; border-radius: 3px;
+    border: 1px solid var(--rule-strong); background: var(--surface); color: var(--ink); width: 100%;
+  }
+  .toggles { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 2px; }
+  .toggles label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-2); }
+  input[type=checkbox] { accent-color: var(--arm-1); }
+
+  .actions {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px;
+    margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--rule);
+  }
+  button {
+    font: inherit; font-size: 14px; font-weight: 600; padding: 8px 18px; border-radius: 3px;
+    border: 1px solid var(--ink); background: var(--ink); color: var(--paper); cursor: pointer;
+  }
+  button.secondary { background: transparent; color: var(--ink); border-color: var(--rule-strong); }
+  button:hover { opacity: .88; }
+  .status { font-size: 12.5px; color: var(--ink-3); }
+  .status[data-busy="1"] { color: var(--arm-2); }
+
+  /* -- output ------------------------------------------------------------ */
+  section { margin-top: 40px; }
+  .kpis {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 1px;
+    background: var(--rule); border: 1px solid var(--rule); border-radius: 3px; overflow: hidden;
+  }
+  .kpi { background: var(--surface); padding: 16px 18px 18px; }
+  .kpi .label { font-size: 11.5px; color: var(--ink-2); line-height: 1.35; min-height: 2.7em; }
+  .kpi .value {
+    font-family: ui-monospace, Menlo, Consolas, monospace; font-variant-numeric: tabular-nums;
+    font-size: clamp(23px,3vw,29px); letter-spacing: -.02em; line-height: 1.1; margin-top: 10px;
+  }
+  .kpi .foot { font-size: 11px; color: var(--ink-3); margin-top: 4px; }
+
+  figure {
+    margin: 20px 0 0; background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 3px; padding: 18px 18px 14px;
+  }
+  .fig-head { margin-bottom: 14px; }
+  .fig-head p { font-size: 13px; color: var(--ink-2); margin: 0; }
+  .fig-note {
+    font-size: 12.5px; color: var(--ink-3); margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid var(--rule); line-height: 1.5;
+  }
+  .chart { width: 100%; overflow-x: auto; }
+  .chart svg { display: block; }
+  .legend { display: flex; flex-wrap: wrap; gap: 7px 16px; font-size: 12.5px; color: var(--ink-2); margin-bottom: 12px; }
+  .legend .item { display: inline-flex; align-items: center; }
+  .swatch { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; }
+
+  .table-wrap { overflow-x: auto; margin-top: 18px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 620px; }
+  th, td { text-align: right; padding: 8px 11px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  thead th { font-weight: 600; font-size: 11.5px; color: var(--ink-2); border-bottom: 1px solid var(--rule-strong); }
+  tbody td.num, tbody th.num {
+    font-family: ui-monospace, Menlo, Consolas, monospace; font-variant-numeric: tabular-nums;
+  }
+  tr.group-row td {
+    font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3);
+    border-bottom: 1px solid var(--rule-strong); padding-top: 18px;
+  }
+
+  #tip {
+    position: fixed; z-index: 50; pointer-events: none; opacity: 0; transition: opacity .09s ease;
+    background: var(--surface); border: 1px solid var(--rule-strong); border-radius: 3px;
+    padding: 8px 10px; font-size: 12.5px; line-height: 1.45; color: var(--ink);
+    box-shadow: 0 4px 14px rgba(0,0,0,.14); max-width: 260px;
+  }
+  #tip .t-title { font-weight: 650; margin-bottom: 3px; }
+  #tip .t-row { color: var(--ink-2); display: flex; justify-content: space-between; gap: 14px; }
+  #tip .t-row b {
+    font-family: ui-monospace, Menlo, Consolas, monospace; font-variant-numeric: tabular-nums;
+    font-weight: 600; color: var(--ink);
+  }
+
+  footer {
+    margin-top: 52px; padding-top: 20px; border-top: 1px solid var(--rule);
+    font-size: 13px; color: var(--ink-3); max-width: 68ch;
+  }
+  a { color: inherit; text-underline-offset: 2px; }
+  :focus-visible { outline: 2px solid var(--arm-1); outline-offset: 2px; border-radius: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+<div class="page">
+  <header>
+    <div class="eyebrow">Founder Wealth Simulator · live</div>
+    <h1>The same founder, forked at the capital decision</h1>
+    <p class="standfirst">
+      Every founder below is run down all five financing paths with the same idea
+      and the same luck. Nothing is replayed — the model runs in your browser
+      when you press Run.
+    </p>
+    <div class="provenance mono" id="provenance"></div>
+  </header>
+
+  <div class="controls">
+    <div class="control-groups">
+      <fieldset>
+        <legend>The world</legend>
+        <div class="ctl">
+          <div class="ctl-head"><label for="world">Configuration</label></div>
+          <select id="world"></select>
+        </div>
+        <div class="ctl">
+          <div class="ctl-head"><label for="founders">Founders</label><output id="founders-out"></output></div>
+          <input type="range" id="founders" min="500" max="12000" step="500" value="3000">
+        </div>
+        <div class="ctl">
+          <div class="ctl-head"><label for="seed">Seed</label><output id="seed-out"></output></div>
+          <input type="range" id="seed" min="1" max="40" step="1" value="1">
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Deal terms</legend>
+        <div class="ctl">
+          <div class="ctl-head"><label for="pref">Liquidation preference</label><output id="pref-out"></output></div>
+          <input type="range" id="pref" min="1" max="3" step="0.25" value="1">
+        </div>
+        <div class="ctl">
+          <div class="ctl-head"><label for="carve">Management carve-out</label><output id="carve-out"></output></div>
+          <input type="range" id="carve" min="0" max="0.25" step="0.01" value="0">
+        </div>
+        <div class="ctl">
+          <div class="ctl-head"><label for="secondary">Founder secondary allowed</label><output id="secondary-out"></output></div>
+          <input type="range" id="secondary" min="0" max="1" step="0.05" value="0.35">
+        </div>
+        <div class="toggles">
+          <label><input type="checkbox" id="participating"> Participating preferred</label>
+          <label><input type="checkbox" id="nullctl"> Null control (cash, no terms)</label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>The business</legend>
+        <div class="ctl">
+          <div class="ctl-head"><label for="understaff">Cost of being understaffed</label><output id="understaff-out"></output></div>
+          <input type="range" id="understaff" min="0" max="0.6" step="0.05" value="0.25">
+        </div>
+        <div class="ctl">
+          <div class="ctl-head"><label for="boost">Capital buys execution</label><output id="boost-out"></output></div>
+          <input type="range" id="boost" min="0" max="0.8" step="0.05" value="0.15">
+        </div>
+        <div class="ctl">
+          <div class="ctl-head"><label for="decay">Market lost to rivals / yr</label><output id="decay-out"></output></div>
+          <input type="range" id="decay" min="0" max="0.3" step="0.02" value="0.06">
+        </div>
+        <div class="ctl">
+          <div class="ctl-head"><label for="regime">Exit market</label><output id="regime-out"></output></div>
+          <input type="range" id="regime" min="0.5" max="2.5" step="0.1" value="1">
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>The founder &amp; the investors</legend>
+        <div class="ctl">
+          <div class="ctl-head"><label for="opp">Salary given up / yr</label><output id="opp-out"></output></div>
+          <input type="range" id="opp" min="100000" max="450000" step="25000" value="300000">
+        </div>
+        <div class="ctl">
+          <div class="ctl-head"><label for="patience">Years before giving up</label><output id="patience-out"></output></div>
+          <input type="range" id="patience" min="2" max="8" step="1" value="4">
+        </div>
+        <div class="ctl">
+          <div class="ctl-head"><label for="gatenoise">How noisy investors are</label><output id="gatenoise-out"></output></div>
+          <input type="range" id="gatenoise" min="0" max="0.8" step="0.05" value="0.2">
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="actions">
+      <button id="run">Run</button>
+      <button id="reset" class="secondary">Reset to frozen</button>
+      <label style="font-size:13px;color:var(--ink-2);display:inline-flex;align-items:center;gap:6px">
+        <input type="checkbox" id="auto" checked> re-run on change
+      </label>
+      <span class="status" id="status">ready</span>
+    </div>
+  </div>
+
+  <section>
+    <div class="kpis" id="kpis"></div>
+  </section>
+
+  <section>
+    <figure>
+      <div class="fig-head">
+        <h3>Where the venture advantage comes from</h3>
+        <p>Median paired difference against bootstrapping the same idea. Split into what the shares returned and what the wage did.</p>
+      </div>
+      <div class="legend" id="legend-gaps"></div>
+      <div class="chart" id="chart-gaps"></div>
+      <p class="fig-note" id="note-gaps"></p>
+    </figure>
+  </section>
+
+  <section>
+    <figure>
+      <div class="fig-head">
+        <h3>Share of founders by final wealth</h3>
+        <p>Present value, net of the salary they gave up. Centre line is breakeven with a salaried job.</p>
+      </div>
+      <div class="legend" id="legend-bands"></div>
+      <div class="chart" id="chart-bands"></div>
+    </figure>
+  </section>
+
+  <section>
+    <figure>
+      <div class="fig-head">
+        <h3>Median ownership return by founder quality</h3>
+        <p>Distributions, secondary and exit proceeds. Salary excluded entirely.</p>
+      </div>
+      <div class="legend" id="legend-cross"></div>
+      <div class="chart" id="chart-cross"></div>
+      <p class="fig-note">
+        Founder quality is product-market fit multiplied by execution skill, both drawn
+        at founding and never observed by anyone — including the investors.
+      </p>
+    </figure>
+  </section>
+
+  <section>
+    <div class="table-wrap"><table id="table"></table></div>
+  </section>
+
+  <footer class="prose">
+    <p>
+      A simulation, not data. Its value is the counterfactual: the same founder down
+      every path, which no observational study can produce because the founders who
+      raise are not the founders who don't.
+    </p>
+    <p>
+      The browser engine is a second implementation of the Python model, kept honest by
+      <span class="mono">scripts/validate_js_engine.cjs</span>, which fails if the two
+      disagree. Method, calibration, sweeps and retractions are in
+      <span class="mono">FINDINGS.md</span>.
+    </p>
+  </footer>
+</div>
+
+<div id="tip" role="status" aria-live="polite"></div>
+
+<script>
+/* inlined from web/worlds.js */
+/* Generated by scripts/build_web.py — do not edit.
+ *
+ * The frozen configurations, as the browser engine needs them. Regenerate
+ * after any recalibration; the hashes below identify which run each came
+ * from, and web/sim.html displays them so a reader can trace any number
+ * on the page back to the config that produced it.
+ */
+
+const WORLDS = {
+ "smallcap": {
+  "blurb": "Grounded on 2025-26 round sizes and lower-middle-market exit multiples. Companies top out near $50M of revenue.",
+  "config": {
+   "business": {
+    "capital_execution_boost": 0.15,
+    "churn_fit_slope": 0.3,
+    "churn_hi": 0.28,
+    "cost_per_head": 190000.0,
+    "customers_per_head": 15.0,
+    "effort_scale": 8.514855170591556,
+    "founder_savings": 50000.0,
+    "gross_margin": 0.78,
+    "growth_scale": 549.6768230081966,
+    "market_decay": 0.06,
+    "organic_scale": 4.5,
+    "price": 12000.0,
+    "spend_alpha": 0.8,
+    "understaffing_churn": 0.25,
+    "understaffing_growth": 1.0
+   },
+   "capital": {
+    "carve_out": 0.0,
+    "gate_noise_sigma": 0.1,
+    "null_control": false,
+    "participating": false,
+    "pref_multiple": 1.0,
+    "price_noise_sigma": 0.35,
+    "secondary_cap": 8000000.0,
+    "secondary_frac": 0.03,
+    "secondary_min_stage": 4,
+    "secondary_prob": 0.35,
+    "stage_terms": [
+     {
+      "arr_multiple": 0.0,
+      "founder_salary": 80000.0,
+      "gate_arr": 0.0,
+      "gate_growth": 0.0,
+      "pool_refresh": 0.02,
+      "pre_money_base": 5000000.0,
+      "raise_ratio": 0.2
+     },
+     {
+      "arr_multiple": 35.0,
+      "founder_salary": 130000.0,
+      "gate_arr": 150000.0,
+      "gate_growth": 1.3,
+      "pool_refresh": 0.02,
+      "pre_money_base": 13000000.0,
+      "raise_ratio": 0.246
+     },
+     {
+      "arr_multiple": 20.0,
+      "founder_salary": 175000.0,
+      "gate_arr": 1500000.0,
+      "gate_growth": 2.0,
+      "pool_refresh": 0.02,
+      "pre_money_base": 40000000.0,
+      "raise_ratio": 0.275
+     },
+     {
+      "arr_multiple": 16.0,
+      "founder_salary": 210000.0,
+      "gate_arr": 6000000.0,
+      "gate_growth": 1.8,
+      "pool_refresh": 0.02,
+      "pre_money_base": 120000000.0,
+      "raise_ratio": 0.267
+     }
+    ]
+   },
+   "exit": {
+    "abandon_growth": 1.2,
+    "abandon_income": 60000.0,
+    "abandon_years": 4,
+    "acquihire_prob_cap": 0.3,
+    "acquihire_prob_per_head": 0.004,
+    "acquihire_value_per_head": 750000.0,
+    "base_earnings_multiple": 1.8927597049337974,
+    "base_revenue_multiple": 4.0,
+    "earnings_multiple_slope": 2.684819306573681,
+    "earnings_pivot": 250000.0,
+    "exit_noise_sigma": 0.45,
+    "growth_premium": 2.0664978723879335,
+    "horizon_illiquidity_discount": 0.3,
+    "horizon_years": 12,
+    "large_liquidity_arr": 25000000.0,
+    "large_liquidity_prob": 0.22,
+    "max_earnings_multiple": 8.0,
+    "max_revenue_multiple": 12.0,
+    "min_earnings_multiple": 1.5,
+    "min_revenue_multiple": 1.0,
+    "offer_min_arr": 1000000.0,
+    "offer_prob": 0.08,
+    "regime": 1.0,
+    "scale_pivot_arr": 1000000.0,
+    "scale_premium": 1.7300402099583732,
+    "sde_ceiling": 2000000.0,
+    "stall_growth": 1.35
+   },
+   "latents": {
+    "exec_sigma": 0.39948530696757767,
+    "fit_a": 2.0,
+    "fit_b": 5.0,
+    "market_median": 112091333.20166673,
+    "market_sigma": 2.2,
+    "skill_a": 5.0,
+    "skill_b": 5.0
+   },
+   "ledger": {
+    "discount_rate": 0.08,
+    "distribution_frac": 0.6,
+    "distribution_reserve_months": 6.0,
+    "opportunity_cost": 300000.0,
+    "salary_cap": 400000.0,
+    "salary_floor": 40000.0,
+    "salary_revenue_share": 0.1,
+    "tax_rate_capital": 0.2,
+    "tax_rate_income": 0.37
+   },
+   "n_founders": 5000,
+   "n_replicates": 8,
+   "root_seed": 20260803,
+   "spend": {
+    "boot_burn_frac": 0.1,
+    "boot_reinvest_frac": 0.6,
+    "boot_reserve_months": 6.0,
+    "funded_burn_frac": 0.5,
+    "funded_spend_rate": 0.2,
+    "patient_spend_rate": 0.18
+   }
+  },
+  "hash": "e9c960d0ef5d76f7",
+  "label": "Small-cap",
+  "source": "configs/smallcap.yaml"
+ },
+ "venture": {
+  "blurb": "The headline configuration: rounds up to $150M and exits into the hundreds of millions.",
+  "config": {
+   "business": {
+    "capital_execution_boost": 0.15,
+    "churn_fit_slope": 0.3,
+    "churn_hi": 0.28,
+    "cost_per_head": 190000.0,
+    "customers_per_head": 15.0,
+    "effort_scale": 4.0,
+    "founder_savings": 50000.0,
+    "gross_margin": 0.78,
+    "growth_scale": 1400.0,
+    "market_decay": 0.06,
+    "organic_scale": 3.3016949513909446,
+    "price": 12000.0,
+    "spend_alpha": 0.8,
+    "understaffing_churn": 0.25,
+    "understaffing_growth": 1.0
+   },
+   "capital": {
+    "carve_out": 0.0,
+    "gate_noise_sigma": 0.20585270713042186,
+    "null_control": false,
+    "participating": false,
+    "pref_multiple": 1.0,
+    "price_noise_sigma": 0.35,
+    "secondary_cap": 8000000.0,
+    "secondary_frac": 0.03,
+    "secondary_min_stage": 4,
+    "secondary_prob": 0.35,
+    "stage_terms": [
+     {
+      "arr_multiple": 0.0,
+      "founder_salary": 90000.0,
+      "gate_arr": 0.0,
+      "gate_growth": 0.0,
+      "pool_refresh": 0.02,
+      "pre_money_base": 4000000.0,
+      "raise_ratio": 0.125
+     },
+     {
+      "arr_multiple": 40.0,
+      "founder_salary": 150000.0,
+      "gate_arr": 150000.0,
+      "gate_growth": 1.3,
+      "pool_refresh": 0.02,
+      "pre_money_base": 12000000.0,
+      "raise_ratio": 0.25
+     },
+     {
+      "arr_multiple": 30.0,
+      "founder_salary": 180000.0,
+      "gate_arr": 1500000.0,
+      "gate_growth": 2.0,
+      "pool_refresh": 0.02,
+      "pre_money_base": 45000000.0,
+      "raise_ratio": 0.267
+     },
+     {
+      "arr_multiple": 25.0,
+      "founder_salary": 220000.0,
+      "gate_arr": 6000000.0,
+      "gate_growth": 2.0,
+      "pool_refresh": 0.02,
+      "pre_money_base": 150000000.0,
+      "raise_ratio": 0.233
+     },
+     {
+      "arr_multiple": 22.0,
+      "founder_salary": 260000.0,
+      "gate_arr": 18000000.0,
+      "gate_growth": 1.7,
+      "pool_refresh": 0.01,
+      "pre_money_base": 500000000.0,
+      "raise_ratio": 0.16
+     },
+     {
+      "arr_multiple": 20.0,
+      "founder_salary": 300000.0,
+      "gate_arr": 45000000.0,
+      "gate_growth": 1.5,
+      "pool_refresh": 0.01,
+      "pre_money_base": 1200000000.0,
+      "raise_ratio": 0.125
+     }
+    ]
+   },
+   "exit": {
+    "abandon_growth": 1.2,
+    "abandon_income": 60000.0,
+    "abandon_years": 4,
+    "acquihire_prob_cap": 0.3,
+    "acquihire_prob_per_head": 0.004,
+    "acquihire_value_per_head": 750000.0,
+    "base_earnings_multiple": 2.0,
+    "base_revenue_multiple": 3.5,
+    "earnings_multiple_slope": 3.0,
+    "earnings_pivot": 250000.0,
+    "exit_noise_sigma": 0.45,
+    "growth_premium": 4.0,
+    "horizon_illiquidity_discount": 0.3,
+    "horizon_years": 12,
+    "large_liquidity_arr": 25000000.0,
+    "large_liquidity_prob": 0.22,
+    "max_earnings_multiple": 8.0,
+    "max_revenue_multiple": 16.0,
+    "min_earnings_multiple": 1.5,
+    "min_revenue_multiple": 1.0,
+    "offer_min_arr": 1000000.0,
+    "offer_prob": 0.10274855135721547,
+    "regime": 1.0,
+    "scale_pivot_arr": 1000000.0,
+    "scale_premium": 0.0,
+    "sde_ceiling": 2000000.0,
+    "stall_growth": 1.35
+   },
+   "latents": {
+    "exec_sigma": 0.25,
+    "fit_a": 2.0,
+    "fit_b": 5.0,
+    "market_median": 643406006.3606135,
+    "market_sigma": 1.2,
+    "skill_a": 5.0,
+    "skill_b": 5.0
+   },
+   "ledger": {
+    "discount_rate": 0.08,
+    "distribution_frac": 0.6,
+    "distribution_reserve_months": 6.0,
+    "opportunity_cost": 300000.0,
+    "salary_cap": 400000.0,
+    "salary_floor": 40000.0,
+    "salary_revenue_share": 0.1,
+    "tax_rate_capital": 0.2,
+    "tax_rate_income": 0.37
+   },
+   "n_founders": 5000,
+   "n_replicates": 8,
+   "root_seed": 20260803,
+   "spend": {
+    "boot_burn_frac": 0.1,
+    "boot_reinvest_frac": 0.6,
+    "boot_reserve_months": 6.0,
+    "funded_burn_frac": 0.5,
+    "funded_spend_rate": 0.2,
+    "patient_spend_rate": 0.18
+   }
+  },
+  "hash": "109d8c1b20a92418",
+  "label": "Venture ladder",
+  "source": "configs/frozen.yaml"
+ }
+};
+
+if (typeof module !== "undefined" && module.exports) module.exports = WORLDS;
+</script>
+<script>
+/* inlined from web/engine.js */
+/* Founder Wealth Simulator — browser engine.
+ *
+ * A direct port of src/foundersim (latents, business, captable, waterfall,
+ * cohort, ledger) so the page can simulate live rather than replay stored runs.
+ *
+ * Two implementations of one model is a real risk: they drift, and the live
+ * numbers stop meaning what FINDINGS.md says. scripts/validate_js_engine.cjs
+ * runs this engine at both frozen configurations and compares its statistics
+ * against the Python ones, so drift fails a check instead of lying quietly.
+ *
+ * It is NOT bit-identical to the Python: NumPy's PCG64 is not reproduced here,
+ * so a given seed draws different numbers. Agreement is statistical, which is
+ * the only kind the claims rest on.
+ *
+ * Structure note: the Python runs vectorised across founders, one arm at a
+ * time. This runs one *founder* at a time, all arms, on a single set of draws.
+ * That is slower in principle and much clearer in practice — the common random
+ * numbers that make the fork a clean counterfactual are guaranteed by the loop
+ * structure rather than by remembering to reuse an array.
+ */
+
+const Engine = (() => {
+  "use strict";
+
+  // -- random numbers -------------------------------------------------------
+
+  function mulberry32(a) {
+    return function () {
+      a |= 0;
+      a = (a + 0x6d2b79f5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function hashSeed(str) {
+    let h = 2166136261 >>> 0;
+    for (let i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619) >>> 0;
+    }
+    return h >>> 0;
+  }
+
+  function makeRng(seed) {
+    const u = mulberry32(seed);
+    let spare = null;
+
+    function normal() {
+      if (spare !== null) {
+        const s = spare;
+        spare = null;
+        return s;
+      }
+      let x, y, r;
+      do {
+        x = 2 * u() - 1;
+        y = 2 * u() - 1;
+        r = x * x + y * y;
+      } while (r === 0 || r >= 1);
+      const f = Math.sqrt((-2 * Math.log(r)) / r);
+      spare = y * f;
+      return x * f;
+    }
+
+    // Marsaglia-Tsang. Beta(a,b) is then X/(X+Y) with X~Gamma(a), Y~Gamma(b).
+    function gamma(shape) {
+      if (shape < 1) return gamma(shape + 1) * Math.pow(u(), 1 / shape);
+      const d = shape - 1 / 3;
+      const c = 1 / Math.sqrt(9 * d);
+      for (;;) {
+        let x, v;
+        do {
+          x = normal();
+          v = 1 + c * x;
+        } while (v <= 0);
+        v = v * v * v;
+        const uu = u();
+        if (uu < 1 - 0.0331 * x * x * x * x) return d * v;
+        if (Math.log(uu) < 0.5 * x * x + d * (1 - v + Math.log(v))) return d * v;
+      }
+    }
+
+    function beta(a, b) {
+      const x = gamma(a);
+      const y = gamma(b);
+      return x / (x + y);
+    }
+
+    return { uniform: u, normal, beta };
+  }
+
+  const clip = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v);
+
+  // -- the model ------------------------------------------------------------
+
+  function churnRate(fit, b) {
+    return clip(b.churn_hi - b.churn_fit_slope * fit, 0.02, 0.6);
+  }
+
+  function grossNewCustomers(fit, skill, customers, spend, ceiling, execNoise, boost, b, execSigma) {
+    const headroom = clip(1 - customers / Math.max(ceiling, 1), 0, 1);
+    const quality = fit * skill * (1 + boost);
+    const paid = b.growth_scale * quality * Math.pow(Math.max(spend, 0) / 1e6, b.spend_alpha);
+    const organic = b.organic_scale * quality * customers;
+    const effort = b.effort_scale * quality;
+    const shock = Math.exp(execSigma * execNoise - 0.5 * execSigma * execSigma);
+    return (paid + organic + effort) * headroom * shock;
+  }
+
+  const employeesNeeded = (customers, b) =>
+    Math.max(customers / b.customers_per_head - 1, 0);
+
+  function capacityFactor(employees, customers, b) {
+    return clip(((employees + 1) * b.customers_per_head) / Math.max(customers, 1), 0, 1);
+  }
+
+  function decayCeiling(ceiling, customers, b) {
+    return customers + Math.max(ceiling - customers, 0) * (1 - b.market_decay);
+  }
+
+  function revenueMultiple(growth, noise, ex, arr) {
+    let mult = ex.base_revenue_multiple + ex.growth_premium * Math.max(growth - 1, 0);
+    if (ex.scale_premium) {
+      mult += ex.scale_premium * Math.log10(Math.max(arr, 1) / ex.scale_pivot_arr);
+    }
+    mult = clip(mult, ex.min_revenue_multiple, ex.max_revenue_multiple);
+    const shock = Math.exp(ex.exit_noise_sigma * noise - 0.5 * ex.exit_noise_sigma ** 2);
+    return mult * ex.regime * shock;
+  }
+
+  function earningsMultiple(earnings, ex) {
+    const decades = Math.log10(Math.max(earnings, 1) / ex.earnings_pivot);
+    return clip(
+      ex.base_earnings_multiple + ex.earnings_multiple_slope * decades,
+      ex.min_earnings_multiple,
+      ex.max_earnings_multiple
+    );
+  }
+
+  function enterpriseValue(arr, profit, growth, noise, ex, ownerComp) {
+    const revValue = revenueMultiple(growth, noise, ex, arr) * arr;
+    const ebitda = Math.max(profit, 0);
+    const ebitdaValue = earningsMultiple(ebitda, ex) * ebitda;
+
+    let earnValue = ebitdaValue;
+    if (ownerComp !== undefined && ownerComp !== null) {
+      const sde = Math.max(profit + ownerComp, 0);
+      const sdeValue = earningsMultiple(sde, ex) * sde;
+      earnValue = sdeValue <= ex.sde_ceiling ? sdeValue : ebitdaValue;
+    }
+    return Math.max(revValue, earnValue);
+  }
+
+  // -- the waterfall --------------------------------------------------------
+  // Preferences are paid in reverse order of investment; each non-participating
+  // investor takes the greater of its preference and its share as common. The
+  // conversion set is a joint decision, so it is solved by best response.
+
+  function payouts(exitValue, prefs, owns, commonPct, converted, participating) {
+    const r = prefs.length;
+    const due = new Array(r);
+    let totalDue = 0;
+    for (let i = 0; i < r; i++) {
+      due[i] = !converted[i] && prefs[i] > 0 ? prefs[i] : 0;
+      totalDue += due[i];
+    }
+
+    // Junior rounds are paid first, so walk the queue from the last round back.
+    const paid = new Array(r).fill(0);
+    let juniorDue = 0;
+    for (let i = r - 1; i >= 0; i--) {
+      const available = Math.max(exitValue - juniorDue, 0);
+      paid[i] = Math.min(due[i], available);
+      juniorDue += due[i];
+    }
+
+    const residual = Math.max(exitValue - Math.min(totalDue, exitValue), 0);
+
+    let commonTotal = commonPct;
+    const shares = new Array(r);
+    for (let i = 0; i < r; i++) {
+      shares[i] = converted[i] || (participating && prefs[i] > 0);
+      if (shares[i]) commonTotal += owns[i];
+    }
+    const perPoint = commonTotal > 0 ? residual / commonTotal : 0;
+
+    const out = new Array(r);
+    for (let i = 0; i < r; i++) out[i] = paid[i] + (shares[i] ? owns[i] * perPoint : 0);
+    return { investor: out, perPoint };
+  }
+
+  const MAX_ITERATIONS = 24;
+
+  function solveConversions(exitValue, prefs, owns, commonPct) {
+    const r = prefs.length;
+    const converted = new Array(r).fill(false);
+    let cur = payouts(exitValue, prefs, owns, commonPct, converted, false);
+
+    for (let it = 0; it < MAX_ITERATIONS; it++) {
+      let changed = false;
+      for (let c = 0; c < r; c++) {
+        converted[c] = !converted[c];
+        const alt = payouts(exitValue, prefs, owns, commonPct, converted, false);
+        if (alt.investor[c] > cur.investor[c] + 1e-6) {
+          changed = true;
+          cur = alt;
+        } else {
+          converted[c] = !converted[c];
+        }
+      }
+      if (!changed) break;
+    }
+    return converted;
+  }
+
+  function founderProceeds(exitValue, prefs, owns, founderPct, otherCommon, cap) {
+    const commonPct = founderPct + otherCommon;
+    const founderShareOfCommon = commonPct > 0 ? founderPct / commonPct : 0;
+
+    const carved = (cap.carve_out || 0) * exitValue;
+    const rest = exitValue - carved;
+
+    const converted = cap.participating
+      ? new Array(prefs.length).fill(false)
+      : solveConversions(rest, prefs, owns, commonPct);
+    const res = payouts(rest, prefs, owns, commonPct, converted, cap.participating);
+    return carved * founderShareOfCommon + res.perPoint * founderPct;
+  }
+
+  // -- one founder, one strategy -------------------------------------------
+
+  const STRATEGIES = [
+    { name: "bootstrap", label: "Bootstrap", maxStage: -1, raiseMultiple: 1 },
+    { name: "friends_family", label: "Friends & family", maxStage: 0, raiseMultiple: 1 },
+    { name: "seed_and_stop", label: "Seed and stop", maxStage: 1, raiseMultiple: 1 },
+    { name: "standard_venture", label: "Standard venture", maxStage: 5, raiseMultiple: 1 },
+    { name: "max_venture", label: "Maximum venture", maxStage: 5, raiseMultiple: 1.4 },
+  ];
+
+  function runArm(cfg, lat, noise, strat) {
+    const b = cfg.business;
+    const sp = cfg.spend;
+    const cap = cfg.capital;
+    const ex = cfg.exit;
+    const led = cfg.ledger;
+    const terms = cap.stage_terms;
+    const horizon = ex.horizon_years;
+    const nStages = terms.length;
+    const topStage = Math.min(strat.maxStage, nStages - 1);
+
+    let founderPct = 1;
+    let otherCommon = 0;
+    const invPct = new Array(nStages).fill(0);
+    const invAmt = new Array(nStages).fill(0);
+
+    let customers = 0;
+    let cash = b.founder_savings;
+    let ceiling = lat.market / b.price;
+    let arr = 0;
+    let arrPrior = 0;
+    let stage = -1;
+    let alive = true;
+    let settled = false;
+    let starvingYears = 0;
+
+    const salaryCash = new Array(horizon).fill(0);
+    const distCash = new Array(horizon).fill(0);
+    const capitalCash = new Array(horizon).fill(0);
+    const active = new Array(horizon).fill(false);
+
+    let exitValue = 0, exitYear = -1, died = false, exited = false;
+    let founderGross = 0, raised = 0, finalArr = 0, founderAtExit = 1;
+
+    const baseChurn = churnRate(lat.fit, b);
+    const growthOf = (cur, prior) => cur / Math.max(prior, b.price);
+
+    let profit = 0;
+    let salary = 0;
+
+    function attemptRounds(eligible, t, growth) {
+      if (!eligible) return;
+      for (let s = 0; s <= topStage; s++) {
+        if (stage !== s - 1) continue;
+        const term = terms[s];
+        const sg = cap.gate_noise_sigma;
+        const arrBar = term.gate_arr * Math.exp(sg * noise.gateArr[t] - 0.5 * sg * sg);
+        const growthBar = term.gate_growth * Math.exp(sg * noise.gateGrowth[t] - 0.5 * sg * sg);
+        if (!(arr >= arrBar && growth >= growthBar)) return;
+
+        const pn = cap.price_noise_sigma;
+        const priceShock = Math.exp(pn * noise.price[t] - 0.5 * pn * pn);
+        const pre = Math.max(term.pre_money_base, arr * term.arr_multiple) * priceShock;
+        const amount = pre * term.raise_ratio * strat.raiseMultiple;
+        const post = pre + amount;
+
+        let newInv = post > 0 ? amount / post : 0;
+        let poolAdd = term.pool_refresh;
+        if (cap.null_control) {
+          newInv = 0;
+          poolAdd = 0;
+        }
+        const keep = 1 - newInv - poolAdd;
+
+        founderPct *= keep;
+        otherCommon = otherCommon * keep + poolAdd;
+        for (let k = 0; k < nStages; k++) invPct[k] *= keep;
+        invPct[s] = newInv;
+        invAmt[s] = amount;
+        cash += amount;
+        raised += amount;
+        stage = s;
+
+        if (s >= cap.secondary_min_stage && noise.secondary[t] < cap.secondary_prob) {
+          let frac = Math.min(cap.secondary_frac, founderPct);
+          frac = Math.min(frac, cap.secondary_cap / Math.max(post, 1));
+          const proceeds = frac * post;
+          founderPct -= frac;
+          otherCommon += frac;
+          capitalCash[t] += proceeds * (1 - led.tax_rate_capital);
+        }
+        return; // at most one round a year
+      }
+    }
+
+    function liquidate(value, t) {
+      const prefs = new Array(nStages);
+      for (let k = 0; k < nStages; k++) {
+        prefs[k] = cap.null_control ? 0 : invAmt[k] * cap.pref_multiple;
+      }
+      const take = founderProceeds(value, prefs, invPct, founderPct, otherCommon, cap);
+      founderGross = take;
+      capitalCash[t] += take * (1 - led.tax_rate_capital);
+      exitValue = value;
+      exitYear = t;
+      founderAtExit = founderPct;
+      finalArr = arr;
+      settled = true;
+      alive = false;
+    }
+
+    for (let t = 0; t < horizon; t++) {
+      if (!alive || settled) break;
+      active[t] = true;
+
+      let growth = growthOf(arr, arrPrior);
+      attemptRounds(stage < topStage, t, growth);
+      let moreRounds = stage < topStage;
+
+      // 2. spend
+      const expectedRevenue = Math.max(arr, customers * b.price);
+      const expectedGp = expectedRevenue * b.gross_margin;
+      const plannedEmployees = employeesNeeded(customers, b);
+      const expectedOpex = plannedEmployees * b.cost_per_head + led.salary_floor;
+      const reserve = (expectedOpex * sp.boot_reserve_months) / 12;
+      const fromProfit = sp.boot_reinvest_frac * Math.max(expectedGp - expectedOpex, 0);
+      const rate = moreRounds ? sp.funded_spend_rate : sp.patient_spend_rate;
+      const spend = fromProfit + rate * Math.max(cash - reserve, 0);
+
+      // 3. staffing
+      const boost = stage >= 2 ? b.capital_execution_boost : 0;
+      const potentialNew = grossNewCustomers(
+        lat.fit, lat.skill, customers, spend, ceiling,
+        noise.exec[t], boost, b, cfg.latents.exec_sigma
+      );
+      const projected = customers * (1 - baseChurn) + potentialNew;
+      const desiredEmployees = employeesNeeded(projected, b);
+
+      const marketSalary = clip(
+        led.salary_revenue_share * expectedRevenue, led.salary_floor, led.salary_cap
+      );
+      const stageSalary = stage >= 0 ? terms[Math.min(stage, nStages - 1)].founder_salary : 0;
+      const salaryTarget = stage >= 0 ? Math.max(marketSalary, stageSalary) : marketSalary;
+      const burnFrac = moreRounds ? sp.funded_burn_frac : sp.boot_burn_frac;
+      const affordable = Math.max(cash * burnFrac + expectedGp - spend, 0);
+      salary = Math.min(salaryTarget, affordable);
+
+      const staffBudget = Math.max(cash * burnFrac + expectedGp - spend - salary, 0);
+      const employees = Math.min(desiredEmployees, staffBudget / b.cost_per_head);
+
+      // 4. customers
+      const capacity = capacityFactor(employees, Math.max(projected, 1), b);
+      const churn = clip(baseChurn + b.understaffing_churn * (1 - capacity), 0, 0.95);
+      const newCustomers = potentialNew * (1 - b.understaffing_growth * (1 - capacity));
+      const opening = customers;
+      customers = opening * (1 - churn) + newCustomers;
+
+      // 5. cash
+      const revenue = 0.5 * (opening + customers) * b.price;
+      const grossProfit = revenue * b.gross_margin;
+      const opex = employees * b.cost_per_head + salary;
+      cash += grossProfit - opex - spend;
+
+      arrPrior = arr;
+      arr = customers * b.price;
+      profit = grossProfit - opex;
+
+      // 6. the founder is paid
+      const distReserve = (opex * led.distribution_reserve_months) / 12;
+      const payable = Math.min(Math.max(cash - distReserve, 0), Math.max(profit, 0));
+      let distribution = 0;
+      if (!moreRounds && payable > 0) {
+        distribution = led.distribution_frac * payable;
+        cash -= distribution;
+      }
+      const founderDistribution = distribution * founderPct;
+      const income = salary + founderDistribution;
+      const afterTax = 1 - led.tax_rate_income;
+      salaryCash[t] += salary * afterTax;
+      distCash[t] += founderDistribution * afterTax;
+
+      // 7. out of cash
+      if (cash < 0) {
+        attemptRounds(stage < topStage, t, growthOf(arr, arrPrior));
+        if (cash < 0) {
+          const pAcq = Math.min(employees * ex.acquihire_prob_per_head, ex.acquihire_prob_cap);
+          const soft = noise.acquihire[t] < pAcq;
+          liquidate(soft ? employees * ex.acquihire_value_per_head : 0, t);
+          died = true;
+          continue;
+        }
+      }
+
+      // 7b. the founder gives up
+      const progressing =
+        growthOf(arr, arrPrior) >= ex.abandon_growth && arr - arrPrior >= ex.abandon_income;
+      starvingYears = income < ex.abandon_income && !progressing ? starvingYears + 1 : 0;
+      if (starvingYears >= ex.abandon_years) {
+        liquidate(
+          enterpriseValue(arr, profit, growthOf(arr, arrPrior), noise.exitMult[t], ex, salary), t
+        );
+        died = true;
+        continue;
+      }
+
+      // 8. acquisition offers
+      const g = growthOf(arr, arrPrior);
+      const stalled = g < ex.stall_growth;
+      const offered =
+        (arr >= ex.offer_min_arr && stalled && noise.offer[t] < ex.offer_prob) ||
+        (arr >= ex.large_liquidity_arr && noise.offer[t] < ex.large_liquidity_prob);
+      if (offered) {
+        liquidate(enterpriseValue(arr, profit, g, noise.exitMult[t], ex, salary), t);
+        exited = true;
+        continue;
+      }
+
+      // 9. the market moves on
+      ceiling = decayCeiling(ceiling, customers, b);
+    }
+
+    if (alive && !settled) {
+      const last = horizon - 1;
+      const value =
+        enterpriseValue(arr, profit, growthOf(arr, arrPrior), noise.exitMult[last], ex, salary) *
+        (1 - ex.horizon_illiquidity_discount);
+      liquidate(value, last);
+      exited = true;
+    }
+
+    // -- ledger -------------------------------------------------------------
+    const oppAfterTax = led.opportunity_cost * (1 - led.tax_rate_income);
+    let fromSalary = 0, fromDist = 0, fromExit = 0, opportunity = 0, yearsActive = 0;
+    let nominal = 0, yearsToMillion = horizon + 1;
+    for (let t = 0; t < horizon; t++) {
+      const df = Math.pow(1 + led.discount_rate, -(t + 0.5));
+      fromSalary += salaryCash[t] * df;
+      fromDist += distCash[t] * df;
+      fromExit += capitalCash[t] * df;
+      if (active[t]) {
+        opportunity += oppAfterTax * df;
+        yearsActive += 1;
+      }
+      nominal += salaryCash[t] + distCash[t] + capitalCash[t];
+      if (nominal >= 1e6 && yearsToMillion === horizon + 1) yearsToMillion = t + 1;
+    }
+    const ownership = fromDist + fromExit;
+    const gross = fromSalary + ownership;
+
+    return {
+      gross,
+      net: gross - opportunity,
+      labour: fromSalary - opportunity,
+      ownership,
+      fromSalary,
+      fromDistributions: fromDist,
+      fromExit,
+      yearsActive,
+      yearsToMillion,
+      equityZero: founderGross <= 0,
+      died,
+      exited,
+      maxStage: stage,
+      raised,
+      exitValue,
+      exitYear,
+      founderPct: founderAtExit,
+      finalArr,
+    };
+  }
+
+  // -- a cohort -------------------------------------------------------------
+
+  function drawFounder(rng, cfg, horizon) {
+    const lc = cfg.latents;
+    const lat = {
+      market: Math.exp(Math.log(lc.market_median) + lc.market_sigma * rng.normal()),
+      fit: rng.beta(lc.fit_a, lc.fit_b),
+      skill: rng.beta(lc.skill_a, lc.skill_b),
+    };
+    const noise = {
+      exec: [], gateArr: [], gateGrowth: [], price: [],
+      offer: [], exitMult: [], acquihire: [], secondary: [],
+    };
+    for (let t = 0; t < horizon; t++) {
+      noise.exec.push(rng.normal());
+      noise.gateArr.push(rng.normal());
+      noise.gateGrowth.push(rng.normal());
+      noise.price.push(rng.normal());
+      noise.exitMult.push(rng.normal());
+      noise.offer.push(rng.uniform());
+      noise.acquihire.push(rng.uniform());
+      noise.secondary.push(rng.uniform());
+    }
+    return { lat, noise };
+  }
+
+  /* Run every strategy over the same founders.
+   *
+   * The draws happen once per founder and every arm reads them, so the arms are
+   * paired by construction: same market, same fit, same skill, same luck in the
+   * same year, forked only at the capital decision.
+   */
+  function simulate(cfg, opts) {
+    const options = opts || {};
+    const nFounders = options.nFounders || 2000;
+    const seed = options.seed === undefined ? 20260803 : options.seed;
+    const strategies = options.strategies || STRATEGIES;
+    const horizon = cfg.exit.horizon_years;
+
+    const rng = makeRng(hashSeed(String(seed)));
+    const arms = {};
+    for (const s of strategies) arms[s.name] = { strategy: s, rows: [] };
+    const quality = new Array(nFounders);
+    const markets = new Array(nFounders);
+
+    for (let i = 0; i < nFounders; i++) {
+      const { lat, noise } = drawFounder(rng, cfg, horizon);
+      quality[i] = lat.fit * lat.skill;
+      markets[i] = lat.market;
+      for (const s of strategies) arms[s.name].rows.push(runArm(cfg, lat, noise, s));
+    }
+    return { arms, quality, markets, nFounders, config: cfg };
+  }
+
+  // -- statistics -----------------------------------------------------------
+
+  function percentile(sorted, p) {
+    if (!sorted.length) return 0;
+    const idx = (p / 100) * (sorted.length - 1);
+    const lo = Math.floor(idx), hi = Math.ceil(idx);
+    if (lo === hi) return sorted[lo];
+    return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+  }
+
+  const sortedOf = (rows, key) => rows.map((r) => r[key]).sort((a, b) => a - b);
+  const median = (rows, key) => percentile(sortedOf(rows, key), 50);
+  const share = (rows, pred) => rows.reduce((a, r) => a + (pred(r) ? 1 : 0), 0) / rows.length;
+
+  const BANDS = [
+    { name: "worse than a job", lo: -Infinity, hi: 0 },
+    { name: "$0 - $1M", lo: 0, hi: 1e6 },
+    { name: "$1M - $10M", lo: 1e6, hi: 10e6 },
+    { name: "$10M - $100M", lo: 10e6, hi: 100e6 },
+    { name: "over $100M", lo: 100e6, hi: Infinity },
+  ];
+
+  function summarise(result, baselineName) {
+    const out = {};
+    const base = result.arms[baselineName] ? result.arms[baselineName].rows : null;
+
+    for (const [name, arm] of Object.entries(result.arms)) {
+      const rows = arm.rows;
+      const net = sortedOf(rows, "net");
+      const own = sortedOf(rows, "ownership");
+
+      const stats = {
+        label: arm.strategy.label,
+        netMedian: percentile(net, 50),
+        netP10: percentile(net, 10),
+        netP90: percentile(net, 90),
+        netP99: percentile(net, 99),
+        ownMedian: percentile(own, 50),
+        ownP90: percentile(own, 90),
+        labourMedian: median(rows, "labour"),
+        pEquityZero: share(rows, (r) => r.equityZero),
+        pDied: share(rows, (r) => r.died),
+        pWorseThanJob: share(rows, (r) => r.net < 0),
+        pGt1m: share(rows, (r) => r.net > 1e6),
+        pGt10m: share(rows, (r) => r.net > 10e6),
+        meanRaised: rows.reduce((a, r) => a + r.raised, 0) / rows.length,
+        medianExitValue: median(rows, "exitValue"),
+        medianFinalArr: median(rows, "finalArr"),
+        bands: BANDS.map((b) => share(rows, (r) => r.net >= b.lo && r.net < b.hi)),
+      };
+
+      if (base) {
+        // Paired within founder: the difference is taken per founder and only
+        // then summarised, which is what removes starting-condition luck.
+        const dNet = rows.map((r, i) => r.net - base[i].net).sort((a, b) => a - b);
+        const dOwn = rows.map((r, i) => r.ownership - base[i].ownership).sort((a, b) => a - b);
+        const dLab = rows.map((r, i) => r.labour - base[i].labour).sort((a, b) => a - b);
+        stats.gapNet = percentile(dNet, 50);
+        stats.gapOwn = percentile(dOwn, 50);
+        stats.gapLabour = percentile(dLab, 50);
+        stats.pBeatsBaseline = share(rows, (r, i) => false) || 0;
+        let wins = 0;
+        for (let i = 0; i < rows.length; i++) if (rows[i].net > base[i].net) wins++;
+        stats.pBeatsBaseline = wins / rows.length;
+      }
+      out[name] = stats;
+    }
+    return out;
+  }
+
+  /* Median outcome by percentile of an index (founder quality, market size).
+   * "At what percentile of luck does raising overtake bootstrapping?" */
+  function crossing(result, index, key, nBins) {
+    const bins = nBins || 20;
+    const order = index.map((v, i) => i).sort((a, b) => index[a] - index[b]);
+    const names = Object.keys(result.arms);
+    const rows = [];
+    for (let k = 0; k < bins; k++) {
+      const from = Math.floor((k * order.length) / bins);
+      const to = Math.floor(((k + 1) * order.length) / bins);
+      const slice = order.slice(from, to);
+      const row = { pctLo: (100 * k) / bins, pctHi: (100 * (k + 1)) / bins };
+      for (const n of names) {
+        const vals = slice.map((i) => result.arms[n].rows[i][key]).sort((a, b) => a - b);
+        row[n] = percentile(vals, 50);
+      }
+      rows.push(row);
+    }
+    return rows;
+  }
+
+  return {
+    STRATEGIES,
+    BANDS,
+    makeRng,
+    hashSeed,
+    simulate,
+    summarise,
+    crossing,
+    percentile,
+    // exported for the validator and for tests
+    enterpriseValue,
+    earningsMultiple,
+    revenueMultiple,
+    founderProceeds,
+    solveConversions,
+    runArm,
+  };
+})();
+
+if (typeof module !== "undefined" && module.exports) module.exports = Engine;
+</script>
+<script>
+(() => {
+  "use strict";
+
+  // Colour follows the arm, not its row number, and the same arm wears the same
+  // colour here as in the written report. Slots 1-3 go to the three arms the
+  // line chart draws, because only the first three clear the all-pairs
+  // colourblind gates; the other two appear solely in bar charts, where the
+  // adjacent-pair gates apply and direct labels are always present.
+  const SLOT = {
+    bootstrap: 1, standard_venture: 2, max_venture: 3, friends_family: 4, seed_and_stop: 5,
+  };
+  const ARMS = Engine.STRATEGIES.map((s) => ({
+    key: s.name, label: s.label, color: `var(--arm-${SLOT[s.name]})`,
+  }));
+  const BASELINE = "bootstrap";
+  const VENTURE_ARMS = ARMS.filter((a) => a.key !== BASELINE);
+  const byKey = (k) => ARMS.find((a) => a.key === k);
+  const LINE_ARMS = [byKey("bootstrap"), byKey("standard_venture"), byKey("max_venture")];
+
+  const NS = "http://www.w3.org/2000/svg";
+  const el = (tag, attrs = {}) => {
+    const n = document.createElementNS(NS, tag);
+    for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+    return n;
+  };
+  const money = (v, dp) => {
+    const m = v / 1e6;
+    const d = dp !== undefined ? dp : Math.abs(m) >= 10 ? 1 : 2;
+    return (v < 0 ? "−$" : "$") + Math.abs(m).toFixed(d) + "M";
+  };
+  const pct = (v, dp = 1) => (v * 100).toFixed(dp) + "%";
+  const $ = (id) => document.getElementById(id);
+
+  // -- tooltip -------------------------------------------------------------
+  const tip = $("tip");
+  function showTip(evt, title, rows) {
+    tip.innerHTML = `<div class="t-title">${title}</div>` +
+      rows.map((r) => `<div class="t-row"><span>${r[0]}</span><b>${r[1]}</b></div>`).join("");
+    tip.style.opacity = "1";
+    moveTip(evt);
+  }
+  function moveTip(evt) {
+    const r = tip.getBoundingClientRect();
+    let x = evt.clientX + 14, y = evt.clientY + 14;
+    if (x + r.width > window.innerWidth - 8) x = evt.clientX - r.width - 14;
+    if (y + r.height > window.innerHeight - 8) y = evt.clientY - r.height - 14;
+    tip.style.left = Math.max(8, x) + "px";
+    tip.style.top = Math.max(8, y) + "px";
+  }
+  const hideTip = () => { tip.style.opacity = "0"; };
+  function hoverable(node, title, rows) {
+    node.addEventListener("mouseenter", (e) => showTip(e, title, rows));
+    node.addEventListener("mousemove", moveTip);
+    node.addEventListener("mouseleave", hideTip);
+  }
+  window.addEventListener("scroll", hideTip, { passive: true });
+
+  const legend = (id, items) => {
+    $(id).innerHTML = items.map((i) =>
+      `<span class="item"><span class="swatch" style="background:${i.color}"></span>${i.name}</span>`
+    ).join("");
+  };
+
+  // -- controls ------------------------------------------------------------
+  const CONTROLS = [
+    { id: "founders", fmt: (v) => (+v).toLocaleString() },
+    { id: "seed", fmt: (v) => "#" + v },
+    { id: "pref", path: "capital.pref_multiple", fmt: (v) => (+v).toFixed(2) + "×" },
+    { id: "carve", path: "capital.carve_out", fmt: (v) => pct(+v, 0) },
+    { id: "secondary", path: "capital.secondary_prob", fmt: (v) => pct(+v, 0) },
+    { id: "understaff", path: "business.understaffing_churn", fmt: (v) => (+v).toFixed(2) },
+    { id: "boost", path: "business.capital_execution_boost", fmt: (v) => "+" + pct(+v, 0) },
+    { id: "decay", path: "business.market_decay", fmt: (v) => pct(+v, 0) },
+    { id: "regime", path: "exit.regime", fmt: (v) => (+v).toFixed(1) + "×" },
+    { id: "opp", path: "ledger.opportunity_cost", fmt: (v) => "$" + Math.round(v / 1000) + "k" },
+    { id: "patience", path: "exit.abandon_years", fmt: (v) => v + " yrs" },
+    { id: "gatenoise", path: "capital.gate_noise_sigma", fmt: (v) => (+v).toFixed(2) },
+  ];
+  const TOGGLES = [
+    { id: "participating", path: "capital.participating" },
+    { id: "nullctl", path: "capital.null_control" },
+  ];
+
+  function setPath(obj, path, value) {
+    const parts = path.split(".");
+    let node = obj;
+    for (let i = 0; i < parts.length - 1; i++) node = node[parts[i]];
+    node[parts[parts.length - 1]] = value;
+  }
+  function getPath(obj, path) {
+    return path.split(".").reduce((o, k) => o[k], obj);
+  }
+
+  function syncOutputs() {
+    for (const c of CONTROLS) $(c.id + "-out").textContent = c.fmt($(c.id).value);
+  }
+
+  function currentConfig() {
+    const world = WORLDS[$("world").value];
+    const cfg = JSON.parse(JSON.stringify(world.config));
+    for (const c of CONTROLS) {
+      if (!c.path) continue;
+      const raw = $(c.id).value;
+      setPath(cfg, c.path, c.id === "patience" ? parseInt(raw, 10) : parseFloat(raw));
+    }
+    for (const t of TOGGLES) setPath(cfg, t.path, $(t.id).checked);
+    return { cfg, world };
+  }
+
+  function resetControls() {
+    const world = WORLDS[$("world").value];
+    for (const c of CONTROLS) {
+      if (!c.path) continue;
+      $(c.id).value = getPath(world.config, c.path);
+    }
+    for (const t of TOGGLES) $(t.id).checked = !!getPath(world.config, t.path);
+    syncOutputs();
+  }
+
+  // -- charts --------------------------------------------------------------
+
+  function chartGaps(width, stats) {
+    const groups = [
+      { name: "Total wealth", k: "gapNet" },
+      { name: "Ownership", k: "gapOwn" },
+      { name: "Wage", k: "gapLabour" },
+    ];
+    const labelW = Math.min(150, Math.max(96, width * 0.17));
+    const padR = 78, padT = 6, padB = 30, rowH = 22, barH = 11, groupGap = 22;
+    const plotW = width - labelW - padR;
+    const h = padT + groups.length * (rowH * VENTURE_ARMS.length + groupGap) + padB;
+
+    const vals = groups.flatMap((g) => VENTURE_ARMS.map((a) => stats[a.key][g.k]));
+    const hi = Math.max(...vals, 1) * 1.12;
+    const lo = Math.min(0, ...vals) - Math.abs(hi) * 0.13;
+    const x = (v) => labelW + ((v - lo) / (hi - lo)) * plotW;
+
+    const svg = el("svg", { width, height: h, viewBox: `0 0 ${width} ${h}`, role: "img" });
+    svg.appendChild(el("title", {})).textContent =
+      "Median paired difference against bootstrapping, split into ownership and wages";
+
+    const zx = x(0);
+    svg.appendChild(el("line", { x1: zx, x2: zx, y1: padT, y2: h - padB, stroke: "var(--rule-strong)", "stroke-width": 1 }));
+    const zl = el("text", { x: zx, y: h - padB + 18, "text-anchor": "middle", "font-size": 11.5, fill: "var(--ink-3)" });
+    zl.textContent = "same as bootstrapping";
+    svg.appendChild(zl);
+
+    let y = padT;
+    for (const g of groups) {
+      const gl = el("text", {
+        x: labelW - 12, y: y + (rowH * VENTURE_ARMS.length) / 2 + 1, "text-anchor": "end",
+        "font-size": 12.5, fill: "var(--ink)", "dominant-baseline": "middle",
+      });
+      gl.textContent = g.name;
+      svg.appendChild(gl);
+
+      for (const a of VENTURE_ARMS) {
+        const v = stats[a.key][g.k];
+        const cy = y + rowH / 2;
+        const x0 = Math.min(x(0), x(v));
+        const w = Math.max(Math.abs(x(v) - x(0)), 1.5);
+        const bar = el("rect", { x: x0, y: cy - barH / 2, width: w, height: barH, rx: 3, fill: a.color });
+        hoverable(bar, `${a.label} — ${g.name}`, [
+          ["Median difference", money(v)],
+          ["Founders ahead overall", pct(stats[a.key].pBeatsBaseline)],
+        ]);
+        svg.appendChild(bar);
+
+        const positive = v >= 0;
+        const t = el("text", {
+          x: positive ? x0 + w + 7 : x0 - 7, y: cy + 1,
+          "text-anchor": positive ? "start" : "end", "font-size": 11.5,
+          fill: "var(--ink-2)", "dominant-baseline": "middle",
+          "font-family": "ui-monospace, Menlo, Consolas, monospace",
+        });
+        t.textContent = (positive ? "+" : "") + money(v);
+        svg.appendChild(t);
+        y += rowH;
+      }
+      y += groupGap;
+    }
+    return svg;
+  }
+
+  function chartBands(width, stats) {
+    const colors = [0, 1, 2, 3, 4].map((i) => `var(--band-${i})`);
+    const labelW = Math.min(180, Math.max(100, width * 0.19));
+    const padR = Math.min(140, Math.max(88, width * 0.15));
+    const padT = 8, padB = 32, rowH = 46, barH = 22;
+    const plotW = width - labelW - padR;
+    const h = padT + ARMS.length * rowH + padB;
+    const terse = width < 620;
+
+    const maxLeft = Math.max(...ARMS.map((a) => stats[a.key].bands[0]));
+    const maxRight = Math.max(...ARMS.map((a) => stats[a.key].bands.slice(1).reduce((s, v) => s + v, 0)));
+    const lo = -(maxLeft + 0.12), hi = maxRight + 0.04;
+    const x = (v) => labelW + ((v - lo) / (hi - lo)) * plotW;
+
+    const svg = el("svg", { width, height: h, viewBox: `0 0 ${width} ${h}`, role: "img" });
+    svg.appendChild(el("title", {})).textContent = "Share of founders by final wealth band";
+
+    const zx = x(0);
+    svg.appendChild(el("line", { x1: zx, x2: zx, y1: padT - 2, y2: h - padB + 4, stroke: "var(--rule-strong)", "stroke-width": 1 }));
+    const zl = el("text", { x: zx, y: h - padB + 20, "text-anchor": "middle", "font-size": 11.5, fill: "var(--ink-3)" });
+    zl.textContent = "breakeven with a salaried job";
+    svg.appendChild(zl);
+
+    ARMS.forEach((arm, i) => {
+      const s = stats[arm.key];
+      const b = s.bands;
+      const cy = padT + i * rowH + rowH / 2;
+
+      const name = el("text", { x: labelW - 12, y: cy - 6, "text-anchor": "end", "font-size": 12.5, fill: "var(--ink)", "dominant-baseline": "middle" });
+      name.textContent = arm.label;
+      svg.appendChild(name);
+      const sub = el("text", {
+        x: labelW - 12, y: cy + 11, "text-anchor": "end", "font-size": 11, fill: "var(--ink-3)",
+        "dominant-baseline": "middle", "font-family": "ui-monospace, Menlo, Consolas, monospace",
+      });
+      sub.textContent = money(s.netMedian);
+      svg.appendChild(sub);
+
+      const negW = Math.max((b[0] / (hi - lo)) * plotW - 2, 0);
+      const neg = el("rect", { x: zx - negW - 1, y: cy - barH / 2, width: negW, height: barH, fill: colors[0], rx: 3 });
+      hoverable(neg, arm.label, [["worse than a job", pct(b[0])]]);
+      svg.appendChild(neg);
+      const nl = el("text", {
+        x: zx - negW - 10, y: cy + 1, "text-anchor": "end", "font-size": 11.5, fill: "var(--ink-2)",
+        "dominant-baseline": "middle", "font-family": "ui-monospace, Menlo, Consolas, monospace",
+      });
+      nl.textContent = pct(b[0], 0);
+      svg.appendChild(nl);
+
+      let acc = 0;
+      for (let k = 1; k < b.length; k++) {
+        const w = Math.max((b[k] / (hi - lo)) * plotW - 2, b[k] > 0 ? 1 : 0);
+        if (w > 0) {
+          const seg = el("rect", {
+            x: x(acc) + 1, y: cy - barH / 2, width: w, height: barH, fill: colors[k],
+            rx: k === 1 || k === b.length - 1 ? 3 : 0,
+          });
+          hoverable(seg, arm.label, [[Engine.BANDS[k].name, pct(b[k])]]);
+          svg.appendChild(seg);
+        }
+        acc += b[k];
+      }
+      const over1m = b.slice(2).reduce((s2, v) => s2 + v, 0);
+      const pl = el("text", {
+        x: x(acc) + 11, y: cy + 1, "font-size": 11.5, fill: "var(--ink-2)",
+        "dominant-baseline": "middle", "font-family": "ui-monospace, Menlo, Consolas, monospace",
+      });
+      pl.textContent = pct(over1m, 0) + (terse ? "" : " over $1M");
+      svg.appendChild(pl);
+    });
+    return svg;
+  }
+
+  function chartCross(width, rows) {
+    const padL = 60, padR = Math.min(120, Math.max(74, width * 0.14)), padT = 12, padB = 42;
+    const h = Math.max(250, Math.min(320, width * 0.4));
+    const plotW = width - padL - padR;
+    const plotH = h - padT - padB;
+
+    const maxY = Math.max(1, ...rows.flatMap((r) => LINE_ARMS.map((a) => r[a.key]))) * 1.08;
+    const x = (p) => padL + ((p - rows[0].pctHi) / (100 - rows[0].pctHi)) * plotW;
+    const y = (v) => padT + plotH - (v / maxY) * plotH;
+
+    const svg = el("svg", { width, height: h, viewBox: `0 0 ${width} ${h}`, role: "img" });
+    svg.appendChild(el("title", {})).textContent = "Median ownership return by percentile of founder quality";
+
+    for (let i = 0; i <= 4; i++) {
+      const v = (maxY / 4) * i;
+      svg.appendChild(el("line", { x1: padL, x2: padL + plotW, y1: y(v), y2: y(v), stroke: "var(--rule)", "stroke-width": 1 }));
+      const t = el("text", {
+        x: padL - 9, y: y(v) + 4, "text-anchor": "end", "font-size": 11, fill: "var(--ink-3)",
+        "font-family": "ui-monospace, Menlo, Consolas, monospace",
+      });
+      t.textContent = money(v, v >= 1e7 ? 0 : 1);
+      svg.appendChild(t);
+    }
+    for (const p of [25, 50, 75, 100]) {
+      const t = el("text", {
+        x: x(p), y: h - padB + 19, "text-anchor": "middle", "font-size": 11, fill: "var(--ink-3)",
+        "font-family": "ui-monospace, Menlo, Consolas, monospace",
+      });
+      t.textContent = String(p);
+      svg.appendChild(t);
+    }
+    const ax = el("text", { x: padL + plotW / 2, y: h - 6, "text-anchor": "middle", "font-size": 11.5, fill: "var(--ink-2)" });
+    ax.textContent = "percentile of founder quality  (fit × skill)";
+    svg.appendChild(ax);
+
+    for (const a of LINE_ARMS) {
+      const d = rows.map((r, i) => (i ? "L" : "M") + x(r.pctHi) + " " + y(r[a.key])).join(" ");
+      svg.appendChild(el("path", { d, fill: "none", stroke: a.color, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }));
+      const last = rows[rows.length - 1];
+      const lab = el("text", {
+        x: x(last.pctHi) + 9, y: y(last[a.key]) + 4, "font-size": 11.5, fill: "var(--ink-2)",
+        "font-family": "ui-monospace, Menlo, Consolas, monospace",
+      });
+      lab.textContent = money(last[a.key]);
+      svg.appendChild(lab);
+    }
+
+    const cross = el("line", { x1: 0, x2: 0, y1: padT, y2: padT + plotH, stroke: "var(--rule-strong)", "stroke-width": 1, opacity: 0 });
+    svg.appendChild(cross);
+    const dots = LINE_ARMS.map((a) => {
+      const c = el("circle", { r: 4, fill: a.color, stroke: "var(--surface)", "stroke-width": 2, opacity: 0 });
+      svg.appendChild(c);
+      return c;
+    });
+    const band = plotW / rows.length;
+    rows.forEach((r, i) => {
+      const hit = el("rect", { x: padL + i * band, y: padT, width: band, height: plotH, fill: "transparent" });
+      hit.addEventListener("mouseenter", (e) => {
+        cross.setAttribute("x1", x(r.pctHi)); cross.setAttribute("x2", x(r.pctHi)); cross.setAttribute("opacity", 1);
+        LINE_ARMS.forEach((a, k) => {
+          dots[k].setAttribute("cx", x(r.pctHi)); dots[k].setAttribute("cy", y(r[a.key])); dots[k].setAttribute("opacity", 1);
+        });
+        showTip(e, `Quality ${Math.round(r.pctLo)}–${Math.round(r.pctHi)}th percentile`,
+          LINE_ARMS.map((a) => [a.label, money(r[a.key])]));
+      });
+      hit.addEventListener("mousemove", moveTip);
+      hit.addEventListener("mouseleave", () => {
+        cross.setAttribute("opacity", 0);
+        dots.forEach((d) => d.setAttribute("opacity", 0));
+        hideTip();
+      });
+      svg.appendChild(hit);
+    });
+    return svg;
+  }
+
+  // -- render --------------------------------------------------------------
+  let LAST = null;
+
+  function renderKpis(stats) {
+    const sv = stats.standard_venture, bs = stats.bootstrap, mv = stats.max_venture;
+    const cards = [
+      { label: "Median wealth gap, standard venture vs bootstrapping", value: (sv.gapNet >= 0 ? "+" : "") + money(sv.gapNet), foot: pct(sv.pBeatsBaseline) + " of founders ahead", color: "var(--arm-2)" },
+      { label: "…of which the shares are responsible for", value: (sv.gapOwn >= 0 ? "+" : "") + money(sv.gapOwn), foot: "the rest is wages", color: "var(--arm-2)" },
+      { label: "Maximum venture, ownership gap", value: (mv.gapOwn >= 0 ? "+" : "") + money(mv.gapOwn), foot: pct(mv.pEquityZero, 0) + " get nothing for their equity", color: "var(--arm-5)" },
+      { label: "Bootstrappers whose equity paid nothing", value: pct(bs.pEquityZero, 0), foot: "no preference stack in front of them", color: "var(--arm-1)" },
+    ];
+    $("kpis").innerHTML = cards.map((c) =>
+      `<div class="kpi"><div class="label">${c.label}</div>` +
+      `<div class="value" style="color:${c.color}">${c.value}</div>` +
+      `<div class="foot">${c.foot}</div></div>`
+    ).join("");
+  }
+
+  function renderTable(stats) {
+    const rows = [
+      { g: "Wealth, net of forgone salary" },
+      { n: "Median", f: (s) => money(s.netMedian) },
+      { n: "10th percentile", f: (s) => money(s.netP10) },
+      { n: "90th percentile", f: (s) => money(s.netP90) },
+      { n: "Worse than a salaried job", f: (s) => pct(s.pWorseThanJob) },
+      { g: "Split apart" },
+      { n: "Ownership return (median)", f: (s) => money(s.ownMedian) },
+      { n: "Wage, net of the job given up", f: (s) => money(s.labourMedian) },
+      { n: "Equity paid nothing", f: (s) => pct(s.pEquityZero) },
+      { g: "Paired against bootstrapping" },
+      { n: "Total wealth gap", f: (s, k) => (k === BASELINE ? "—" : (s.gapNet >= 0 ? "+" : "") + money(s.gapNet)) },
+      { n: "Ownership gap", f: (s, k) => (k === BASELINE ? "—" : (s.gapOwn >= 0 ? "+" : "") + money(s.gapOwn)) },
+      { n: "Wage gap", f: (s, k) => (k === BASELINE ? "—" : (s.gapLabour >= 0 ? "+" : "") + money(s.gapLabour)) },
+      { n: "Founders better off", f: (s, k) => (k === BASELINE ? "—" : pct(s.pBeatsBaseline)) },
+      { g: "The company" },
+      { n: "Capital raised (mean)", f: (s) => money(s.meanRaised) },
+      { n: "Company value (median)", f: (s) => money(s.medianExitValue) },
+      { n: "Final ARR (median)", f: (s) => money(s.medianFinalArr) },
+      { n: "Company failed", f: (s) => pct(s.pDied) },
+    ];
+    const head = "<thead><tr><th></th>" + ARMS.map((a) =>
+      `<th><span class="swatch" style="background:${a.color}"></span>${a.label}</th>`).join("") + "</tr></thead>";
+    const body = "<tbody>" + rows.map((r) => {
+      if (r.g) return `<tr class="group-row"><td colspan="${ARMS.length + 1}">${r.g}</td></tr>`;
+      return `<tr><th scope="row" style="font-weight:400">${r.n}</th>` +
+        ARMS.map((a) => `<td class="num">${r.f(stats[a.key], a.key)}</td>`).join("") + "</tr>";
+    }).join("") + "</tbody>";
+    $("table").innerHTML = head + body;
+  }
+
+  function draw() {
+    if (!LAST) return;
+    const { stats, cross } = LAST;
+    const specs = [
+      ["chart-gaps", (w) => chartGaps(w, stats)],
+      ["chart-bands", (w) => chartBands(w, stats)],
+      ["chart-cross", (w) => chartCross(w, cross)],
+    ];
+    for (const [id, fn] of specs) {
+      const host = $(id);
+      const w = Math.max(320, Math.floor(host.clientWidth || host.parentElement.clientWidth));
+      host.innerHTML = "";
+      host.appendChild(fn(w));
+    }
+  }
+
+  function run() {
+    const status = $("status");
+    status.dataset.busy = "1";
+    status.textContent = "simulating…";
+
+    // Yield a frame so the busy state paints before the loop blocks.
+    requestAnimationFrame(() => {
+      const { cfg, world } = currentConfig();
+      const nFounders = parseInt($("founders").value, 10);
+      const seed = parseInt($("seed").value, 10);
+      const t0 = performance.now();
+      const result = Engine.simulate(cfg, { nFounders, seed });
+      const stats = Engine.summarise(result, BASELINE);
+      const cross = Engine.crossing(result, result.quality, "ownership", 20);
+      const ms = performance.now() - t0;
+
+      LAST = { stats, cross };
+      renderKpis(stats);
+      renderTable(stats);
+      draw();
+
+      const sv = stats.standard_venture;
+      $("note-gaps").textContent =
+        `Standard venture is ${(sv.gapNet >= 0 ? "ahead by " : "behind by ") + money(Math.abs(sv.gapNet))}` +
+        ` overall, of which the shares account for ${money(sv.gapOwn)}. ` +
+        `${pct(sv.pEquityZero, 0)} of those founders receive nothing at all for their equity.`;
+
+      $("provenance").innerHTML = [
+        `${nFounders.toLocaleString()} founders × 5 paths`,
+        `${cfg.exit.horizon_years}-year horizon`,
+        "present value, after tax",
+        `net of $${Math.round(cfg.ledger.opportunity_cost / 1000)}k/yr forgone salary`,
+        `config ${world.hash}`,
+      ].map((s) => `<span>${s}</span>`).join("");
+
+      status.dataset.busy = "0";
+      status.textContent = `${(nFounders * 5).toLocaleString()} simulated lifetimes in ${ms.toFixed(0)} ms`;
+    });
+  }
+
+  // -- wiring --------------------------------------------------------------
+  const worldSelect = $("world");
+  worldSelect.innerHTML = Object.entries(WORLDS)
+    .map(([k, w]) => `<option value="${k}">${w.label}</option>`).join("");
+
+  legend("legend-gaps", VENTURE_ARMS.map((a) => ({ name: a.label, color: a.color })));
+  legend("legend-cross", LINE_ARMS.map((a) => ({ name: a.label, color: a.color })));
+  legend("legend-bands", Engine.BANDS.map((b, i) => ({
+    name: i === 0 ? "Worse than a job" : b.name, color: `var(--band-${i})`,
+  })));
+
+  let timer = null;
+  const schedule = () => {
+    if (!$("auto").checked) return;
+    clearTimeout(timer);
+    timer = setTimeout(run, 180);
+  };
+
+  for (const c of CONTROLS) {
+    $(c.id).addEventListener("input", () => { syncOutputs(); schedule(); });
+  }
+  for (const t of TOGGLES) $(t.id).addEventListener("change", schedule);
+  worldSelect.addEventListener("change", () => { resetControls(); run(); });
+  $("run").addEventListener("click", run);
+  $("reset").addEventListener("click", () => { resetControls(); run(); });
+
+  let raf = null;
+  window.addEventListener("resize", () => {
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(draw);
+  });
+
+  resetControls();
+  run();
+})();
+</script>
