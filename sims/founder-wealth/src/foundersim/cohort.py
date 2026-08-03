@@ -40,8 +40,13 @@ class ArmResult:
     """One strategy's outcome for a whole cohort. All arrays are (n,) or (n, T)."""
 
     strategy: str
-    income_cash: np.ndarray  # (n, T) after-tax salary + distributions
-    capital_cash: np.ndarray  # (n, T) after-tax secondary + exit proceeds
+    # The ledger is kept in three separate streams so that pay for labour can be
+    # told apart from return on ownership. Adding them back together gives what
+    # the founder banked; keeping them apart is the only way to see that the
+    # median funded founder's advantage is a wage rather than a shareholding.
+    salary_cash: np.ndarray  # (n, T) after-tax salary — pay for work
+    distribution_cash: np.ndarray  # (n, T) after-tax profit distributions — ownership
+    capital_cash: np.ndarray  # (n, T) after-tax secondary + exit proceeds — ownership
     active: np.ndarray  # (n, T) bool: the founder is running the company
     exit_value: np.ndarray  # (n,) enterprise value at the liquidity event
     exit_year: np.ndarray  # (n,) year the story ended; ``died`` says how
@@ -74,7 +79,8 @@ def run_arm(cfg: RunConfig, lat: Latents, noise: Noise, strat: Strategy) -> ArmR
     alive = np.ones(n, dtype=bool)
     settled = np.zeros(n, dtype=bool)  # died or exited: the story is over
 
-    income_cash = np.zeros((n, horizon))
+    salary_cash = np.zeros((n, horizon))
+    distribution_cash = np.zeros((n, horizon))
     capital_cash = np.zeros((n, horizon))
     active_log = np.zeros((n, horizon), dtype=bool)
     exit_value = np.zeros(n)
@@ -217,8 +223,14 @@ def run_arm(cfg: RunConfig, lat: Latents, noise: Noise, strat: Strategy) -> ArmR
         distributing = running & ~more_rounds_ahead & (payable > 0)
         distribution = np.where(distributing, led.distribution_frac * payable, 0.0)
         cash -= distribution
-        income = salary + distribution * table.founder_pct
-        income_cash[:, t] += np.where(running, income * (1.0 - led.tax_rate_income), 0.0)
+        founder_distribution = distribution * table.founder_pct
+        # Total income still drives the give-up test below: a founder decides
+        # whether to keep going on what actually reaches their bank account,
+        # whichever bucket it came from.
+        income = salary + founder_distribution
+        after_tax = 1.0 - led.tax_rate_income
+        salary_cash[:, t] += np.where(running, salary * after_tax, 0.0)
+        distribution_cash[:, t] += np.where(running, founder_distribution * after_tax, 0.0)
 
         # 7. Out of cash: rescue round, acquihire, or death --------------------
         broke = running & (cash < 0)
@@ -290,7 +302,8 @@ def run_arm(cfg: RunConfig, lat: Latents, noise: Noise, strat: Strategy) -> ArmR
 
     return ArmResult(
         strategy=strat.name,
-        income_cash=income_cash,
+        salary_cash=salary_cash,
+        distribution_cash=distribution_cash,
         capital_cash=capital_cash,
         active=active_log,
         exit_value=exit_value,

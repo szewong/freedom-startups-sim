@@ -44,25 +44,86 @@ The first half happened and the second did not. **In this model the median
 venture founder ends up ahead**, by $0.6M on standard venture and $2.3M on
 maximum venture. So the claim as literally stated is not supported.
 
-But the reason is not the one either side of this argument usually gives.
+But the reason is not the one either side of this argument usually gives, and it
+only shows up once the founder's salary is separated from the founder's shares.
+That is §2, and it is the finding.
 
-## 2. The median venture founder's advantage is payroll, not ownership
+## 2. Take the salary out and standard venture's advantage disappears entirely
 
-Look at the two columns together. Standard venture pays the median founder
-$0.6M more than bootstrapping — and **51.6% of those founders receive nothing at
-all for their equity**. Maximum venture pays $2.3M more, with 60.2% receiving
-nothing for their equity. Bootstrappers receive nothing for their equity **0%**
-of the time, because there is no preference stack in front of them; whatever the
-business is worth, they own it.
+The founder's ledger splits exactly in two, and the two halves are answering
+different questions:
 
-What the funded founder gets that the bootstrapper does not is a salary,
-underwritten by investors, from year one, in a company that has not yet earned
-it. Over twelve years, discounted, that is most of the median difference. The
-equity — the thing the entire argument is usually about — is worthless to more
-than half of them.
+```
+net wealth  =  [ salary − the salary you turned down ]  +  [ distributions + secondary + exit ]
+                        labour P&L                                  ownership return
+```
 
-This is what the sim was built to see, and it is not visible in any observational
-comparison, because the founders who raise are not the founders who don't.
+The left side is whether you were paid properly for twelve years of work. The
+right side is whether owning the company was worth anything. Only the right side
+is what "should I raise?" is usually asked about — and the two move in opposite
+directions.
+
+Paired within founder, against bootstrapping the same idea:
+
+| Strategy | Total gap | **Ownership gap** | Founders ahead on ownership | **Labour gap** | Founders ahead on wages |
+|---|---|---|---|---|---|
+| Friends & family | −$0.06M | −$0.10M [−0.10, −0.10] | 25% | +$0.09M | 71% |
+| Seed and stop | −$0.45M | −$0.43M [−0.43, −0.42] | 20% | +$0.13M | 67% |
+| **Standard venture** | **+$0.58M** | **−$0.02M** [−0.03, −0.02] | **48%** | **+$0.74M** | **83%** |
+| Maximum venture | +$2.27M | +$1.39M [+1.30, +1.47] | 60% | +$0.91M | 88% |
+
+**For standard venture, the ownership gap is −$0.02M.** Not small — *negative*,
+and tightly bounded away from anything that would matter. Fewer than half of
+those founders (47.8%) did better on ownership than they would have
+bootstrapping the identical business. Every dollar of the +$0.58M headline
+advantage, and slightly more, is wages.
+
+The absolute levels say the same thing. Median ownership return:
+
+| Strategy | Ownership (median) | P90 | P(ownership > $1M) | P(equity paid nothing) |
+|---|---|---|---|---|
+| Bootstrap | **$0.71M** | $2.0M | 0.338 | **0.000** |
+| Friends & family | $0.53M | $1.8M | 0.262 | 0.089 |
+| Seed and stop | $0.27M | $0.5M | 0.049 | 0.855 |
+| Standard venture | **$0.54M** | $12.5M | 0.459 | 0.516 |
+| Maximum venture | $2.41M | $70.2M | 0.585 | 0.602 |
+
+**The median bootstrapper's shares are worth more than the median standard-venture
+founder's shares** — $0.71M against $0.54M — despite the venture companies being
+several times larger. 51.6% of venture founders receive nothing at all for their
+equity; bootstrappers receive nothing **0%** of the time, because there is no
+preference stack standing in front of them. Whatever the business is worth, they
+own it.
+
+### So where does the venture money actually come from?
+
+Median present value, by source:
+
+| Strategy | Salary | Distributions | Exit + secondary | Salary forgone |
+|---|---|---|---|---|
+| Bootstrap | $0.19M | $0.04M | $0.66M | −$1.36M |
+| Standard venture | $0.63M | $0.00M | $0.23M | −$1.06M |
+| Maximum venture | $0.70M | $0.00M | $0.93M | −$0.91M |
+
+Three things fall out of that table. The venture founder is paid **3.3× more
+salary**. They lose less to the job they turned down, because they were funded
+sooner and quit later. And their median *exit* — the thing the whole exercise is
+supposedly about — pays them **$0.23M against the bootstrapper's $0.66M**.
+
+### Only the biggest raisers get a real ownership gain
+
+Maximum venture is the one arm where ownership genuinely pays: +$1.39M over
+bootstrapping, on 60% of founders. Even there, 40% of the total advantage is
+still wages — and §3 shows what the terms take back out of it.
+
+So the honest summary of the headline is narrower than §1 makes it sound. **If
+you are asking whether raising makes your shares worth more, the answer for the
+standard path is no.** If you are asking whether it pays you better while you
+find out, the answer is emphatically yes.
+
+That distinction is invisible in any observational comparison, because the
+founders who raise are not the founders who don't — and it is invisible in a
+single wealth number, which is why the ledger is kept in three streams.
 
 ## 3. Capital structure costs the median founder $1.4M — $8.3M
 
@@ -264,6 +325,12 @@ Beyond the PRD §8 list, which stands:
 - **No debt, no revenue-based financing, no bootstrapping-then-raising**, which
   is what a great many real founders actually do.
 - **Taxes are two flat rates.** QSBS alone would move the funded arm materially.
+- **Distributions come out thinner than the PRD expects.** The design doc has
+  them "real and recurring once profitable" for a bootstrapper; the model
+  delivers a median present value of $0.04M, because a company only pays out
+  once it is profitable, past its cash reserve, and out of the range of further
+  rounds. Since distributions are ownership income, this understates the
+  bootstrapper's ownership return — the side that already won in §2.
 - **The horizon is a wall.** Companies still growing at year 12 are marked at a
   30% illiquidity discount and stopped. Venture outcomes have longer tails than
   that, so the top of the funded distribution is cut off.
@@ -279,3 +346,6 @@ Stated in advance of the next run, so it cannot be chosen afterwards:
    advantage while making it apply to far fewer people.
 3. If the understaffing penalty is genuinely nearer 0.5 than 0.25, the venture
    advantage is inside the noise.
+4. A richer distribution policy would raise the bootstrapper's ownership return
+   and push the standard-venture ownership gap in §2 further negative. The
+   sweeps do not currently cover it, and they should.

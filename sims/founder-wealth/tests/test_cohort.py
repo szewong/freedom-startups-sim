@@ -63,7 +63,8 @@ def test_seeded_runs_reproduce_exactly(cfg):
     a = run_arm(cfg, draw_latents(cfg, 0), draw_noise(cfg, 0), BY_NAME["standard_venture"])
     b = run_arm(cfg, draw_latents(cfg, 0), draw_noise(cfg, 0), BY_NAME["standard_venture"])
     assert np.array_equal(a.exit_value, b.exit_value)
-    assert np.array_equal(a.income_cash, b.income_cash)
+    assert np.array_equal(a.salary_cash, b.salary_cash)
+    assert np.array_equal(a.distribution_cash, b.distribution_cash)
     assert np.array_equal(a.max_stage, b.max_stage)
 
 
@@ -99,7 +100,8 @@ def test_two_strategies_with_identical_terms_produce_identical_runs(cfg, draws):
     a = run_arm(cfg, lat, noise, Strategy("bootstrap", -1))
     b = run_arm(cfg, lat, noise, Strategy("a_different_name", -1))
     assert np.array_equal(a.exit_value, b.exit_value)
-    assert np.array_equal(a.income_cash, b.income_cash)
+    assert np.array_equal(a.salary_cash, b.salary_cash)
+    assert np.array_equal(a.distribution_cash, b.distribution_cash)
     assert np.array_equal(a.died, b.died)
 
 
@@ -129,7 +131,8 @@ def test_business_engine_is_blind_to_capital_structure():
 
 def test_no_nans_or_infinities_anywhere(arms):
     for name, arm in arms.items():
-        for field in ("income_cash", "capital_cash", "exit_value", "founder_pct", "final_arr"):
+        for field in ("salary_cash", "distribution_cash", "capital_cash", "exit_value",
+                      "founder_pct", "final_arr"):
             values = getattr(arm, field)
             assert np.isfinite(values).all(), f"{name}.{field} is not finite"
 
@@ -208,6 +211,22 @@ def test_the_speed_premium_is_real(cfg, draws):
 
 
 # -- Ledger ------------------------------------------------------------------
+
+
+def test_the_ledger_decomposition_adds_back_up(cfg, arms):
+    """net = labour P&L + ownership return, exactly.
+
+    The whole point of splitting the ledger is that these two can be read
+    separately; if they do not recombine into the total, the split is telling a
+    different story from the one the totals tell.
+    """
+    for arm in arms.values():
+        w = build_ledger(cfg, arm)
+        assert np.allclose(w.labour_pl + w.ownership, w.net, atol=1e-6)
+        assert np.allclose(w.from_salary + w.from_equity, w.gross, atol=1e-6)
+        assert np.allclose(w.from_distributions + w.from_exit, w.from_equity, atol=1e-6)
+        # Ownership can be zero but never negative: shares cannot cost you money.
+        assert (w.ownership >= -1e-9).all()
 
 
 def test_opportunity_cost_only_makes_things_worse(cfg, arms):

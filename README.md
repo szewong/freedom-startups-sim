@@ -42,12 +42,14 @@ The same founder, the same idea, the same luck, forked at the capital decision:
 control that gives the cash without the dilution or the preferences.
 
 The hypothesis it was built to test — that raising does not make the median
-founder wealthier — **did not survive**. The median venture founder ends up
-ahead. But **half of them receive nothing at all for their equity**, so the
-advantage is payroll rather than ownership: a salary underwritten by investors in
-a company that has not yet earned it. Against the null control, capital structure
-costs the median heavily-funded founder $8.3M relative to the same cash on
-neutral terms. The cash helps; the terms take most of it back.
+founder wealthier — **did not survive**: the median venture founder ends up
+ahead. But the ledger splits into pay for the work and return on the shares, and
+those move in opposite directions. **Separate them and the standard venture
+path's entire advantage is wages** — its ownership gap against bootstrapping the
+same idea is −$0.02M, and half of those founders receive nothing at all for their
+equity, against none of the bootstrappers. Only the biggest raisers gain on
+ownership, and against the null control capital structure costs them $8.3M
+relative to the same cash on neutral terms.
 
 Design: [`PRD.md`](sims/founder-wealth/PRD.md). Results, caveats and the
 retraction: [`FINDINGS.md`](sims/founder-wealth/FINDINGS.md).

@@ -31,9 +31,21 @@ def distribution(values: np.ndarray) -> dict[str, float]:
 
 
 def summarise(w: Wealth) -> dict[str, float]:
-    """Everything PRD §5.3 asks for, for one arm."""
+    """Everything PRD §5.3 asks for, for one arm.
+
+    Reported three ways: the total, and then the two halves it decomposes into —
+    what the founder was paid for the work, and what the shares returned. The
+    total alone cannot distinguish a founder who got rich from one who was simply
+    employed for twelve years.
+    """
     out = {f"net_{k}": v for k, v in distribution(w.net).items()}
     out |= {f"gross_{k}": v for k, v in distribution(w.gross).items()}
+    out |= {f"own_{k}": v for k, v in distribution(w.ownership).items()}
+    out |= {f"labour_{k}": v for k, v in distribution(w.labour_pl).items()}
+    out["median_from_salary"] = float(np.median(w.from_salary))
+    out["median_from_distributions"] = float(np.median(w.from_distributions))
+    out["median_from_exit"] = float(np.median(w.from_exit))
+    out["p_own_gt_1m"] = float((w.ownership > 1e6).mean())
     out["p_equity_zero"] = float(w.equity_zero.mean())
     out["p_died"] = float(w.died.mean())
     out["years_to_million_median"] = float(np.median(w.years_to_million))

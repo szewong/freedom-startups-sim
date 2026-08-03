@@ -63,6 +63,8 @@ def main() -> None:
 
     per_replicate: dict[str, list[dict[str, float]]] = {s.name: [] for s in STRATEGIES}
     paired: dict[str, list[dict[str, float]]] = {s.name: [] for s in STRATEGIES}
+    paired_own: dict[str, list[dict[str, float]]] = {s.name: [] for s in STRATEGIES}
+    paired_labour: dict[str, list[dict[str, float]]] = {s.name: [] for s in STRATEGIES}
     did: dict[str, list[float]] = {s.name: [] for s in STRATEGIES}
     pooled_net: dict[str, list[np.ndarray]] = {s.name: [] for s in STRATEGIES}
     pooled_market: list[np.ndarray] = []
@@ -80,6 +82,15 @@ def main() -> None:
             records.append(summarise(w))
             calib[name].append(calibration(world["arms"][name], cfg.exit.horizon_years))
             paired[name].append(paired_difference(w.net, base))
+            # The same paired comparison run on each half separately. Medians of
+            # the halves do not add up to the median of the total — that is a
+            # property of medians, not a bug — so all three are reported.
+            paired_own[name].append(
+                paired_difference(w.ownership, world["wealth"][BASELINE].ownership)
+            )
+            paired_labour[name].append(
+                paired_difference(w.labour_pl, world["wealth"][BASELINE].labour_pl)
+            )
             # Difference in differences: what is left of the gap once the same
             # machinery is run with dilution and preferences removed (METHOD §2).
             treated_gap = float(np.median(w.net - base))
@@ -117,6 +128,22 @@ def main() -> None:
             "p_died": across(name, "p_died"),
             "p_worse_than_a_job": across(name, "net_p_negative"),
             "years_to_million": across(name, "years_to_million_median"),
+            "ownership_median": across(name, "own_p50"),
+            "ownership_p90": across(name, "own_p90"),
+            "ownership_p99": across(name, "own_p99"),
+            "p_own_gt_1m": across(name, "p_own_gt_1m"),
+            "labour_median": across(name, "labour_p50"),
+            "median_from_salary": across(name, "median_from_salary"),
+            "median_from_distributions": across(name, "median_from_distributions"),
+            "median_from_exit": across(name, "median_from_exit"),
+            "paired_ownership_vs_baseline": {
+                k: replicate_interval([r[k] for r in paired_own[name]])
+                for k in paired_own[name][0]
+            },
+            "paired_labour_vs_baseline": {
+                k: replicate_interval([r[k] for r in paired_labour[name]])
+                for k in paired_labour[name][0]
+            },
             "paired_vs_baseline": {
                 k: replicate_interval([r[k] for r in paired[name]])
                 for k in paired[name][0]
@@ -162,6 +189,19 @@ def print_summary(report: dict) -> None:
             f"{row['p_gt_1m']['mean']:>9.3f} {row['p_equity_zero']['mean']:>12.3f} "
             f"{row['p_worse_than_a_job']['mean']:>9.3f} "
             f"{money(row['paired_vs_baseline']['median_diff']['mean']):>12s}"
+        )
+
+    print("\nsalary taken out: what the shares alone returned, and what the wage alone did")
+    print(f"{'strategy':18s} {'ownership med':>14s} {'own p90':>12s} {'P(own>$1M)':>11s} "
+          f"{'own vs boot':>12s} {'labour med':>12s} {'labour vs boot':>15s}")
+    for name, row in report["arms"].items():
+        print(
+            f"{name:18s} {money(row['ownership_median']['mean']):>14s} "
+            f"{money(row['ownership_p90']['mean']):>12s} "
+            f"{row['p_own_gt_1m']['mean']:>11.3f} "
+            f"{money(row['paired_ownership_vs_baseline']['median_diff']['mean']):>12s} "
+            f"{money(row['labour_median']['mean']):>12s} "
+            f"{money(row['paired_labour_vs_baseline']['median_diff']['mean']):>15s}"
         )
 
     print("\nnull-controlled gap vs bootstrap (median paired difference, "
