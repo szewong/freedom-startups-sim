@@ -54,6 +54,7 @@ class ArmResult:
     abandoned: np.ndarray  # (n,) ... specifically, the founder gave up on it
     exited: np.ndarray  # (n,)
     max_stage: np.ndarray  # (n,) highest round closed, -1 = none
+    first_profit_year: np.ndarray  # (n,) first year profitable on a real salary, -1 = never
     first_stage: np.ndarray  # (n,) stage the company entered the ladder at, -1 = never
     raised: np.ndarray  # (n,) total capital raised
     founder_pct: np.ndarray  # (n,) founder common at the liquidity event
@@ -78,6 +79,8 @@ def run_arm(cfg: RunConfig, lat: Latents, noise: Noise, strat: Strategy) -> ArmR
     arr_prior = np.zeros(n)
     stage = np.full(n, -1, dtype=int)
     first_stage = np.full(n, -1, dtype=int)
+    first_profit_year = np.full(n, -1, dtype=int)
+    is_profitable = np.zeros(n, dtype=bool)
     alive = np.ones(n, dtype=bool)
     settled = np.zeros(n, dtype=bool)  # died or exited: the story is over
 
@@ -122,6 +125,8 @@ def run_arm(cfg: RunConfig, lat: Latents, noise: Noise, strat: Strategy) -> ArmR
         first raise mean anything.
         """
         eligible = eligible & (arr >= strat.min_arr_to_raise)
+        if strat.require_profitable:
+            eligible = eligible & is_profitable
         already = np.zeros(n, dtype=bool)
         entering = stage < 0
 
@@ -282,6 +287,17 @@ def run_arm(cfg: RunConfig, lat: Latents, noise: Noise, strat: Strategy) -> ArmR
         arr = np.where(running, customers * b.price, arr)
         profit = gross_profit - opex
 
+        # Profitable *after paying yourself*: could this company cover a real
+        # founder salary out of its own margin and still be in the black? The
+        # test uses the reference salary rather than what was actually paid, so
+        # a founder underpaying themselves to fake profitability does not count.
+        real_salary = np.maximum(market_salary, led.profit_test_salary)
+        profitable_now = running & (gross_profit - employees * b.cost_per_head - real_salary >= 0)
+        is_profitable = profitable_now
+        first_profit_year = np.where(
+            (first_profit_year < 0) & profitable_now, t, first_profit_year
+        )
+
         # 6. The founder gets paid -------------------------------------------
         reserve = opex * led.distribution_reserve_months / 12.0
         payable = np.minimum(np.maximum(cash - reserve, 0.0), np.maximum(profit, 0.0))
@@ -378,6 +394,7 @@ def run_arm(cfg: RunConfig, lat: Latents, noise: Noise, strat: Strategy) -> ArmR
         exited=exited,
         max_stage=stage,
         first_stage=first_stage,
+        first_profit_year=first_profit_year,
         raised=table.raised(),
         founder_pct=founder_at_exit,
         final_arr=final_arr,

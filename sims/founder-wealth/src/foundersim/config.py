@@ -347,6 +347,12 @@ class LedgerConfig:
     distribution_frac: float = 0.60
     distribution_reserve_months: float = 6.0
 
+    # What counts as "profitable after paying yourself". A one-person business
+    # covering a $40k draw is technically profitable and nobody would call it
+    # that, so the test is whether the company can pay the founder a real salary
+    # and still be in the black. [sweep] — the answer moves with it.
+    profit_test_salary: float = 100_000.0
+
     tax_rate_income: float = 0.37  # [fit] salary and distributions
     tax_rate_capital: float = 0.20  # [fit] exit and secondary proceeds
 

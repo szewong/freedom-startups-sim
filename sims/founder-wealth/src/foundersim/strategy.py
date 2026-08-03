@@ -39,6 +39,11 @@ class Strategy:
     entry_amount: float | None = None
     entry_pre_money: float | None = None
 
+    # Raise only once the business is profitable while paying the founder a real
+    # salary. A different kind of trigger from a revenue number: it is a test of
+    # whether the company can survive without the money it is about to take.
+    require_profitable: bool = False
+
 
 STRATEGIES: tuple[Strategy, ...] = (
     Strategy("bootstrap", -1, label="Never raise. Growth funded from gross profit."),
