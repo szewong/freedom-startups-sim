@@ -274,6 +274,18 @@
           <div class="ctl-head"><label for="regime">Exit market</label><output id="regime-out"></output></div>
           <input type="range" id="regime" min="0.5" max="2.5" step="0.1" value="1">
         </div>
+        <div class="ctl">
+          <div class="ctl-head">
+            <label for="hireshare">Money spent on people</label><output id="hireshare-out"></output>
+          </div>
+          <input type="range" id="hireshare" min="0" max="0.9" step="0.05" value="0">
+        </div>
+        <div class="ctl">
+          <div class="ctl-head">
+            <label for="hireeff">A hire is worth (vs marketing)</label><output id="hireeff-out"></output>
+          </div>
+          <input type="range" id="hireeff" min="0" max="1.5" step="0.05" value="0">
+        </div>
       </fieldset>
 
       <fieldset>
@@ -449,6 +461,10 @@
     { id: "boost", path: "business.capital_execution_boost", fmt: (v) => "+" + pct(+v, 0) },
     { id: "decay", path: "business.market_decay", fmt: (v) => pct(+v, 0) },
     { id: "regime", path: "exit.regime", fmt: (v) => (+v).toFixed(1) + "×" },
+    { id: "hireshare", path: "business.growth_hire_share",
+      fmt: (v) => (+v === 0 ? "none — all marketing" : pct(+v, 0)) },
+    { id: "hireeff", path: "business.team_acquisition_efficiency",
+      fmt: (v) => (+v === 0 ? "nothing for growth" : (+v).toFixed(2) + "×") },
     { id: "opp", path: "ledger.opportunity_cost", fmt: (v) => "$" + Math.round(v / 1000) + "k" },
     { id: "patience", path: "exit.abandon_years", fmt: (v) => v + " yrs" },
     { id: "gatenoise", path: "capital.gate_noise_sigma", fmt: (v) => (+v).toFixed(2) },

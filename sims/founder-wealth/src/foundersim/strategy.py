@@ -32,6 +32,13 @@ class Strategy:
     # whichever early rounds it has already outgrown.
     min_arr_to_raise: float = 0.0
 
+    # Override the size and price of the *first* round only. A founder raising
+    # $250k to hire two people is not raising the ladder's pre-seed, and pricing
+    # it as one would flatter the strategy by handing them a $5M valuation for a
+    # company doing a few thousand a month.
+    entry_amount: float | None = None
+    entry_pre_money: float | None = None
+
 
 STRATEGIES: tuple[Strategy, ...] = (
     Strategy("bootstrap", -1, label="Never raise. Growth funded from gross profit."),

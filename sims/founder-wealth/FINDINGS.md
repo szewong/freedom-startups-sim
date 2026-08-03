@@ -308,7 +308,7 @@ startups under $10M in enterprise value". Deals close in about 81 days.
 slower — 39% now take 3+ years against 19% in 2019. Of 4,369 US startups founded
 in 2018, 61.9% have closed.
 
-Sources in §15.
+Sources in §16.
 
 ### What changed in the model
 
@@ -560,7 +560,77 @@ result comes from delaying the *start*, not from limiting the finish — which i
 the opposite of what "stay small" intuition suggests, and consistent with the
 seed-and-stop row being the worst outcome in the entire study.
 
-## 12. Retractions and exposures
+## 12. The $250k round, raised to hire
+
+The most common version of the question is not about the ladder at all. It is a
+founder doing a few thousand a month who believes the thing stopping them is that
+they cannot hire anyone, and who wants **$250k to put two or three people on for
+a year**.
+
+### The model could not express the belief
+
+Worth stating plainly, because it is the more useful half of the answer. As
+calibrated, this model has exactly one channel through which money buys growth:
+sales spend. Employees only add capacity to *serve* customers already won. So at
+$48k of revenue — four customers — the model computes that the founder needs
+**zero** employees, hiring cannot make the company grow faster, and the founder's
+belief is not wrong so much as inexpressible.
+
+Two parameters now make it expressible, both defaulted to zero so no calibrated
+result moves:
+
+    growth_hire_share            how much of the money deployed goes to people
+    team_acquisition_efficiency  what a dollar of payroll buys, as a fraction of
+                                 what a dollar of marketing buys
+
+The output is deliberately not "hiring pays". It is *how good the hires have to
+be* before it pays — a number the founder can check against their own experience,
+which is the only honest place for it to come from.
+
+### The answer does not depend on the hires
+
+$250k on a $2.5M pre-money — 9.1% plus the option pool — triggered at $48k of
+ARR. Median paired difference against never raising, among the founders who
+actually raise:
+
+| A hire is worth… | Raise once, then stop | Raise, then keep raising |
+|---|---|---|
+| nothing for growth | −$0.09M · beats 5% | **+$1.13M** · beats 76% |
+| half a marketing dollar | −$0.06M · beats 14% | +$1.26M · beats 75% |
+| a full marketing dollar | −$0.05M · beats 21% | +$1.25M · beats 73% |
+| more than marketing | −$0.04M · beats 27% | +$1.24M · beats 72% |
+
+Sweeping how fast the round is deployed as well — from the calibrated trickle to
+spending it inside a year — moves the "raise once" column from −$0.09M to
+−$0.005M and its win rate from 5% to 46%. It never crosses zero.
+
+**Whether hiring works is nearly irrelevant to the outcome.** Making a hire twice
+as productive changes the answer by about $40k. What decides it is whether the
+$250k is the first step onto a ladder or a full stop — and that is worth $1.2M.
+
+### Why a small round on good terms still loses
+
+The arithmetic is the same one as everywhere else in this study, just smaller.
+The median company in this world exits around $1.7M. Give up 9.1% plus a pool and
+put a $250k preference in front of yourself, and at that exit the investor takes
+their $250k back off the top and the founder's remaining ~89% is applied to
+what's left. That costs roughly $0.38M gross of a $1.7M outcome — more than the
+$250k of extra growth capital returns.
+
+A $250k round is not a small version of a venture round. It is a full-price
+option on the ladder, sold at the moment the founder has the least leverage, and
+it only pays if the option gets exercised.
+
+### What this does not say
+
+It does not say hiring is useless — it says $250k of hiring, at that stage, is
+too small to change a trajectory that the preference stack then taxes. And the
+efficiency parameter is an input, not a finding: the model cannot tell anyone how
+productive their hires would be. What it can say is that the answer is not very
+sensitive to it, which means the founder's instinct to argue about *that* number
+is aimed at the wrong variable.
+
+## 13. Retractions and exposures
 
 Kept on the record, per METHOD §10.
 
@@ -619,7 +689,7 @@ calibration targets do not identify it. Any claim that depends on the market
 size distribution should be treated as unresolved — which is one more reason to
 read §5's flat market-size curve carefully.
 
-## 13. What is not modelled
+## 14. What is not modelled
 
 Beyond the PRD §8 list, which stands:
 
@@ -640,7 +710,7 @@ Beyond the PRD §8 list, which stands:
   30% illiquidity discount and stopped. Venture outcomes have longer tails than
   that, so the top of the funded distribution is cut off.
 
-## 14. What would change the answer
+## 15. What would change the answer
 
 Stated in advance of the next run, so it cannot be chosen afterwards:
 
@@ -658,7 +728,7 @@ Stated in advance of the next run, so it cannot be chosen afterwards:
 
 ---
 
-## 15. Sources for the real-world figures
+## 16. Sources for the real-world figures
 
 Round sizes, valuations and dilution:
 

@@ -316,8 +316,12 @@ const Engine = (() => {
 
         const pn = cap.price_noise_sigma;
         const priceShock = Math.exp(pn * noise.price[t] - 0.5 * pn * pn);
-        const pre = Math.max(term.pre_money_base, arr * term.arr_multiple) * priceShock;
-        const amount = pre * term.raise_ratio * strat.raiseMultiple;
+        let pre = Math.max(term.pre_money_base, arr * term.arr_multiple) * priceShock;
+        let amount = pre * term.raise_ratio * strat.raiseMultiple;
+        // A founder raising $250k to hire is not raising the ladder's pre-seed,
+        // and pricing it as one would hand them a valuation they have not earned.
+        if (entering && strat.entryAmount) amount = strat.entryAmount;
+        if (entering && strat.entryPreMoney) pre = strat.entryPreMoney;
         const post = pre + amount;
 
         let newInv = post > 0 ? amount / post : 0;
@@ -386,12 +390,20 @@ const Engine = (() => {
       const reserve = (expectedOpex * sp.boot_reserve_months) / 12;
       const fromProfit = sp.boot_reinvest_frac * Math.max(expectedGp - expectedOpex, 0);
       const rate = moreRounds ? sp.funded_spend_rate : sp.patient_spend_rate;
-      const spend = fromProfit + rate * Math.max(cash - reserve, 0);
+      const deploy = fromProfit + rate * Math.max(cash - reserve, 0);
+      // The deployment budget splits between marketing and payroll. At a share
+      // of zero this is exactly the calibrated behaviour.
+      const spend = deploy * (1 - (b.growth_hire_share || 0));
+      const growthEmployees = (deploy * (b.growth_hire_share || 0)) / b.cost_per_head;
 
       // 3. staffing
       const boost = stage >= 2 ? b.capital_execution_boost : 0;
+      // Payroll counts toward acquisition at its own efficiency, so a team can
+      // win customers rather than only serve them.
+      const acquisitionSpend =
+        spend + growthEmployees * b.cost_per_head * (b.team_acquisition_efficiency || 0);
       const potentialNew = grossNewCustomers(
-        lat.fit, lat.skill, customers, spend, ceiling,
+        lat.fit, lat.skill, customers, acquisitionSpend, ceiling,
         noise.exec[t], boost, b, cfg.latents.exec_sigma
       );
       const projected = customers * (1 - baseChurn) + potentialNew;
@@ -407,7 +419,11 @@ const Engine = (() => {
       salary = Math.min(salaryTarget, affordable);
 
       const staffBudget = Math.max(cash * burnFrac + expectedGp - spend - salary, 0);
-      const employees = Math.min(desiredEmployees, staffBudget / b.cost_per_head);
+      // Hire for the book of business, or for growth, whichever is larger. The
+      // growth hires are already paid for out of the deployment budget.
+      const employees = Math.max(
+        Math.min(desiredEmployees, staffBudget / b.cost_per_head), growthEmployees
+      );
 
       // 4. customers
       const capacity = capacityFactor(employees, Math.max(projected, 1), b);

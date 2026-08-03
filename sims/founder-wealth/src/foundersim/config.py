@@ -97,6 +97,27 @@ class BusinessConfig:
     # better tooling. Multiplier on growth_scale. Swept including zero.
     capital_execution_boost: float = 0.15  # [sweep]
 
+    # --- hiring as a growth channel ----------------------------------------
+    # The model as calibrated has exactly one way for money to buy growth: sales
+    # spend. Employees only add capacity to *serve* customers already won, so a
+    # company with four customers needs none, and hiring cannot make it grow
+    # faster. That is the wrong shape for the founder who says "I cannot grow
+    # because I cannot hire", so the channel is here — defaulted off, because
+    # turning it on is an assumption and not a measurement.
+    #
+    #   growth_hire_share            how much of the money deployed goes to
+    #                                people rather than marketing
+    #   team_acquisition_efficiency  what a dollar of payroll buys, as a
+    #                                fraction of what a dollar of marketing
+    #                                buys. 1.0 means a hire is exactly as good
+    #                                at winning customers as an ad. 0 means the
+    #                                model as calibrated.
+    #
+    # Both are [sweep]: the honest output is not "hiring pays" but "hiring has
+    # to be worth this much before it pays".
+    growth_hire_share: float = 0.0  # [sweep]
+    team_acquisition_efficiency: float = 0.0  # [sweep]
+
     founder_savings: float = 50_000.0  # what a bootstrapper starts with  [fit]
 
 

@@ -134,6 +134,10 @@ def run_arm(cfg: RunConfig, lat: Latents, noise: Noise, strat: Strategy) -> ArmR
             if take.any():
                 pre, amount = price_round(s, arr, cap, noise.price[:, t])
                 amount = amount * strat.raise_multiple
+                if strat.entry_amount is not None:
+                    amount = np.full_like(amount, strat.entry_amount)
+                if strat.entry_pre_money is not None:
+                    pre = np.full_like(pre, strat.entry_pre_money)
                 apply_round(table, take, s, pre, amount, cap)
                 cash[take] += amount[take]
                 stage[take] = s
@@ -214,13 +218,23 @@ def run_arm(cfg: RunConfig, lat: Latents, noise: Noise, strat: Strategy) -> ArmR
         expected_gp = expected_revenue * b.gross_margin
         planned_employees = business.employees_needed(customers, b)
         expected_opex = planned_employees * b.cost_per_head + led.salary_floor
-        spend = plan_spend(cash, expected_gp, expected_opex, more_rounds_ahead, sp)
-        spend = np.where(running, spend, 0.0)
+        deploy = plan_spend(cash, expected_gp, expected_opex, more_rounds_ahead, sp)
+        deploy = np.where(running, deploy, 0.0)
+        # The deployment budget splits between marketing and payroll. At the
+        # default share of zero this is exactly the old behaviour: everything is
+        # marketing and `spend` is unchanged.
+        spend = deploy * (1.0 - b.growth_hire_share)
+        growth_employees = deploy * b.growth_hire_share / b.cost_per_head
 
         # 3. Staffing ---------------------------------------------------------
         boost = np.where(stage >= 2, b.capital_execution_boost, 0.0)
+        # Payroll counts toward acquisition at its own efficiency, so a team can
+        # win customers rather than only serve them.
+        acquisition_spend = spend + (
+            growth_employees * b.cost_per_head * b.team_acquisition_efficiency
+        )
         potential_new = business.gross_new_customers(
-            lat.fit, lat.skill, customers, spend, ceiling,
+            lat.fit, lat.skill, customers, acquisition_spend, ceiling,
             noise.execution[:, t], boost, b, cfg.latents.exec_sigma,
         )
         projected = customers * (1.0 - base_churn) + potential_new
@@ -245,7 +259,10 @@ def run_arm(cfg: RunConfig, lat: Latents, noise: Noise, strat: Strategy) -> ArmR
         salary = np.where(running, np.minimum(salary_target, affordable), 0.0)
 
         staff_budget = np.maximum(cash * burn_frac + expected_gp - spend - salary, 0.0)
+        # Hire for the book of business, or for growth, whichever is larger. The
+        # growth hires are already paid for out of the deployment budget.
         employees = np.minimum(desired_employees, staff_budget / b.cost_per_head)
+        employees = np.maximum(employees, growth_employees)
         employees = np.where(running, employees, 0.0)
 
         # 4. Customers --------------------------------------------------------
