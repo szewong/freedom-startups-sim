@@ -5,9 +5,13 @@
     color-scheme: light;
     --paper: #f3f4f3; --surface: #fcfcfb; --ink: #14171a; --ink-2: #52514e;
     --ink-3: #86857f; --rule: #e0e2e2; --rule-strong: #c8cccc;
-    --own: #2a78d6;   /* ownership kept */
-    --wipe: #eb6834;  /* equity wiped */
-    --died: #e34948;  /* company failed */
+    /* Every categorical set on this page clears the all-pairs colourblind gates
+     * in both themes: orange/violet/aqua for the three shares, and blue against
+     * a neutral grey for the two money lines (an emphasis pair, not a
+     * categorical one). Checked with the validator, not by eye. */
+    --own: #2a78d6;   /* what the shares paid */
+    --wipe: #eb6834;  /* equity paid nothing */
+    --died: #4a3aa7;  /* company failed */
     --prof: #1baf7a;  /* reached profitability */
     --flat: #86857f;
   }
@@ -16,14 +20,14 @@
       color-scheme: dark;
       --paper: #121212; --surface: #1a1a19; --ink: #f3f3f0; --ink-2: #c3c2b7;
       --ink-3: #8b8a82; --rule: #2c2c2a; --rule-strong: #3d3d3a;
-      --own: #3987e5; --wipe: #d95926; --died: #e66767; --prof: #199e70; --flat: #8b8a82;
+      --own: #3987e5; --wipe: #d95926; --died: #9085e9; --prof: #199e70; --flat: #8b8a82;
     }
   }
   :root[data-theme="dark"] {
     color-scheme: dark;
     --paper: #121212; --surface: #1a1a19; --ink: #f3f3f0; --ink-2: #c3c2b7;
     --ink-3: #8b8a82; --rule: #2c2c2a; --rule-strong: #3d3d3a;
-    --own: #3987e5; --wipe: #d95926; --died: #e66767; --prof: #199e70; --flat: #8b8a82;
+    --own: #3987e5; --wipe: #d95926; --died: #9085e9; --prof: #199e70; --flat: #8b8a82;
   }
 
   * { box-sizing: border-box; }

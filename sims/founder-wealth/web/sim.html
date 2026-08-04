@@ -519,10 +519,10 @@
       { name: "Ownership", k: "gapOwn" },
       { name: "Wage", k: "gapLabour" },
     ];
-    const labelW = Math.min(150, Math.max(96, width * 0.17));
+    const labelW = Math.min(196, Math.max(124, width * 0.22));
     // padT leaves room for the two direction labels: without them the zero line
     // is just a line, and a reader cannot tell which way is good.
-    const padR = 78, padT = 30, padB = 34, rowH = 22, barH = 11, groupGap = 22;
+    const padR = 78, padT = 30, padB = 34, rowH = 22, barH = 11, groupGap = 36;
     const plotW = width - labelW - padR;
     const h = padT + groups.length * (rowH * VENTURE_ARMS.length + groupGap) + padB;
 
@@ -555,11 +555,13 @@
 
     let y = padT;
     for (const g of groups) {
+      // The measure names the group; every bar names its own arm below. Six
+      // categorical series cannot all clear the all-pairs colourblind gates, so
+      // colour here is reinforcement and the text carries identity.
       const gl = el("text", {
-        x: labelW - 12, y: y + (rowH * VENTURE_ARMS.length) / 2 + 1, "text-anchor": "end",
-        "font-size": 12.5, fill: "var(--ink)", "dominant-baseline": "middle",
+        x: 0, y: y - 8, "font-size": 10.5, fill: "var(--ink-3)", "letter-spacing": ".09em",
       });
-      gl.textContent = g.name;
+      gl.textContent = g.name.toUpperCase();
       svg.appendChild(gl);
 
       for (const a of VENTURE_ARMS) {
@@ -567,6 +569,13 @@
         const cy = y + rowH / 2;
         const x0 = Math.min(x(0), x(v));
         const w = Math.max(Math.abs(x(v) - x(0)), 1.5);
+        svg.appendChild(el("rect", { x: 0, y: cy - 4.5, width: 9, height: 9, rx: 2, fill: a.color }));
+        const nm = el("text", {
+          x: labelW - 12, y: cy + 1, "text-anchor": "end", "font-size": 11.5,
+          fill: "var(--ink-2)", "dominant-baseline": "middle",
+        });
+        nm.textContent = a.label;
+        svg.appendChild(nm);
         const bar = el("rect", { x: x0, y: cy - barH / 2, width: w, height: barH, rx: 3, fill: a.color });
         hoverable(bar, `${a.label} — ${g.name}`, [
           ["Median difference", money(v)],
