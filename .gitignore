@@ -19,3 +19,6 @@ uv.lock
 
 # Built pages — regenerate with each sim's build script.
 **/web/index.html
+
+# Agent worktrees and local session state — never publish these.
+.claude/
