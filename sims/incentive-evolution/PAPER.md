@@ -37,6 +37,13 @@ selection produces is not a better competitor or a worse one, but one *shaped to
 a particular bar* — and that shape is invisible from inside a system that scores
 only the thing it optimises for.
 
+Sweeping the bar from 1 to 50 points shows the effect is not uniform: capability
+holds steady up to a bar of ~20 and then collapses, offensive skill decaying to
+0.721 by bar 50 as too few games score for selection to distinguish teams. The
+accompanying threefold rise in volatility is the population *fragmenting* rather
+than any team playing riskier — mean aggression barely moves while its spread
+across teams doubles.
+
 Separating a threshold's **height** from its all-or-nothing **shape** proves more
 consequential than either alone. Replacing the step with a ramp — partial credit
 toward the same bar, same maximum — leaves the volatility effect intact but
@@ -146,6 +153,25 @@ reward = 1.0 if margin >= threshold else 0.0
 
 League A uses `threshold = 1`; League B uses `threshold = 10`. This single
 integer is the entire experimental manipulation.
+
+**How demanding is that, really?** The phrasing "only wins by 10 or more count"
+reads as draconian and is not. The average winning margin in this engine is
+**9.0 points** (margin sd 11.2, 38.9% of games decided by 10+), which is close to
+real basketball — the NBA runs an ~11-point average margin with roughly 40% of
+games decided by double digits. Against an equal opponent:
+
+| Bar | Share of *wins* that clear it |
+|---|---|
+| 1 | 100% |
+| 5 | 68.7% |
+| **10** | **39.1%** |
+| 20 | 8.5% |
+| 50 | ~0% before adaptation |
+
+So League B discards about 61% of its wins. That is a real restriction, but a
+double-digit win is a common outcome rather than an elite one, and readers should
+calibrate the claims accordingly. Section 4.2 sweeps the bar from 1 to 50 to show
+what happens when it is genuinely severe.
 
 ### 2.4 Season structure
 
@@ -314,7 +340,50 @@ strongest available evidence that the mechanism is real rather than incidental:
 | Defensive skill | −0.0013 (ns) | **−0.0034 (sig)** |
 
 At threshold 5 only offensive skill is significantly degraded; at threshold 10
-both attributes are. The harder the bar, the more real capability is traded away.
+both attributes are.
+
+**Sweeping the bar from 1 to 50** (500 seasons x 10 replicates per level) shows
+that "the harder the bar, the more capability is traded away" is true but hides a
+change of mechanism partway along:
+
+| Bar | Aggression gap | Offensive skill gap | Margin volatility gap | League B's reward rate |
+|---|---|---|---|---|
+| 1 | −0.003 | +0.000 | −0.49 | 49.5% |
+| 3 | +0.037 | +0.002 | +0.99 | 42.0% |
+| 5 | +0.061 | +0.001 | +1.19 | 35.4% |
+| 10 | +0.136 | −0.003 | +1.97 | 23.0% |
+| 15 | +0.181 | −0.002 | +2.34 | 13.9% |
+| 20 | +0.174 | −0.010 | +2.79 | 8.0% |
+| 25 | +0.209 | −0.033 | +7.23 | 6.7% |
+| 30 | +0.190 | −0.067 | +11.27 | 7.0% |
+| 40 | +0.179 | −0.164 | +13.14 | 5.6% |
+| **50** | **+0.223** | **−0.228** | **+15.87** | **4.6%** |
+
+Bar 1 is a useful built-in control: both leagues run the same rule and every gap
+is null, as it should be.
+
+Two predictions we recorded before running this were **wrong**. We expected an
+inverted U in the aggression gap as the reward signal starved; there is none — it
+plateaus at 0.18–0.22 from bar 15 all the way to 50. We also expected League B's
+reward rate to fall toward zero; it settles near 5% instead, because the
+population's volatility rises to meet the bar.
+
+**What does break, past a bar of about 25, is skill maintenance.** Offensive skill
+holds essentially flat to bar 20 and then falls off a cliff — by bar 50 it has
+decayed to 0.721 from a baseline of 0.930, most of the way back to the 0.5 the
+population started from. Too few games score for selection to distinguish teams,
+so it stops maintaining quality.
+
+The accompanying explosion in margin volatility is *not* teams playing riskier.
+Mean aggression barely moves between bar 10 (0.250) and bar 50 (0.260). What
+changes is the **spread**: the standard deviation of aggression across teams
+doubles, 0.086 to 0.172. The population is fragmenting, and the huge margins come
+from wildly mismatched teams rather than from wild play. Head-to-head against the
+baseline population confirms it — League B's win rate falls 47.2% (bar 10) →
+44.2% (20) → 30.6% (30) → **8.8% (50)**.
+
+This is a distinct failure mode from the one the rest of the paper studies, and
+§4.2c shows it is caused by the reward's *shape* rather than its height.
 
 ### 4.2b Retracted: an early-lead effect that does not survive its own error bars
 
@@ -709,7 +778,10 @@ python scripts/payoff_curve.py  results/threshold10
 python scripts/fatigue_curve.py results/threshold10
 python scripts/invasion.py      results/threshold10
 python scripts/cost_sweep.py
+python scripts/threshold_sweep.py
+python scripts/graded_reward.py
 python scripts/null_control.py
+python scripts/vs_null.py        results/threshold10
 python scripts/build_site.py    results/threshold10 web/index.html
 ```
 
