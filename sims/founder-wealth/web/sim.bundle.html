@@ -220,13 +220,32 @@
           <div class="ctl-head"><label for="seed">Seed</label><output id="seed-out"></output></div>
           <input type="range" id="seed" min="1" max="40" step="1" value="1">
         </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>The Freedom Startup trigger</legend>
         <div class="ctl">
           <div class="ctl-head">
-            <label for="freedomarr">Freedom startup raises after</label>
+            <label for="freedomarr">Wait for ARR of</label>
             <output id="freedomarr-out"></output>
           </div>
           <input type="range" id="freedomarr" min="0" max="2000000" step="25000" value="100000">
         </div>
+        <div class="ctl">
+          <div class="ctl-head">
+            <label for="profitsalary">…and a founder salary of</label>
+            <output id="profitsalary-out"></output>
+          </div>
+          <input type="range" id="profitsalary" min="40000" max="300000" step="10000" value="100000">
+        </div>
+        <div class="toggles">
+          <label><input type="checkbox" id="requireprofit" checked>
+            require profitability, not just revenue</label>
+        </div>
+        <p style="font-size:11.5px;color:var(--ink-3);margin:8px 0 0;line-height:1.45">
+          "Profitable" means the business covers that salary out of its own margin and is
+          still in the black. Untick the box and the trigger is revenue alone.
+        </p>
       </fieldset>
 
       <fieldset>
@@ -394,11 +413,13 @@ const WORLDS = {
     "effort_scale": 8.514855170591556,
     "founder_savings": 50000.0,
     "gross_margin": 0.78,
+    "growth_hire_share": 0.0,
     "growth_scale": 549.6768230081966,
     "market_decay": 0.06,
     "organic_scale": 4.5,
     "price": 12000.0,
     "spend_alpha": 0.8,
+    "team_acquisition_efficiency": 0.0,
     "understaffing_churn": 0.25,
     "understaffing_growth": 1.0
    },
@@ -495,6 +516,7 @@ const WORLDS = {
     "distribution_frac": 0.6,
     "distribution_reserve_months": 6.0,
     "opportunity_cost": 300000.0,
+    "profit_test_salary": 100000.0,
     "salary_cap": 400000.0,
     "salary_floor": 40000.0,
     "salary_revenue_share": 0.1,
@@ -513,7 +535,7 @@ const WORLDS = {
     "patient_spend_rate": 0.18
    }
   },
-  "hash": "b37d74e2b7e016da",
+  "hash": "ace68566bc01d22b",
   "label": "Small-cap",
   "source": "configs/smallcap.yaml"
  },
@@ -529,11 +551,13 @@ const WORLDS = {
     "effort_scale": 4.0,
     "founder_savings": 50000.0,
     "gross_margin": 0.78,
+    "growth_hire_share": 0.0,
     "growth_scale": 1400.0,
     "market_decay": 0.06,
     "organic_scale": 3.3016949513909446,
     "price": 12000.0,
     "spend_alpha": 0.8,
+    "team_acquisition_efficiency": 0.0,
     "understaffing_churn": 0.25,
     "understaffing_growth": 1.0
    },
@@ -648,6 +672,7 @@ const WORLDS = {
     "distribution_frac": 0.6,
     "distribution_reserve_months": 6.0,
     "opportunity_cost": 300000.0,
+    "profit_test_salary": 100000.0,
     "salary_cap": 400000.0,
     "salary_floor": 40000.0,
     "salary_revenue_share": 0.1,
@@ -666,7 +691,7 @@ const WORLDS = {
     "patient_spend_rate": 0.18
    }
   },
-  "hash": "f489a543e3928b5c",
+  "hash": "c5067d29040856c1",
   "label": "Venture ladder",
   "source": "configs/frozen.yaml"
  }
@@ -919,7 +944,8 @@ const Engine = (() => {
     { name: "seed_and_stop", label: "Seed and stop", maxStage: 1, raiseMultiple: 1, minArrToRaise: 0 },
     { name: "standard_venture", label: "Standard venture", maxStage: 5, raiseMultiple: 1, minArrToRaise: 0 },
     { name: "max_venture", label: "Maximum venture", maxStage: 5, raiseMultiple: 1.4, minArrToRaise: 0 },
-    { name: "freedom", label: "Freedom startup", maxStage: 5, raiseMultiple: 1, minArrToRaise: 100e3 },
+    { name: "freedom", label: "Freedom startup", maxStage: 5, raiseMultiple: 1,
+      minArrToRaise: 100e3, requireProfitable: true },
   ];
 
   function runArm(cfg, lat, noise, strat) {
@@ -955,6 +981,8 @@ const Engine = (() => {
 
     let exitValue = 0, exitYear = -1, died = false, exited = false, abandoned = false;
     let firstStage = -1;
+    let firstProfitYear = -1;
+    let isProfitable = false;
     let founderGross = 0, raised = 0, finalArr = 0, founderAtExit = 1;
 
     const baseChurn = churnRate(lat.fit, b);
@@ -976,6 +1004,7 @@ const Engine = (() => {
     function attemptRounds(eligible, t, growth) {
       if (!eligible) return;
       if (arr < (strat.minArrToRaise || 0)) return;
+      if (strat.requireProfitable && !isProfitable) return;
       const entering = stage < 0;
       const order = [];
       if (entering) for (let s = topStage; s >= 0; s--) order.push(s);
@@ -1056,7 +1085,11 @@ const Engine = (() => {
       // "More rounds ahead" has to mean money is actually coming, not merely
       // intended: a founder still below their own bar lives within their means
       // and takes distributions, exactly like one who never intends to raise.
-      const eligibleNow = arr >= (strat.minArrToRaise || 0);
+      // Both conditions, or a founder waiting for profitability above the
+      // revenue bar spends like a funded company and stops taking distributions
+      // — working directly against the thing they are waiting for.
+      const eligibleNow =
+        arr >= (strat.minArrToRaise || 0) && (!strat.requireProfitable || isProfitable);
       attemptRounds(stage < topStage, t, growth);
       let moreRounds = stage < topStage && eligibleNow;
 
@@ -1119,6 +1152,14 @@ const Engine = (() => {
       arrPrior = arr;
       arr = customers * b.price;
       profit = grossProfit - opex;
+
+      // Profitable *after paying yourself*: could this company cover a real
+      // founder salary out of its own margin and still be in the black? Uses
+      // the reference salary, not what was actually paid, so a founder
+      // underpaying themselves cannot fake it.
+      const realSalary = Math.max(marketSalary, led.profit_test_salary || 0);
+      isProfitable = grossProfit - employees * b.cost_per_head - realSalary >= 0;
+      if (isProfitable && firstProfitYear < 0) firstProfitYear = t;
 
       // 6. the founder is paid
       const distReserve = (opex * led.distribution_reserve_months) / 12;
@@ -1223,6 +1264,7 @@ const Engine = (() => {
       exited,
       maxStage: stage,
       firstStage,
+      firstProfitYear,
       raised,
       exitValue,
       exitYear,
@@ -1331,6 +1373,7 @@ const Engine = (() => {
         pRanDry: share(rows, (r) => r.died && !r.abandoned),
         pFailedWithNothing: share(rows, (r) => r.died && r.equityZero),
         pEverRaised: share(rows, (r) => r.firstStage >= 0),
+        pProfitable: share(rows, (r) => r.firstProfitYear >= 0),
         medianFounderPct: median(rows, "founderPct"),
         medianFailYear: (() => {
           const yrs = rows.filter((r) => r.died).map((r) => r.exitYear + 1).sort((a2, b2) => a2 - b2);
@@ -1483,7 +1526,9 @@ if (typeof module !== "undefined" && module.exports) module.exports = Engine;
   const CONTROLS = [
     { id: "founders", fmt: (v) => (+v).toLocaleString() },
     { id: "seed", fmt: (v) => "#" + v },
-    { id: "freedomarr", fmt: (v) => (+v === 0 ? "day one" : "$" + (+v / 1000).toFixed(0) + "k ARR") },
+    { id: "freedomarr", fmt: (v) => (+v === 0 ? "any revenue" : "$" + (+v / 1000).toFixed(0) + "k") },
+    { id: "profitsalary", path: "ledger.profit_test_salary",
+      fmt: (v) => "$" + (+v / 1000).toFixed(0) + "k/yr" },
     { id: "pref", path: "capital.pref_multiple", fmt: (v) => (+v).toFixed(2) + "×" },
     { id: "carve", path: "capital.carve_out", fmt: (v) => pct(+v, 0) },
     { id: "secondary", path: "capital.secondary_prob", fmt: (v) => pct(+v, 0) },
@@ -1537,6 +1582,8 @@ if (typeof module !== "undefined" && module.exports) module.exports = Engine;
       $(c.id).value = getPath(world.config, c.path);
     }
     for (const t of TOGGLES) $(t.id).checked = !!getPath(world.config, t.path);
+    $("requireprofit").checked = true;
+    $("freedomarr").value = "100000";
     syncOutputs();
   }
 
@@ -1848,6 +1895,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = Engine;
       { n: "Wage gap", f: (s, k) => (k === BASELINE ? "—" : (s.gapLabour >= 0 ? "+" : "") + money(s.gapLabour)) },
       { n: "Founders better off", f: (s, k) => (k === BASELINE ? "—" : pct(s.pBeatsBaseline)) },
       { g: "The company" },
+      { n: "Reached profitability", f: (s) => pct(s.pProfitable) },
       { n: "Ever raised anything", f: (s) => pct(s.pEverRaised) },
       { n: "Capital raised (mean)", f: (s) => money(s.meanRaised) },
       { n: "Founder kept (median)", f: (s) => pct(s.medianFounderPct) },
@@ -1904,8 +1952,11 @@ if (typeof module !== "undefined" && module.exports) module.exports = Engine;
       const seed = parseInt($("seed").value, 10);
       const t0 = performance.now();
       const threshold = parseFloat($("freedomarr").value);
+      const needProfit = $("requireprofit").checked;
       const strategies = Engine.STRATEGIES.map((st) =>
-        st.name === "freedom" ? { ...st, minArrToRaise: threshold } : st
+        st.name === "freedom"
+          ? { ...st, minArrToRaise: threshold, requireProfitable: needProfit }
+          : st
       );
       const result = Engine.simulate(cfg, { nFounders, seed, strategies });
       const stats = Engine.summarise(result, BASELINE);
@@ -1972,6 +2023,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = Engine;
     $(c.id).addEventListener("input", () => { syncOutputs(); schedule(); });
   }
   for (const t of TOGGLES) $(t.id).addEventListener("change", schedule);
+  $("requireprofit").addEventListener("change", schedule);
   worldSelect.addEventListener("change", () => { resetControls(); run(); });
   // "Run again" draws a *new* sample. Recomputing the same seed with the same
   // parameters returns the identical picture — which reads as a broken button.

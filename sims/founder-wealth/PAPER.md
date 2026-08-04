@@ -34,7 +34,7 @@ everything else.
 | | Median wealth | What the shares paid | Equity paid nothing | Founder kept |
 |---|---|---|---|---|
 | Bootstrap | −$0.46M | **$0.61M** | **0.0%** | 100% |
-| Freedom Startup | −$0.41M | $0.35M | 8.8% | 78.3% |
+| Freedom Startup | −$0.44M | $0.31M | 8.1% | 78.3% |
 | Standard venture | −$0.28M | **$0.00M** | 58.7% | 63.6% |
 | Maximum venture | −$0.16M | $0.16M | **75.6%** | 55.1% |
 
@@ -75,13 +75,13 @@ with a business already built.
 
 ### What it does
 
-Among the **57%** of founders for whom the trigger ever fires:
+Among the **61%** of founders for whom the trigger ever fires:
 
 | | vs bootstrapping the same business |
 |---|---|
-| Total wealth | **+$1.28M** |
-| What the shares paid | **+$0.91M** |
-| Founders better off | **79.6%** |
+| Total wealth | **+$0.62M** |
+| What the shares paid | **+$0.31M** |
+| Founders better off | **73.2%** |
 
 **This is the only strategy in the study with a positive ownership gap.** Every
 other venture path's shares are worth *less* than bootstrapping the same
@@ -93,9 +93,9 @@ Two things, both checkable.
 
 **It skips the most expensive round.** Raise on day one and you enter at the
 pre-seed, which costs ~19% of the company for $1M. Arrive with $100k of revenue
-and you enter at the seed instead. That single step is where the wipeout rate
-falls off a cliff — 58.8% raising on day one, 54.3% at $10k of ARR, **18.2% at
-$100k**, 8.8% once profitability is required too.
+and you enter at the seed instead — 92.9% of them do. That single step is where
+the wipeout rate falls off a cliff: 58.8% raising on day one, 54.3% at $10k of
+ARR, **18.2% at $100k**, **8.1%** once profitability is required too.
 
 **It only takes money when it does not need it.** Companies that reach
 profitability fail at **7–17%**, against 30–52% for their cohort as a whole.
@@ -137,34 +137,35 @@ it is too strong. Measured against standard venture, on the same founders:
 
 | | Bootstrap | **Freedom Startup** | Standard venture |
 |---|---|---|---|
-| p75 of what the shares paid | $1.31M | $2.59M | $2.83M |
-| p90 | $2.36M | $5.97M | $8.10M |
-| p99 | $5.75M | $17.60M | $33.16M |
-| P(shares > $10M) | 0.1% | 3.8% | 7.9% |
+| p75 of what the shares paid | $1.31M | $1.96M | $2.83M |
+| p90 | $2.36M | $4.58M | $8.10M |
+| p99 | $5.75M | $13.47M | $33.16M |
+| P(shares > $10M) | 0.1% | 2.2% | 7.9% |
 | **P(shares paid nothing)** | **0.0%** | **0.0%** | **52.4%** |
 
-The upside is kept in proportion, not in full: **91% of it at the 75th
-percentile, 74% at the 90th, 53% at the 99th.** The further into the tail, the
-more of it delay costs you. What you buy with that is the bottom row — a 52.4%
+The upside is kept in proportion, and not much more than half of it: **69% at
+the 75th percentile, 57% at the 90th, 41% at the 99th.** The further into the
+tail, the more of it delay costs you. What you buy is the bottom row — a 52.4%
 chance of zero, removed.
 
-Paired founder by founder, **Freedom beats standard venture for 68.7%** and
-loses to it for 31.2%. Against bootstrapping it is better for 43.9%, worse for
-16.9%, and identical for the 39.2% who never reach the trigger.
+Paired founder by founder, **Freedom beats standard venture for 63.1%** and
+loses to it for 36.8%. Against bootstrapping it is better for 37.1%, worse for
+23.7%, and identical for the 39.2% who never reach the trigger.
 
-So the accurate sentence is: **it caps your best case by about a quarter and
-removes your worst case entirely.** That is insurance, and this is its price.
+So the accurate sentence is: **it roughly halves your best case and removes your
+worst case entirely.** That is insurance, and this is its price — a bigger
+premium than "keep the upside" implies.
 
 ### Why the floor holds: you get paid before the exit
 
 The reason no Freedom founder ends with nothing is not that their exits are
-safer. 8.8% of them still have their equity wiped *at the exit*. It is that they
+safer. 8.1% of them still have their equity wiped *at the exit*. It is that they
 have already been paid something before it arrives:
 
 | | Took distributions along the way | Median |
 |---|---|---|
 | Bootstrap | 97.6% | $39k |
-| **Freedom Startup** | **97.6%** | **$17k** |
+| **Freedom Startup** | **97.6%** | **$51k** |
 | Standard venture | **8.0%** | **$0** |
 
 A company that reaches profitability distributes its surplus. A company that is
@@ -188,7 +189,7 @@ the point of the exercise.
 **It does not make the median founder rich.** −$0.41M, still worse than a
 salaried job. No strategy in this study produces a positive median.
 
-**Its overall ownership gap is zero, not positive.** 43% of founders never reach
+**Its overall ownership gap is zero, not positive.** 39% of founders never reach
 the trigger, so for the median founder the strategy changes nothing. The +$0.91M
 is real but it is conditional on the trigger firing, and you cannot know in
 advance that it will.
@@ -198,7 +199,8 @@ against $0.22M, $0.37M against $0.56M. Founders who scrape over the bar, raise,
 dilute, and never reach the upside are made worse off by it. About a fifth of
 all founders land there.
 
-**It does not reduce failure.** 46.6% against bootstrapping's 45.2%. Waiting for
+**Its failure rate is better than bootstrapping but worse than venture's.** 39.0%
+against bootstrapping's 45.2% and standard venture's 36.5%. Waiting for
 profitability *alone*, without the revenue condition, is the most dangerous
 strategy tested at 52.3% — half the cohort never gets there and dies trying.
 

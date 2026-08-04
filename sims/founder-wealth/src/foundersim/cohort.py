@@ -212,6 +212,12 @@ def run_arm(cfg: RunConfig, lat: Latents, noise: Noise, strat: Strategy) -> ArmR
         # Without this, waiting to raise silently changed how the company was run
         # while it waited.
         eligible_now = arr >= strat.min_arr_to_raise
+        if strat.require_profitable:
+            # Both conditions, or a founder waiting for profitability above the
+            # revenue bar would spend like a funded company and stop taking
+            # distributions — working directly against the thing they are
+            # waiting for.
+            eligible_now = eligible_now & is_profitable
         more_rounds_ahead = (stage < top_stage) & eligible_now
 
         # 1. Rounds -----------------------------------------------------------

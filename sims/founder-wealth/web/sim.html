@@ -228,13 +228,32 @@
           <div class="ctl-head"><label for="seed">Seed</label><output id="seed-out"></output></div>
           <input type="range" id="seed" min="1" max="40" step="1" value="1">
         </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>The Freedom Startup trigger</legend>
         <div class="ctl">
           <div class="ctl-head">
-            <label for="freedomarr">Freedom startup raises after</label>
+            <label for="freedomarr">Wait for ARR of</label>
             <output id="freedomarr-out"></output>
           </div>
           <input type="range" id="freedomarr" min="0" max="2000000" step="25000" value="100000">
         </div>
+        <div class="ctl">
+          <div class="ctl-head">
+            <label for="profitsalary">…and a founder salary of</label>
+            <output id="profitsalary-out"></output>
+          </div>
+          <input type="range" id="profitsalary" min="40000" max="300000" step="10000" value="100000">
+        </div>
+        <div class="toggles">
+          <label><input type="checkbox" id="requireprofit" checked>
+            require profitability, not just revenue</label>
+        </div>
+        <p style="font-size:11.5px;color:var(--ink-3);margin:8px 0 0;line-height:1.45">
+          "Profitable" means the business covers that salary out of its own margin and is
+          still in the black. Untick the box and the trigger is revenue alone.
+        </p>
       </fieldset>
 
       <fieldset>
@@ -454,7 +473,9 @@
   const CONTROLS = [
     { id: "founders", fmt: (v) => (+v).toLocaleString() },
     { id: "seed", fmt: (v) => "#" + v },
-    { id: "freedomarr", fmt: (v) => (+v === 0 ? "day one" : "$" + (+v / 1000).toFixed(0) + "k ARR") },
+    { id: "freedomarr", fmt: (v) => (+v === 0 ? "any revenue" : "$" + (+v / 1000).toFixed(0) + "k") },
+    { id: "profitsalary", path: "ledger.profit_test_salary",
+      fmt: (v) => "$" + (+v / 1000).toFixed(0) + "k/yr" },
     { id: "pref", path: "capital.pref_multiple", fmt: (v) => (+v).toFixed(2) + "×" },
     { id: "carve", path: "capital.carve_out", fmt: (v) => pct(+v, 0) },
     { id: "secondary", path: "capital.secondary_prob", fmt: (v) => pct(+v, 0) },
@@ -508,6 +529,8 @@
       $(c.id).value = getPath(world.config, c.path);
     }
     for (const t of TOGGLES) $(t.id).checked = !!getPath(world.config, t.path);
+    $("requireprofit").checked = true;
+    $("freedomarr").value = "100000";
     syncOutputs();
   }
 
@@ -819,6 +842,7 @@
       { n: "Wage gap", f: (s, k) => (k === BASELINE ? "—" : (s.gapLabour >= 0 ? "+" : "") + money(s.gapLabour)) },
       { n: "Founders better off", f: (s, k) => (k === BASELINE ? "—" : pct(s.pBeatsBaseline)) },
       { g: "The company" },
+      { n: "Reached profitability", f: (s) => pct(s.pProfitable) },
       { n: "Ever raised anything", f: (s) => pct(s.pEverRaised) },
       { n: "Capital raised (mean)", f: (s) => money(s.meanRaised) },
       { n: "Founder kept (median)", f: (s) => pct(s.medianFounderPct) },
@@ -875,8 +899,11 @@
       const seed = parseInt($("seed").value, 10);
       const t0 = performance.now();
       const threshold = parseFloat($("freedomarr").value);
+      const needProfit = $("requireprofit").checked;
       const strategies = Engine.STRATEGIES.map((st) =>
-        st.name === "freedom" ? { ...st, minArrToRaise: threshold } : st
+        st.name === "freedom"
+          ? { ...st, minArrToRaise: threshold, requireProfitable: needProfit }
+          : st
       );
       const result = Engine.simulate(cfg, { nFounders, seed, strategies });
       const stats = Engine.summarise(result, BASELINE);
@@ -943,6 +970,7 @@
     $(c.id).addEventListener("input", () => { syncOutputs(); schedule(); });
   }
   for (const t of TOGGLES) $(t.id).addEventListener("change", schedule);
+  $("requireprofit").addEventListener("change", schedule);
   worldSelect.addEventListener("change", () => { resetControls(); run(); });
   // "Run again" draws a *new* sample. Recomputing the same seed with the same
   // parameters returns the identical picture — which reads as a broken button.

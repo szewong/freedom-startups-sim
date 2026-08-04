@@ -241,7 +241,8 @@ const Engine = (() => {
     { name: "seed_and_stop", label: "Seed and stop", maxStage: 1, raiseMultiple: 1, minArrToRaise: 0 },
     { name: "standard_venture", label: "Standard venture", maxStage: 5, raiseMultiple: 1, minArrToRaise: 0 },
     { name: "max_venture", label: "Maximum venture", maxStage: 5, raiseMultiple: 1.4, minArrToRaise: 0 },
-    { name: "freedom", label: "Freedom startup", maxStage: 5, raiseMultiple: 1, minArrToRaise: 100e3 },
+    { name: "freedom", label: "Freedom startup", maxStage: 5, raiseMultiple: 1,
+      minArrToRaise: 100e3, requireProfitable: true },
   ];
 
   function runArm(cfg, lat, noise, strat) {
@@ -277,6 +278,8 @@ const Engine = (() => {
 
     let exitValue = 0, exitYear = -1, died = false, exited = false, abandoned = false;
     let firstStage = -1;
+    let firstProfitYear = -1;
+    let isProfitable = false;
     let founderGross = 0, raised = 0, finalArr = 0, founderAtExit = 1;
 
     const baseChurn = churnRate(lat.fit, b);
@@ -298,6 +301,7 @@ const Engine = (() => {
     function attemptRounds(eligible, t, growth) {
       if (!eligible) return;
       if (arr < (strat.minArrToRaise || 0)) return;
+      if (strat.requireProfitable && !isProfitable) return;
       const entering = stage < 0;
       const order = [];
       if (entering) for (let s = topStage; s >= 0; s--) order.push(s);
@@ -378,7 +382,11 @@ const Engine = (() => {
       // "More rounds ahead" has to mean money is actually coming, not merely
       // intended: a founder still below their own bar lives within their means
       // and takes distributions, exactly like one who never intends to raise.
-      const eligibleNow = arr >= (strat.minArrToRaise || 0);
+      // Both conditions, or a founder waiting for profitability above the
+      // revenue bar spends like a funded company and stops taking distributions
+      // — working directly against the thing they are waiting for.
+      const eligibleNow =
+        arr >= (strat.minArrToRaise || 0) && (!strat.requireProfitable || isProfitable);
       attemptRounds(stage < topStage, t, growth);
       let moreRounds = stage < topStage && eligibleNow;
 
@@ -441,6 +449,14 @@ const Engine = (() => {
       arrPrior = arr;
       arr = customers * b.price;
       profit = grossProfit - opex;
+
+      // Profitable *after paying yourself*: could this company cover a real
+      // founder salary out of its own margin and still be in the black? Uses
+      // the reference salary, not what was actually paid, so a founder
+      // underpaying themselves cannot fake it.
+      const realSalary = Math.max(marketSalary, led.profit_test_salary || 0);
+      isProfitable = grossProfit - employees * b.cost_per_head - realSalary >= 0;
+      if (isProfitable && firstProfitYear < 0) firstProfitYear = t;
 
       // 6. the founder is paid
       const distReserve = (opex * led.distribution_reserve_months) / 12;
@@ -545,6 +561,7 @@ const Engine = (() => {
       exited,
       maxStage: stage,
       firstStage,
+      firstProfitYear,
       raised,
       exitValue,
       exitYear,
@@ -653,6 +670,7 @@ const Engine = (() => {
         pRanDry: share(rows, (r) => r.died && !r.abandoned),
         pFailedWithNothing: share(rows, (r) => r.died && r.equityZero),
         pEverRaised: share(rows, (r) => r.firstStage >= 0),
+        pProfitable: share(rows, (r) => r.firstProfitYear >= 0),
         medianFounderPct: median(rows, "founderPct"),
         medianFailYear: (() => {
           const yrs = rows.filter((r) => r.died).map((r) => r.exitYear + 1).sort((a2, b2) => a2 - b2);

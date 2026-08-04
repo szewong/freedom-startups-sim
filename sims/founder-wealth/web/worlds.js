@@ -19,11 +19,13 @@ const WORLDS = {
     "effort_scale": 8.514855170591556,
     "founder_savings": 50000.0,
     "gross_margin": 0.78,
+    "growth_hire_share": 0.0,
     "growth_scale": 549.6768230081966,
     "market_decay": 0.06,
     "organic_scale": 4.5,
     "price": 12000.0,
     "spend_alpha": 0.8,
+    "team_acquisition_efficiency": 0.0,
     "understaffing_churn": 0.25,
     "understaffing_growth": 1.0
    },
@@ -120,6 +122,7 @@ const WORLDS = {
     "distribution_frac": 0.6,
     "distribution_reserve_months": 6.0,
     "opportunity_cost": 300000.0,
+    "profit_test_salary": 100000.0,
     "salary_cap": 400000.0,
     "salary_floor": 40000.0,
     "salary_revenue_share": 0.1,
@@ -138,7 +141,7 @@ const WORLDS = {
     "patient_spend_rate": 0.18
    }
   },
-  "hash": "b37d74e2b7e016da",
+  "hash": "ace68566bc01d22b",
   "label": "Small-cap",
   "source": "configs/smallcap.yaml"
  },
@@ -154,11 +157,13 @@ const WORLDS = {
     "effort_scale": 4.0,
     "founder_savings": 50000.0,
     "gross_margin": 0.78,
+    "growth_hire_share": 0.0,
     "growth_scale": 1400.0,
     "market_decay": 0.06,
     "organic_scale": 3.3016949513909446,
     "price": 12000.0,
     "spend_alpha": 0.8,
+    "team_acquisition_efficiency": 0.0,
     "understaffing_churn": 0.25,
     "understaffing_growth": 1.0
    },
@@ -273,6 +278,7 @@ const WORLDS = {
     "distribution_frac": 0.6,
     "distribution_reserve_months": 6.0,
     "opportunity_cost": 300000.0,
+    "profit_test_salary": 100000.0,
     "salary_cap": 400000.0,
     "salary_floor": 40000.0,
     "salary_revenue_share": 0.1,
@@ -291,7 +297,7 @@ const WORLDS = {
     "patient_spend_rate": 0.18
    }
   },
-  "hash": "f489a543e3928b5c",
+  "hash": "c5067d29040856c1",
   "label": "Venture ladder",
   "source": "configs/frozen.yaml"
  }

@@ -35,7 +35,7 @@ const BASELINE = "bootstrap";
 // bit-identical across the change.
 const PYTHON = {
   smallcap: {
-    hash: "b37d74e2b7e016da",
+    hash: "ace68566bc01d22b",
     checks: [
       ["bootstrap.netMedian", -461537, 60e3],
       ["bootstrap.ownMedian", 613732, 60e3],
@@ -52,7 +52,7 @@ const PYTHON = {
     ],
   },
   venture: {
-    hash: "f489a543e3928b5c",
+    hash: "c5067d29040856c1",
     checks: [
       ["bootstrap.netMedian", -398005, 60e3],
       ["bootstrap.ownMedian", 705102, 70e3],
