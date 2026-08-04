@@ -130,10 +130,55 @@ founder for founder. From the 60th percentile up it beats bootstrapping *and*
 beats standard venture at almost every level. It is the only column that is
 never catastrophic and still reaches the top.
 
-That is the honest form of the philosophy: **not a way to get richer, a way to
-keep the upside without buying the downside.** You cannot know your decile in
-advance — nobody in this model can, investors included — so the strategy's value
-is precisely that it does not require you to.
+### The trade, priced
+
+"Keep the upside without buying the downside" is the natural way to say this and
+it is too strong. Measured against standard venture, on the same founders:
+
+| | Bootstrap | **Freedom Startup** | Standard venture |
+|---|---|---|---|
+| p75 of what the shares paid | $1.31M | $2.59M | $2.83M |
+| p90 | $2.36M | $5.97M | $8.10M |
+| p99 | $5.75M | $17.60M | $33.16M |
+| P(shares > $10M) | 0.1% | 3.8% | 7.9% |
+| **P(shares paid nothing)** | **0.0%** | **0.0%** | **52.4%** |
+
+The upside is kept in proportion, not in full: **91% of it at the 75th
+percentile, 74% at the 90th, 53% at the 99th.** The further into the tail, the
+more of it delay costs you. What you buy with that is the bottom row — a 52.4%
+chance of zero, removed.
+
+Paired founder by founder, **Freedom beats standard venture for 68.7%** and
+loses to it for 31.2%. Against bootstrapping it is better for 43.9%, worse for
+16.9%, and identical for the 39.2% who never reach the trigger.
+
+So the accurate sentence is: **it caps your best case by about a quarter and
+removes your worst case entirely.** That is insurance, and this is its price.
+
+### Why the floor holds: you get paid before the exit
+
+The reason no Freedom founder ends with nothing is not that their exits are
+safer. 8.8% of them still have their equity wiped *at the exit*. It is that they
+have already been paid something before it arrives:
+
+| | Took distributions along the way | Median |
+|---|---|---|
+| Bootstrap | 97.6% | $39k |
+| **Freedom Startup** | **97.6%** | **$17k** |
+| Standard venture | **8.0%** | **$0** |
+
+A company that reaches profitability distributes its surplus. A company that is
+always raising the next round never does — it is always spending against a
+future event. So the venture founder's entire return depends on one moment that
+more than half the time pays them nothing, while the Freedom founder has banked
+cash on the way there regardless of how the exit goes.
+
+That is the concrete form of "infinite runway", and it is a stronger claim than
+the ownership numbers: it is not about how big the exit is, it is about not
+needing one.
+
+You cannot know your decile in advance — nobody in this model can, investors
+included — so the strategy's value is precisely that it does not require you to.
 
 ## 4. What the model will not support
 
