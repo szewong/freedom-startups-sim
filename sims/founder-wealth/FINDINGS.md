@@ -1,4 +1,9 @@
-# Founder Wealth Simulator — findings, v0.1
+# Founder Wealth Simulator — working notebook, v0.1
+
+> **Start with [`PAPER.md`](PAPER.md).** It states the question, the answer, what
+> the answer will not support, and the retractions, in about a tenth of the
+> length. This file is the notebook behind it: every sweep, every defect, and
+> every wrong turn in the order they happened. It is kept long on purpose.
 
 **Status: first complete run. Provisional.** All seven phases of PRD §7 are
 built and have run end to end, including the live explorer at `web/sim.html`. One

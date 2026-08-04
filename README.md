@@ -51,8 +51,11 @@ equity, against none of the bootstrappers. Only the biggest raisers gain on
 ownership, and against the null control capital structure costs them $8.3M
 relative to the same cash on neutral terms.
 
-Design: [`PRD.md`](sims/founder-wealth/PRD.md). Results, caveats and the
-retraction: [`FINDINGS.md`](sims/founder-wealth/FINDINGS.md).
+**Start here:** [`PAPER.md`](sims/founder-wealth/PAPER.md) — the question, the
+answer, what it will not support, and the retractions. Then
+[`web/sim.html`](sims/founder-wealth/web/sim.html), which simulates live in the
+browser. Design: [`PRD.md`](sims/founder-wealth/PRD.md); working notebook:
+[`FINDINGS.md`](sims/founder-wealth/FINDINGS.md).
 
 ---
 

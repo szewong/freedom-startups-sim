@@ -11,8 +11,12 @@ same idea both raise $40M and bootstrap. So the model makes it free — **the sa
 founder, the same idea, the same luck, forked at the capital decision** — and
 protects that pairing above everything else.
 
+**The answer: [`PAPER.md`](PAPER.md).** Raising buys a salary, not a return on
+your shares — and the one strategy that flips that is delaying the first round
+until the business is already profitable.
+
 Design: [`PRD.md`](PRD.md). Method it inherits: [`../../METHOD.md`](../../METHOD.md).
-Results, caveats and retractions: [`FINDINGS.md`](FINDINGS.md).
+The working notebook, with every sweep and wrong turn: [`FINDINGS.md`](FINDINGS.md).
 
 ---
 
