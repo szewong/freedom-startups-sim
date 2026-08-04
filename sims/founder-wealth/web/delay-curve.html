@@ -115,12 +115,18 @@
   <section>
     <figure>
       <div class="fig-head">
-        <h3>Delay protects ownership, monotonically</h3>
-        <p id="fig-a-sub">Median outcome by raise trigger, in dollars of present value.</p>
+        <h3>Along the delay scale, ownership rises monotonically</h3>
+        <p id="fig-a-sub">Median outcome by raise trigger, in dollars of present value. The joined points are ordered by how long the founder waits; the two diamonds are a different kind of trigger and are not on that scale.</p>
       </div>
       <div class="legend" id="legend-a"></div>
       <div class="chart" id="chart-a"></div>
       <p class="fig-note">
+        <strong>Why "profitable" is off the line.</strong> It is not a later gate than
+        $1M of revenue — it is a looser one. It opens for <span class="mono">49%</span> of
+        founders against <span class="mono">29%</span> for the $1M threshold, typically in
+        year 4. Drawing it to the right of $1M on a delay axis would imply an ordering that
+        does not exist, so it sits apart.
+        <br><br>
         <strong>What the two lines are.</strong> The blue line is what the founder's
         <em>shares</em> returned — distributions along the way plus exit and secondary
         proceeds. It excludes salary entirely. The grey line is everything:
@@ -152,7 +158,7 @@
     <figure>
       <div class="fig-head">
         <h3>Failure, wipeout, and who reaches profitability</h3>
-        <p>All three are shares of founders, so they share one axis. "Profitable" means the business covers a real founder salary out of its own margin.</p>
+        <p>All three are shares of founders, so they share one axis. The two diamonds are the profitability triggers, which are not points on the delay scale.</p>
       </div>
       <div class="legend" id="legend-b"></div>
       <div class="chart" id="chart-b"></div>
@@ -201,7 +207,7 @@
 <div id="tip"></div>
 
 <script>
-const DATA = {"salary":100000.0,"rows":[{"t":"day one","net":-276534,"own":0,"eq0":0.5877,"ever":1.0,"died":0.3658,"prof":0.4075,"profyr":7.0,"profdied":0.165,"kept":0.6365,"raised":4099199},{"t":"first dollar","net":-345124,"own":20433,"eq0":0.5823,"ever":1.0,"died":0.3102,"prof":0.3857,"profyr":6.75,"profdied":0.0966,"kept":0.6365,"raised":4180509},{"t":"$5k ARR","net":-345592,"own":22819,"eq0":0.5707,"ever":0.9885,"died":0.3034,"prof":0.3855,"profyr":7.17,"profdied":0.0961,"kept":0.6365,"raised":4209408},{"t":"$10k ARR","net":-347595,"own":39974,"eq0":0.543,"ever":0.9634,"died":0.3113,"prof":0.3762,"profyr":7.5,"profdied":0.0906,"kept":0.6365,"raised":4259489},{"t":"$100k ARR","net":-397974,"own":234528,"eq0":0.1822,"ever":0.6111,"died":0.4771,"prof":0.2967,"profyr":6.0,"profdied":0.0677,"kept":0.6365,"raised":3750937},{"t":"$1M ARR","net":-509731,"own":433835,"eq0":0.1291,"ever":0.2862,"died":0.4512,"prof":0.611,"profyr":3.0,"profdied":0.1018,"kept":0.4865,"raised":45719168},{"t":"profitable","net":-423246,"own":238247,"eq0":0.0635,"ever":0.4899,"died":0.5226,"prof":0.5022,"profyr":4.0,"profdied":0.1052,"kept":0.7826,"raised":2971994},{"t":"profitable + $100k","net":-408976,"own":355404,"eq0":0.0882,"ever":0.5726,"died":0.4639,"prof":0.5802,"profyr":4.0,"profdied":0.1136,"kept":0.7826,"raised":2936891},{"t":"never (bootstrap)","net":-459907,"own":615796,"eq0":0.0,"ever":0.0,"died":0.4512,"prof":0.611,"profyr":3.0,"profdied":0.1018,"kept":1.0,"raised":0}]};
+const DATA = {"salary":100000.0,"rows":[{"t":"day one","line":true,"net":-276534,"own":0,"eq0":0.5877,"ever":1.0,"died":0.3658,"prof":0.4075,"profyr":7.0,"profdied":0.165,"kept":0.6365},{"t":"first dollar","line":true,"net":-345124,"own":20433,"eq0":0.5823,"ever":1.0,"died":0.3102,"prof":0.3857,"profyr":6.75,"profdied":0.0966,"kept":0.6365},{"t":"$5k ARR","line":true,"net":-345592,"own":22819,"eq0":0.5707,"ever":0.9885,"died":0.3034,"prof":0.3855,"profyr":7.17,"profdied":0.0961,"kept":0.6365},{"t":"$10k ARR","line":true,"net":-347595,"own":39974,"eq0":0.543,"ever":0.9634,"died":0.3113,"prof":0.3762,"profyr":7.5,"profdied":0.0906,"kept":0.6365},{"t":"$100k ARR","line":true,"net":-397974,"own":234528,"eq0":0.1822,"ever":0.6111,"died":0.4771,"prof":0.2967,"profyr":6.0,"profdied":0.0677,"kept":0.6365},{"t":"$1M ARR","line":true,"net":-509731,"own":433835,"eq0":0.1291,"ever":0.2862,"died":0.4512,"prof":0.611,"profyr":3.0,"profdied":0.1018,"kept":0.4865},{"t":"never (bootstrap)","line":true,"net":-459907,"own":615796,"eq0":0.0,"ever":0.0,"died":0.4512,"prof":0.611,"profyr":3.0,"profdied":0.1018,"kept":1.0},{"t":"profitable","line":false,"net":-423246,"own":238247,"eq0":0.0635,"ever":0.4899,"died":0.5226,"prof":0.5022,"profyr":4.0,"profdied":0.1052,"kept":0.7826},{"t":"profitable + $100k","line":false,"net":-408976,"own":355404,"eq0":0.0882,"ever":0.5726,"died":0.4639,"prof":0.5802,"profyr":4.0,"profdied":0.1136,"kept":0.7826}]};
 
 const NS = "http://www.w3.org/2000/svg";
 const el = (t, a = {}) => {
@@ -283,17 +289,42 @@ function panel(host, spec) {
     svg.appendChild(t);
   }
 
+  // Only the revenue thresholds form an ordered scale of delay. The
+  // profitability triggers are a different kind of gate — in fact a looser one,
+  // firing for more founders than the $1M threshold — so joining them to the
+  // line would draw a continuum that does not exist.
+  const nLine = rows.filter((r) => r.line).length;
+  if (nLine < rows.length) {
+    const dx = (x(nLine - 1) + x(nLine)) / 2;
+    svg.appendChild(el("line", {
+      x1: dx, x2: dx, y1: padT, y2: padT + plotH,
+      stroke: "var(--rule-strong)", "stroke-width": 1, "stroke-dasharray": "3 4",
+    }));
+    const cap = el("text", { x: dx + 7, y: padT + 11, "font-size": 10.5, fill: "var(--ink-3)" });
+    cap.textContent = "not on the delay scale";
+    svg.appendChild(cap);
+  }
+
   for (const se of spec.series) {
-    const d = rows.map((r, i) => (i ? "L" : "M") + x(i) + " " + y(se.get(r))).join(" ");
+    const d = rows.slice(0, nLine)
+      .map((r, i) => (i ? "L" : "M") + x(i) + " " + y(se.get(r))).join(" ");
     svg.appendChild(el("path", {
       d, fill: "none", stroke: se.color, "stroke-width": 2.2,
       "stroke-linejoin": "round", "stroke-linecap": "round",
     }));
     rows.forEach((r, i) => {
-      svg.appendChild(el("circle", {
-        cx: x(i), cy: y(se.get(r)), r: 3.4, fill: se.color,
-        stroke: "var(--surface)", "stroke-width": 1.5,
-      }));
+      if (r.line) {
+        svg.appendChild(el("circle", {
+          cx: x(i), cy: y(se.get(r)), r: 3.4, fill: se.color,
+          stroke: "var(--surface)", "stroke-width": 1.5,
+        }));
+      } else {
+        const c = y(se.get(r)), w = 4.6;
+        svg.appendChild(el("path", {
+          d: `M ${x(i)} ${c - w} L ${x(i) + w} ${c} L ${x(i)} ${c + w} L ${x(i) - w} ${c} Z`,
+          fill: "var(--surface)", stroke: se.color, "stroke-width": 2,
+        }));
+      }
     });
   }
 
