@@ -39,11 +39,14 @@ FREEDOM = Strategy(
     label="Bootstrap to profitability and $100k ARR, then raise at every gate.",
     min_arr_to_raise=100e3, require_profitable=True,
 )
+# Three paths, and only three. Never raise; raise at day one on the best terms
+# available to a company with no revenue; or wait until the business can already
+# survive without the money. The other arms are still in strategy.py and the
+# counterfactual script — they are not the argument.
 ARMS: list[tuple[str, Strategy]] = [
     ("Bootstrap", Strategy("bootstrap", -1)),
+    ("YC", BY_NAME["yc"]),
     ("Freedom Startup", FREEDOM),
-    ("Standard venture", BY_NAME["standard_venture"]),
-    ("Maximum venture", BY_NAME["max_venture"]),
 ]
 BASELINE = "Bootstrap"
 

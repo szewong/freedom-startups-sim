@@ -124,7 +124,9 @@ function meanStats(world, seeds) {
   let acc = null;
   let last = null;
   for (const seed of seeds) {
-    const result = Engine.simulate(cfg, { nFounders: N_FOUNDERS, seed });
+    const result = Engine.simulate(cfg, {
+      nFounders: N_FOUNDERS, seed, strategies: Engine.ALL_STRATEGIES,
+    });
     const stats = Engine.summarise(result, BASELINE);
     last = { result, stats };
     if (acc === null) {

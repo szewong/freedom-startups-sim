@@ -197,7 +197,7 @@
     <div class="eyebrow">Founder Wealth Simulator · live</div>
     <h1>The same founder, forked at the capital decision</h1>
     <p class="standfirst">
-      Every founder below is run down all six financing paths with the same idea
+      Every founder below is run down all three financing paths with the same idea
       and the same luck. Nothing is replayed — the model runs in your browser
       when you press Run.
     </p>
@@ -938,15 +938,29 @@ const Engine = (() => {
   // means "raise as soon as anyone will fund you", which in practice means
   // raising at $0 of revenue on day one. A positive threshold is a founder
   // saying: prove it first, then decide.
-  const STRATEGIES = [
+  const ALL_STRATEGIES = [
     { name: "bootstrap", label: "Bootstrap", maxStage: -1, raiseMultiple: 1, minArrToRaise: 0 },
     { name: "friends_family", label: "Friends & family", maxStage: 0, raiseMultiple: 1, minArrToRaise: 0 },
     { name: "seed_and_stop", label: "Seed and stop", maxStage: 1, raiseMultiple: 1, minArrToRaise: 0 },
     { name: "standard_venture", label: "Standard venture", maxStage: 5, raiseMultiple: 1, minArrToRaise: 0 },
     { name: "max_venture", label: "Maximum venture", maxStage: 5, raiseMultiple: 1.4, minArrToRaise: 0 },
+    // The accelerator path: $500k at day one on much better terms than a
+    // pre-seed. YC's standard deal is $125k for 7% post-money plus $375k on an
+    // uncapped MFN safe converting at the next round — $500k of cash for about
+    // 9.3% before the pool. It is the strongest opponent to delaying.
+    { name: "yc", label: "YC", maxStage: 5, raiseMultiple: 1, minArrToRaise: 0,
+      entryAmount: 500e3, entryPreMoney: 4.9e6 },
     { name: "freedom", label: "Freedom startup", maxStage: 5, raiseMultiple: 1,
       minArrToRaise: 100e3, requireProfitable: true },
   ];
+
+  // The three-way comparison the page makes: never raise, raise at day one on
+  // the best terms a company with no revenue can get, or wait until the
+  // business can already survive without the money. The rest stay available
+  // for the validator and the scripts.
+  const STRATEGIES = ALL_STRATEGIES.filter((s) =>
+    ["bootstrap", "yc", "freedom"].includes(s.name)
+  );
 
   function runArm(cfg, lat, noise, strat) {
     const b = cfg.business;
@@ -1434,6 +1448,7 @@ const Engine = (() => {
 
   return {
     STRATEGIES,
+    ALL_STRATEGIES,
     BANDS,
     makeRng,
     hashSeed,
@@ -1466,17 +1481,16 @@ if (typeof module !== "undefined" && module.exports) module.exports = Engine;
   // both themes, and they go to the three arms the line chart draws. Freedom
   // takes one because it is the arm the chart exists to show; maximum venture
   // moves to a bar-only slot, where the adjacent-pair gates apply instead.
-  const SLOT = {
-    bootstrap: 1, standard_venture: 2, freedom: 3,
-    max_venture: 4, friends_family: 5, seed_and_stop: 6,
-  };
+  // Three arms, so all three sit in slots 1-3 — the only trio that clears the
+  // all-pairs colourblind gates in both themes.
+  const SLOT = { bootstrap: 1, yc: 2, freedom: 3 };
   const ARMS = Engine.STRATEGIES.map((s) => ({
     key: s.name, label: s.label, color: `var(--arm-${SLOT[s.name]})`,
   }));
   const BASELINE = "bootstrap";
   const VENTURE_ARMS = ARMS.filter((a) => a.key !== BASELINE);
   const byKey = (k) => ARMS.find((a) => a.key === k);
-  const LINE_ARMS = [byKey("bootstrap"), byKey("standard_venture"), byKey("freedom")];
+  const LINE_ARMS = ARMS;
 
   const NS = "http://www.w3.org/2000/svg";
   const el = (tag, attrs = {}) => {
@@ -1864,12 +1878,17 @@ if (typeof module !== "undefined" && module.exports) module.exports = Engine;
   let LAST = null;
 
   function renderKpis(stats) {
-    const sv = stats.standard_venture, bs = stats.bootstrap, mv = stats.max_venture;
+    const fr = stats.freedom, bs = stats.bootstrap, yc = stats.yc;
     const cards = [
-      { label: "Median wealth gap, standard venture vs bootstrapping", value: (sv.gapNet >= 0 ? "+" : "") + money(sv.gapNet), foot: pct(sv.pBeatsBaseline) + " of founders ahead", color: "var(--arm-2)" },
-      { label: "Standard venture: what the shares alone returned", value: (sv.gapOwn >= 0 ? "+" : "") + money(sv.gapOwn), foot: "its own measurement, not subtracted from the total", color: "var(--arm-2)" },
-      { label: "Maximum venture, ownership gap", value: (mv.gapOwn >= 0 ? "+" : "") + money(mv.gapOwn), foot: pct(mv.pEquityZero, 0) + " get nothing for their equity", color: "var(--arm-5)" },
-      { label: "Bootstrappers whose equity paid nothing", value: pct(bs.pEquityZero, 0), foot: "no preference stack in front of them", color: "var(--arm-1)" },
+      { label: "YC founders whose equity paid nothing", value: pct(yc.pEquityZero, 0),
+        foot: "they raised at day one", color: "var(--arm-2)" },
+      { label: "Freedom founders whose equity paid nothing", value: pct(fr.pEquityZero, 0),
+        foot: "they waited until the business could pay them", color: "var(--arm-3)" },
+      { label: "Bootstrappers whose equity paid nothing", value: pct(bs.pEquityZero, 0),
+        foot: "no preference stack in front of them", color: "var(--arm-1)" },
+      { label: "What the Freedom founder's shares returned, vs bootstrapping",
+        value: (fr.gapOwn >= 0 ? "+" : "") + money(fr.gapOwn),
+        foot: pct(fr.pEverRaised, 0) + " of them ever reach the trigger", color: "var(--arm-3)" },
     ];
     $("kpis").innerHTML = cards.map((c) =>
       `<div class="kpi"><div class="label">${c.label}</div>` +
@@ -1968,11 +1987,12 @@ if (typeof module !== "undefined" && module.exports) module.exports = Engine;
       renderTable(stats);
       draw();
 
-      const sv = stats.standard_venture;
+      const sv = stats.freedom;
       $("note-gaps").innerHTML =
-        `Standard venture is ${(sv.gapNet >= 0 ? "ahead by " : "behind by ") + money(Math.abs(sv.gapNet))}` +
-        ` overall, and its shares alone return ${money(sv.gapOwn)}. ` +
-        `${pct(sv.pEquityZero, 0)} of those founders receive nothing at all for their equity.` +
+        `The Freedom Startup is ${(sv.gapNet >= 0 ? "ahead by " : "behind by ") + money(Math.abs(sv.gapNet))}` +
+        ` overall, and its shares alone return ${money(sv.gapOwn)} against bootstrapping. ` +
+        `${pct(sv.pEquityZero, 0)} of those founders receive nothing at all for their equity, ` +
+        `against ${pct(stats.yc.pEquityZero, 0)} of YC founders.` +
         `<br><br><strong>Why the three rows do not add up.</strong> Each one is the middle ` +
         `founder <em>for that measure</em>, and those are different people — the founder in ` +
         `the middle of the wage row is usually not the one in the middle of the total row. ` +

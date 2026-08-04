@@ -235,15 +235,29 @@ const Engine = (() => {
   // means "raise as soon as anyone will fund you", which in practice means
   // raising at $0 of revenue on day one. A positive threshold is a founder
   // saying: prove it first, then decide.
-  const STRATEGIES = [
+  const ALL_STRATEGIES = [
     { name: "bootstrap", label: "Bootstrap", maxStage: -1, raiseMultiple: 1, minArrToRaise: 0 },
     { name: "friends_family", label: "Friends & family", maxStage: 0, raiseMultiple: 1, minArrToRaise: 0 },
     { name: "seed_and_stop", label: "Seed and stop", maxStage: 1, raiseMultiple: 1, minArrToRaise: 0 },
     { name: "standard_venture", label: "Standard venture", maxStage: 5, raiseMultiple: 1, minArrToRaise: 0 },
     { name: "max_venture", label: "Maximum venture", maxStage: 5, raiseMultiple: 1.4, minArrToRaise: 0 },
+    // The accelerator path: $500k at day one on much better terms than a
+    // pre-seed. YC's standard deal is $125k for 7% post-money plus $375k on an
+    // uncapped MFN safe converting at the next round — $500k of cash for about
+    // 9.3% before the pool. It is the strongest opponent to delaying.
+    { name: "yc", label: "YC", maxStage: 5, raiseMultiple: 1, minArrToRaise: 0,
+      entryAmount: 500e3, entryPreMoney: 4.9e6 },
     { name: "freedom", label: "Freedom startup", maxStage: 5, raiseMultiple: 1,
       minArrToRaise: 100e3, requireProfitable: true },
   ];
+
+  // The three-way comparison the page makes: never raise, raise at day one on
+  // the best terms a company with no revenue can get, or wait until the
+  // business can already survive without the money. The rest stay available
+  // for the validator and the scripts.
+  const STRATEGIES = ALL_STRATEGIES.filter((s) =>
+    ["bootstrap", "yc", "freedom"].includes(s.name)
+  );
 
   function runArm(cfg, lat, noise, strat) {
     const b = cfg.business;
@@ -731,6 +745,7 @@ const Engine = (() => {
 
   return {
     STRATEGIES,
+    ALL_STRATEGIES,
     BANDS,
     makeRng,
     hashSeed,

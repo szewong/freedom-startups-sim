@@ -31,17 +31,24 @@ everything else.
 
 **Raising buys a salary. It does not buy a return on your shares.**
 
+Three paths. **Never raise. Raise at day one on the best terms a company with no
+revenue can get. Or wait until the business can already survive without the
+money.**
+
 | | Median wealth | What the shares paid | Equity paid nothing | Founder kept |
 |---|---|---|---|---|
 | Bootstrap | −$0.46M | **$0.61M** | **0.0%** | 100% |
+| YC | −$0.39M | **$0.02M** | **53.2%** | 69.4% |
 | Freedom Startup | −$0.44M | $0.31M | 8.1% | 78.3% |
-| Standard venture | −$0.28M | **$0.00M** | 58.7% | 63.6% |
-| Maximum venture | −$0.16M | $0.16M | **75.6%** | 55.1% |
 
-Standard venture's median founder ends up $180k ahead of bootstrapping — and
-**their shares return exactly zero**, because more than half of them get nothing
-at all. Every dollar of the advantage is wages: they draw $0.60M of salary in
-present value against the bootstrapper's $0.18M.
+The YC arm is the accelerator deal as it actually is: **$500k at day one for
+about 9.3% before the option pool** — $125k for 7% post-money plus $375k on an
+uncapped MFN safe converting at the next round — then the full ladder. Better
+terms per dollar than a pre-seed, and available with no revenue and no milestone.
+
+Its median founder ends up $70k ahead of bootstrapping — and **their shares
+return $0.02M**, because 53.2% of them get nothing at all. The advantage is
+wages, as it is on every day-one path tested.
 
 Against a null control — the same machinery with dilution and preferences
 removed — capital structure costs the median maximum-venture founder **$8.25M**
@@ -130,27 +137,48 @@ founder for founder. From the 60th percentile up it beats bootstrapping *and*
 beats standard venture at almost every level. It is the only column that is
 never catastrophic and still reaches the top.
 
+### Against the accelerator
+
+YC is the harder opponent and it should be stated plainly: **above the 70th
+percentile of founder quality, YC beats the Freedom Startup on ownership.**
+
+| Quality decile | Bootstrap | YC | **Freedom Startup** |
+|---|---|---|---|
+| 10–50% | $0.01–0.56M | **$0.00M** | $0.01–0.26M |
+| 60% | $0.76M | $0.48M | $0.70M |
+| 70% | $0.96M | **$1.44M** | $1.17M |
+| 80% | $1.26M | **$2.68M** | $1.86M |
+| 100% | $2.62M | **$6.54M** | $4.99M |
+
+Better terms and an earlier start compound: a company on the ladder from year
+one clears more gates in twelve years than one that starts in year four. If you
+are confident you are in the top third, the accelerator is the better instrument
+and this model says so.
+
+What it costs is the bottom half. YC's median founder owns **$0.02M** of
+realised value against Freedom's $0.31M, because half of them are wiped. Paired
+founder by founder, **Freedom beats YC for 59.3%** and loses for 40.6% — and YC
+is *worse than simply bootstrapping* for 57.1% of founders.
+
 ### The trade, priced
 
 "Keep the upside without buying the downside" is the natural way to say this and
 it is too strong. Measured against standard venture, on the same founders:
 
-| | Bootstrap | **Freedom Startup** | Standard venture |
+| | Bootstrap | YC | **Freedom Startup** |
 |---|---|---|---|
-| p75 of what the shares paid | $1.31M | $1.96M | $2.83M |
-| p90 | $2.36M | $4.58M | $8.10M |
-| p99 | $5.75M | $13.47M | $33.16M |
-| P(shares > $10M) | 0.1% | 2.2% | 7.9% |
-| **P(shares paid nothing)** | **0.0%** | **0.0%** | **52.4%** |
+| p75 of what the shares paid | $1.31M | $2.99M | $1.96M |
+| p90 | $2.36M | $7.22M | $4.58M |
+| p99 | $5.75M | $28.49M | $13.47M |
+| P(shares > $10M) | 0.1% | 6.4% | 2.2% |
+| **P(shares paid nothing)** | **0.0%** | **50.5%** | **0.0%** |
 
-The upside is kept in proportion, and not much more than half of it: **69% at
-the 75th percentile, 57% at the 90th, 41% at the 99th.** The further into the
-tail, the more of it delay costs you. What you buy is the bottom row — a 52.4%
-chance of zero, removed.
+The upside is kept in proportion, and roughly half to two thirds of it: **66% at
+the 75th percentile, 63% at the 90th, 47% at the 99th.** What you buy is the
+bottom row — a 50.5% chance of zero, removed entirely.
 
-Paired founder by founder, **Freedom beats standard venture for 63.1%** and
-loses to it for 36.8%. Against bootstrapping it is better for 37.1%, worse for
-23.7%, and identical for the 39.2% who never reach the trigger.
+Against bootstrapping, Freedom is better for 37.1%, worse for 23.7%, and
+identical for the 39.2% who never reach the trigger.
 
 So the accurate sentence is: **it roughly halves your best case and removes your
 worst case entirely.** That is insurance, and this is its price — a bigger
@@ -166,7 +194,7 @@ have already been paid something before it arrives:
 |---|---|---|
 | Bootstrap | 97.6% | $39k |
 | **Freedom Startup** | **97.6%** | **$51k** |
-| Standard venture | **8.0%** | **$0** |
+| YC | **3.4%** | **$0** |
 
 A company that reaches profitability distributes its surplus. A company that is
 always raising the next round never does — it is always spending against a
@@ -194,13 +222,13 @@ the trigger, so for the median founder the strategy changes nothing. The +$0.91M
 is real but it is conditional on the trigger firing, and you cannot know in
 advance that it will.
 
-**It is worse than bootstrapping in the fourth and fifth deciles** — $0.17M
-against $0.22M, $0.37M against $0.56M. Founders who scrape over the bar, raise,
+**It is worse than bootstrapping in the fourth and fifth deciles** — $0.15M
+against $0.22M, $0.26M against $0.56M. Founders who scrape over the bar, raise,
 dilute, and never reach the upside are made worse off by it. About a fifth of
 all founders land there.
 
-**Its failure rate is better than bootstrapping but worse than venture's.** 39.0%
-against bootstrapping's 45.2% and standard venture's 36.5%. Waiting for
+**Its failure rate is better than bootstrapping but worse than YC's.** 39.0%
+against bootstrapping's 45.2% and YC's 36.9%. Waiting for
 profitability *alone*, without the revenue condition, is the most dangerous
 strategy tested at 52.3% — half the cohort never gets there and dies trying.
 

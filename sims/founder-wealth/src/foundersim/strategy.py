@@ -51,12 +51,35 @@ STRATEGIES: tuple[Strategy, ...] = (
     Strategy("seed_and_stop", 1, label="Raise seed, then bootstrap to profitability."),
     Strategy("standard_venture", 5, label="Raise at every gate cleared."),
     Strategy("max_venture", 5, 1.4, label="Raise the largest round available at every gate."),
+    # The accelerator path, and the strongest opponent to the Freedom Startup:
+    # money at $0 of revenue on terms much better than a pre-seed, then the
+    # full ladder. YC's standard deal is $125k for 7% post-money plus $375k on
+    # an uncapped MFN safe that converts at the next priced round — so the
+    # company banks $500k and gives up 7% now plus roughly 2.3% when the MFN
+    # converts at a typical seed price. Modelled as $500k at a $4.9M pre-money,
+    # which is 9.3% before the option pool.
+    #   source: ycombinator.com/deal
+    Strategy(
+        "yc",
+        5,
+        label="Take $500k at day one on accelerator terms, then raise at every gate.",
+        entry_amount=500_000.0,
+        entry_pre_money=4_900_000.0,
+    ),
     Strategy(
         "freedom",
         5,
         label="Bootstrap to $100k ARR, then raise at every gate cleared.",
         min_arr_to_raise=100_000.0,
+        require_profitable=True,
     ),
+)
+
+# The three-way comparison the paper makes: never raise, raise on day one on the
+# best terms available to a company with no revenue, or wait until the business
+# can already survive without the money.
+HEADLINE: tuple[Strategy, ...] = tuple(
+    s for s in STRATEGIES if s.name in ("bootstrap", "yc", "freedom")
 )
 
 BY_NAME = {s.name: s for s in STRATEGIES}
