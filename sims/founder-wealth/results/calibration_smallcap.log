@@ -1,0 +1,24 @@
+world=smallcap  320 trials at n=2500 over 2 arms
+  random   0  score 18.2492
+  random   3  score 13.7664
+  random   7  score 11.7703
+  random  17  score 9.2897
+  random  19  score 1.4508
+  refine   6  score 1.4457  growth_scale=414  organic_scale=4.5  effort_scale=9.77  market_sigma=1.51  exec_sigma=0.295  market_median=8.65e+07  funded_spend_rate=0.219  offer_prob=0.124  gate_noise_sigma=0.1  base_revenue_multiple=4  scale_premium=2.06  max_revenue_multiple=6  growth_premium=1.7  base_earnings_multiple=1.74  earnings_multiple_slope=3.24
+  refine  20  score 1.1032  growth_scale=511  organic_scale=4.5  effort_scale=9.89  market_sigma=1.49  exec_sigma=0.321  market_median=1.05e+08  funded_spend_rate=0.214  offer_prob=0.111  gate_noise_sigma=0.111  base_revenue_multiple=3.94  scale_premium=1.35  max_revenue_multiple=6  growth_premium=1.59  base_earnings_multiple=2.69  earnings_multiple_slope=3.12
+  refine  21  score 1.0390  growth_scale=451  organic_scale=4.33  effort_scale=10.7  market_sigma=1.65  exec_sigma=0.436  market_median=1.2e+08  funded_spend_rate=0.2  offer_prob=0.08  gate_noise_sigma=0.117  base_revenue_multiple=4  scale_premium=1.49  max_revenue_multiple=7.8  growth_premium=1.55  base_earnings_multiple=2.05  earnings_multiple_slope=4
+  refine  22  score 0.8127  growth_scale=586  organic_scale=4.5  effort_scale=8.44  market_sigma=1.54  exec_sigma=0.294  market_median=1.08e+08  funded_spend_rate=0.2  offer_prob=0.11  gate_noise_sigma=0.1  base_revenue_multiple=3.73  scale_premium=2.04  max_revenue_multiple=9.22  growth_premium=2.21  base_earnings_multiple=1.6  earnings_multiple_slope=3.84
+  refine  36  score 0.7851  growth_scale=564  organic_scale=4.5  effort_scale=7.07  market_sigma=1.99  exec_sigma=0.396  market_median=1.2e+08  funded_spend_rate=0.2  offer_prob=0.0923  gate_noise_sigma=0.107  base_revenue_multiple=4  scale_premium=1.6  max_revenue_multiple=12  growth_premium=2.21  base_earnings_multiple=1.66  earnings_multiple_slope=3.07
+  refine  84  score 0.6854  growth_scale=550  organic_scale=4.5  effort_scale=8.51  market_sigma=2.2  exec_sigma=0.399  market_median=1.12e+08  funded_spend_rate=0.2  offer_prob=0.08  gate_noise_sigma=0.1  base_revenue_multiple=4  scale_premium=1.73  max_revenue_multiple=12  growth_premium=2.07  base_earnings_multiple=1.89  earnings_multiple_slope=2.68
+
+best search score 0.6854; at n=10000: 0.6551
+
+  OK   median_exit_of_exits     want 10000000.000  got 10333146.536   (Typical exit lands near $10M)
+  OK   p_exit_gt_50m            want   0.120  got   0.088   (Few clear $50M (>80% of exits are below it))
+  MISS p99_final_arr            want 50000000.000  got 29754530.467   (Revenue tops out around $50M)
+  OK   seed_to_a_graduation     want   0.220  got   0.236   (Seed -> Series A)
+  OK   p_below_1x_capital       want   0.700  got   0.562   (Returning < 1x capital)
+  OK   median_exit_year_material want   8.000  got   8.000   (Time to an exit over $10M)
+  OK   p_survive_5y             want   0.600  got   0.609   (Bootstrapped 5-year survival)
+
+frozen -> configs/smallcap.yaml   config hash e9c960d0ef5d76f7

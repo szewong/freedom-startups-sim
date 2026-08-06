@@ -1,0 +1,27 @@
+[project]
+name = "founder-sim"
+version = "0.1.0"
+description = "Founder Wealth Simulator — does raising big rounds make founders wealthier than bootstrapping?"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2.1",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/foundersim"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"

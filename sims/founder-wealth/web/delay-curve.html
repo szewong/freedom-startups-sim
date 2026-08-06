@@ -1,0 +1,451 @@
+<title>When to raise — the delay curve</title>
+
+<style>
+  :root {
+    color-scheme: light;
+    --paper: #f3f4f3; --surface: #fcfcfb; --ink: #14171a; --ink-2: #52514e;
+    --ink-3: #86857f; --rule: #e0e2e2; --rule-strong: #c8cccc;
+    /* Every categorical set on this page clears the all-pairs colourblind gates
+     * in both themes: orange/violet/aqua for the three shares, and blue against
+     * a neutral grey for the two money lines (an emphasis pair, not a
+     * categorical one). Checked with the validator, not by eye. */
+    --own: #2a78d6;   /* what the shares paid */
+    --wipe: #eb6834;  /* equity paid nothing */
+    --died: #4a3aa7;  /* company failed */
+    --prof: #1baf7a;  /* reached profitability */
+    --flat: #86857f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --paper: #121212; --surface: #1a1a19; --ink: #f3f3f0; --ink-2: #c3c2b7;
+      --ink-3: #8b8a82; --rule: #2c2c2a; --rule-strong: #3d3d3a;
+      --own: #3987e5; --wipe: #d95926; --died: #9085e9; --prof: #199e70; --flat: #8b8a82;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper: #121212; --surface: #1a1a19; --ink: #f3f3f0; --ink-2: #c3c2b7;
+    --ink-3: #8b8a82; --rule: #2c2c2a; --rule-strong: #3d3d3a;
+    --own: #3987e5; --wipe: #d95926; --died: #9085e9; --prof: #199e70; --flat: #8b8a82;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 940px; margin: 0 auto; padding: clamp(26px,4vw,56px) clamp(16px,3vw,36px) 72px; }
+  .prose { max-width: 66ch; }
+  .mono, .num {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  .eyebrow {
+    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px;
+    letter-spacing: .13em; text-transform: uppercase; color: var(--ink-3);
+  }
+  h1 {
+    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; font-weight: 400;
+    font-size: clamp(28px,4.4vw,42px); line-height: 1.12; letter-spacing: -.015em;
+    margin: 12px 0 0; text-wrap: balance;
+  }
+  h2 {
+    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; font-weight: 400;
+    font-size: clamp(20px,2.8vw,26px); line-height: 1.2; margin: 0 0 8px; text-wrap: balance;
+  }
+  h3 { font-size: 14.5px; font-weight: 650; margin: 0 0 4px; }
+  p { margin: 0 0 14px; }
+  strong { font-weight: 650; }
+  .standfirst { font-size: clamp(16px,2vw,18px); color: var(--ink-2); margin: 14px 0 0; max-width: 60ch; }
+  .provenance {
+    margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--rule);
+    font-size: 12px; color: var(--ink-3); display: flex; flex-wrap: wrap; gap: 4px 20px;
+  }
+  section { margin-top: 44px; }
+  figure {
+    margin: 20px 0 0; background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 3px; padding: 18px 18px 14px;
+  }
+  .fig-head { margin-bottom: 14px; }
+  .fig-head p { font-size: 13px; color: var(--ink-2); margin: 0; }
+  .fig-note {
+    font-size: 12.5px; color: var(--ink-3); margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid var(--rule); line-height: 1.5;
+  }
+  .chart { width: 100%; overflow-x: auto; }
+  .chart svg { display: block; }
+  .legend { display: flex; flex-wrap: wrap; gap: 7px 16px; font-size: 12.5px; color: var(--ink-2); margin-bottom: 12px; }
+  .legend .item { display: inline-flex; align-items: center; }
+  .swatch { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; }
+  .table-wrap { overflow-x: auto; margin-top: 20px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 640px; }
+  th, td { text-align: right; padding: 8px 11px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  thead th { font-weight: 600; font-size: 11.5px; color: var(--ink-2); border-bottom: 1px solid var(--rule-strong); }
+  tbody td.num { font-family: ui-monospace, Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
+  tbody tr.hi td { background: color-mix(in srgb, var(--prof) 9%, transparent); }
+  .callout { border-left: 2px solid var(--ink-3); padding: 2px 0 2px 18px; margin: 22px 0; max-width: 62ch; }
+  .callout p { margin: 0; color: var(--ink-2); }
+  .callout p + p { margin-top: 10px; }
+  footer {
+    margin-top: 52px; padding-top: 20px; border-top: 1px solid var(--rule);
+    font-size: 13px; color: var(--ink-3); max-width: 66ch;
+  }
+  #tip {
+    position: fixed; z-index: 50; pointer-events: none; opacity: 0; transition: opacity .09s ease;
+    background: var(--surface); border: 1px solid var(--rule-strong); border-radius: 3px;
+    padding: 8px 10px; font-size: 12.5px; color: var(--ink); box-shadow: 0 4px 14px rgba(0,0,0,.14);
+  }
+  #tip .t-title { font-weight: 650; margin-bottom: 3px; }
+  #tip .t-row { color: var(--ink-2); display: flex; justify-content: space-between; gap: 14px; }
+  #tip .t-row b { font-family: ui-monospace, Menlo, Consolas, monospace; font-weight: 600; color: var(--ink); }
+  :focus-visible { outline: 2px solid var(--own); outline-offset: 2px; }
+</style>
+
+<div class="page">
+  <header>
+    <div class="eyebrow">Founder Wealth Simulator · the delay curve</div>
+    <h1>How long should you wait before raising?</h1>
+    <p class="standfirst">
+      Bootstrapping is "delay forever". Startup school is "raise on day one".
+      Everything below holds the ladder, the terms and the ambition fixed, and
+      varies only <em>when</em> the founder first takes money.
+    </p>
+    <div class="provenance mono" id="prov"></div>
+  </header>
+
+  <section>
+    <figure>
+      <div class="fig-head">
+        <h3>Along the delay scale, ownership rises monotonically</h3>
+        <p id="fig-a-sub">Median outcome by raise trigger, in dollars of present value. The joined points are ordered by how long the founder waits; the two diamonds are a different kind of trigger and are not on that scale.</p>
+      </div>
+      <div class="legend" id="legend-a"></div>
+      <div class="chart" id="chart-a"></div>
+      <p class="fig-note">
+        <strong>Why "profitable" is off the line.</strong> It is not a later gate than
+        $1M of revenue — it is a looser one. It opens for <span class="mono">49%</span> of
+        founders against <span class="mono">29%</span> for the $1M threshold, typically in
+        year 4. Drawing it to the right of $1M on a delay axis would imply an ordering that
+        does not exist, so it sits apart.
+        <br><br>
+        <strong>What the two lines are.</strong> The blue line is what the founder's
+        <em>shares</em> returned — distributions along the way plus exit and secondary
+        proceeds. It excludes salary entirely. The grey line is everything:
+        <span class="mono">salary drawn + shares − the salary given up by not taking a job</span>.
+        It is negative throughout because that last term is large: about
+        <span class="mono">$1.4M</span> of present value over twelve years at $300k/yr.
+        <br><br>
+        For the never-raise column the grey line is
+        <span class="mono">+$0.18M salary + $0.61M shares − $1.40M forgone = −$0.46M</span>.
+        For day one it is <span class="mono">+$0.60M + $0.00M − $1.32M = −$0.28M</span> —
+        three times the salary, none of the shares.
+        <br><br>
+        The step between <span class="mono">$10k</span> and <span class="mono">$100k</span> is
+        where a company stops entering at the pre-seed and starts entering at the seed — the
+        single most expensive round on the ladder, skipped.
+      </p>
+    </figure>
+  </section>
+
+  <section>
+    <div class="prose">
+      <h2>But the risk of dying is U-shaped</h2>
+      <p>
+        Waiting a little is the safest thing you can do. Waiting for profitability is
+        the most dangerous — not because profitability is bad, but because half the
+        cohort never gets there and dies trying.
+      </p>
+    </div>
+    <figure>
+      <div class="fig-head">
+        <h3>Failure, wipeout, and who reaches profitability</h3>
+        <p>All three are shares of founders, so they share one axis. The two diamonds are the profitability triggers, which are not points on the delay scale.</p>
+      </div>
+      <div class="legend" id="legend-b"></div>
+      <div class="chart" id="chart-b"></div>
+      <p class="fig-note" id="note-b"></p>
+    </figure>
+  </section>
+
+  <section>
+    <div class="prose">
+      <h2>The claim that survives</h2>
+    </div>
+    <div class="callout prose">
+      <p>
+        <strong>Profitability is the thing that stops you dying.</strong> Across every
+        trigger, the companies that reach it fail at <strong>7–17%</strong>, against
+        <strong>30–52%</strong> for their cohort as a whole. That is the largest single
+        effect on this page, and it is the "infinite runway" argument stated as a number.
+      </p>
+      <p>
+        And raising works against it. Founders who never raise reach profitability
+        <strong>61% of the time, by year 3</strong>. Founders who raise on day one reach it
+        <strong>41% of the time, by year 7</strong>. Taking money does not merely postpone
+        profitability — it reduces how many companies ever get there at all.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="table-wrap"><table id="table"></table></div>
+  </section>
+
+  <footer class="prose">
+    <p>
+      Small-cap configuration — companies topping out near $50M of revenue, grounded on
+      2025–26 round sizes and lower-middle-market exit multiples. Every figure is a median
+      across 6 replicates of 5,000 paired founders: the same person, same idea, same luck,
+      down each path.
+    </p>
+    <p>
+      A simulation, not data. Method, calibration, sweeps and retractions are in
+      <span class="mono">FINDINGS.md</span>.
+    </p>
+  </footer>
+</div>
+
+<div id="tip"></div>
+
+<script>
+const DATA = {"salary":100000.0,"rows":[{"t":"day one","line":true,"net":-276534,"own":0,"eq0":0.5877,"ever":1.0,"died":0.3658,"prof":0.4075,"profyr":7.0,"profdied":0.165,"kept":0.6365},{"t":"first dollar","line":true,"net":-345124,"own":20433,"eq0":0.5823,"ever":1.0,"died":0.3102,"prof":0.3857,"profyr":6.75,"profdied":0.0966,"kept":0.6365},{"t":"$5k ARR","line":true,"net":-345592,"own":22819,"eq0":0.5707,"ever":0.9885,"died":0.3034,"prof":0.3855,"profyr":7.17,"profdied":0.0961,"kept":0.6365},{"t":"$10k ARR","line":true,"net":-347595,"own":39974,"eq0":0.543,"ever":0.9634,"died":0.3113,"prof":0.3762,"profyr":7.5,"profdied":0.0906,"kept":0.6365},{"t":"$100k ARR","line":true,"net":-397974,"own":234528,"eq0":0.1822,"ever":0.6111,"died":0.4771,"prof":0.2967,"profyr":6.0,"profdied":0.0677,"kept":0.6365},{"t":"$1M ARR","line":true,"net":-509731,"own":433835,"eq0":0.1291,"ever":0.2862,"died":0.4512,"prof":0.611,"profyr":3.0,"profdied":0.1018,"kept":0.4865},{"t":"never (bootstrap)","line":true,"net":-459907,"own":615796,"eq0":0.0,"ever":0.0,"died":0.4512,"prof":0.611,"profyr":3.0,"profdied":0.1018,"kept":1.0},{"t":"profitable","line":false,"net":-423246,"own":238247,"eq0":0.0635,"ever":0.4899,"died":0.5226,"prof":0.5022,"profyr":4.0,"profdied":0.1052,"kept":0.7826},{"t":"profitable + $100k","line":false,"net":-408976,"own":355404,"eq0":0.0882,"ever":0.5726,"died":0.4639,"prof":0.5802,"profyr":4.0,"profdied":0.1136,"kept":0.7826}]};
+
+const NS = "http://www.w3.org/2000/svg";
+const el = (t, a = {}) => {
+  const n = document.createElementNS(NS, t);
+  for (const [k, v] of Object.entries(a)) n.setAttribute(k, v);
+  return n;
+};
+const money = (v) => (v < 0 ? "−$" : "$") + Math.abs(v / 1e6).toFixed(2) + "M";
+const pct = (v, d = 0) => (v * 100).toFixed(d) + "%";
+const $ = (id) => document.getElementById(id);
+
+const tip = $("tip");
+function hover(node, title, rows) {
+  node.addEventListener("mouseenter", (e) => {
+    tip.innerHTML = `<div class="t-title">${title}</div>` +
+      rows.map((r) => `<div class="t-row"><span>${r[0]}</span><b>${r[1]}</b></div>`).join("");
+    tip.style.opacity = "1";
+    move(e);
+  });
+  node.addEventListener("mousemove", move);
+  node.addEventListener("mouseleave", () => { tip.style.opacity = "0"; });
+}
+function move(e) {
+  const r = tip.getBoundingClientRect();
+  let x = e.clientX + 14, y = e.clientY + 14;
+  if (x + r.width > innerWidth - 8) x = e.clientX - r.width - 14;
+  if (y + r.height > innerHeight - 8) y = e.clientY - r.height - 14;
+  tip.style.left = Math.max(8, x) + "px";
+  tip.style.top = Math.max(8, y) + "px";
+}
+const legend = (id, items) => {
+  $(id).innerHTML = items.map((i) =>
+    `<span class="item"><span class="swatch" style="background:${i.c}"></span>${i.n}</span>`).join("");
+};
+
+/* One axis per plot, always. Money lines share a dollar axis; share lines share
+ * a percentage axis. A second y-scale would let the two be slid against each
+ * other until they appeared to agree, which is a correlation the chart would be
+ * inventing rather than showing. */
+function panel(host, spec) {
+  const width = Math.max(340, Math.floor($(host).clientWidth || 800));
+  const rows = DATA.rows;
+  const padL = 62, padR = Math.min(150, Math.max(96, width * 0.17));
+  const padT = 16, padB = 78;
+  const h = Math.max(280, Math.min(360, width * 0.44));
+  const plotW = width - padL - padR;
+  const plotH = h - padT - padB;
+  const x = (i) => padL + (plotW * (i + 0.5)) / rows.length;
+
+  const svg = el("svg", { width, height: h, viewBox: `0 0 ${width} ${h}`, role: "img" });
+  svg.appendChild(el("title", {})).textContent = spec.title;
+
+  // The axis spans the data, negatives included. Shifting a series to make it
+  // fit is the same dishonesty as a second scale, wearing a different hat.
+  const all = spec.series.flatMap((se) => rows.map((r) => se.get(r)));
+  const hi = Math.max(...all, 0) * 1.12 || 1;
+  const lo = Math.min(...all, 0) * 1.12;
+  const y = (v) => padT + plotH - ((v - lo) / (hi - lo)) * plotH;
+
+  for (let i = 0; i <= 4; i++) {
+    const v = lo + ((hi - lo) * i) / 4;
+    svg.appendChild(el("line", {
+      x1: padL, x2: padL + plotW, y1: y(v), y2: y(v),
+      stroke: "var(--rule)", "stroke-width": 1,
+    }));
+    if (lo < 0 && i === 0) {
+      svg.appendChild(el("line", {
+        x1: padL, x2: padL + plotW, y1: y(0), y2: y(0),
+        stroke: "var(--rule-strong)", "stroke-width": 1,
+      }));
+      const z = el("text", { x: padL + plotW + 6, y: y(0) + 4, "font-size": 11,
+        fill: "var(--ink-3)" });
+      z.textContent = "0";
+      svg.appendChild(z);
+    }
+    const t = el("text", { x: padL - 9, y: y(v) + 4, "text-anchor": "end",
+      "font-size": 11, fill: "var(--ink-3)", "font-family": "ui-monospace,Menlo,monospace" });
+    t.textContent = spec.fmt(v);
+    svg.appendChild(t);
+  }
+
+  // Only the revenue thresholds form an ordered scale of delay. The
+  // profitability triggers are a different kind of gate — in fact a looser one,
+  // firing for more founders than the $1M threshold — so joining them to the
+  // line would draw a continuum that does not exist.
+  const nLine = rows.filter((r) => r.line).length;
+  if (nLine < rows.length) {
+    const dx = (x(nLine - 1) + x(nLine)) / 2;
+    svg.appendChild(el("line", {
+      x1: dx, x2: dx, y1: padT, y2: padT + plotH,
+      stroke: "var(--rule-strong)", "stroke-width": 1, "stroke-dasharray": "3 4",
+    }));
+    const cap = el("text", { x: dx + 7, y: padT + 11, "font-size": 10.5, fill: "var(--ink-3)" });
+    cap.textContent = "not on the delay scale";
+    svg.appendChild(cap);
+  }
+
+  for (const se of spec.series) {
+    const d = rows.slice(0, nLine)
+      .map((r, i) => (i ? "L" : "M") + x(i) + " " + y(se.get(r))).join(" ");
+    svg.appendChild(el("path", {
+      d, fill: "none", stroke: se.color, "stroke-width": 2.2,
+      "stroke-linejoin": "round", "stroke-linecap": "round",
+    }));
+    rows.forEach((r, i) => {
+      if (r.line) {
+        svg.appendChild(el("circle", {
+          cx: x(i), cy: y(se.get(r)), r: 3.4, fill: se.color,
+          stroke: "var(--surface)", "stroke-width": 1.5,
+        }));
+      } else {
+        const c = y(se.get(r)), w = 4.6;
+        svg.appendChild(el("path", {
+          d: `M ${x(i)} ${c - w} L ${x(i) + w} ${c} L ${x(i)} ${c + w} L ${x(i) - w} ${c} Z`,
+          fill: "var(--surface)", stroke: se.color, "stroke-width": 2,
+        }));
+      }
+    });
+  }
+
+  // Name each line where it ends, pushed apart if they converge.
+  const last = rows.length - 1;
+  const ends = spec.series
+    .map((se) => ({ se, v: se.get(rows[last]), y: y(se.get(rows[last])) }))
+    .sort((a, b) => a.y - b.y);
+  for (let i = 1; i < ends.length; i++) {
+    if (ends[i].y - ends[i - 1].y < 26) ends[i].y = ends[i - 1].y + 26;
+  }
+  const over = ends.length ? ends[ends.length - 1].y - (padT + plotH) : 0;
+  if (over > 0) for (const e of ends) e.y -= over;
+  for (const e of ends) {
+    const lx = x(last) + 10;
+    svg.appendChild(el("line", {
+      x1: x(last), y1: y(e.v), x2: lx - 3, y2: e.y - 4,
+      stroke: e.se.color, "stroke-width": 1, opacity: 0.55,
+    }));
+    const nm = el("text", { x: lx, y: e.y - 5, "font-size": 11.5, fill: "var(--ink)" });
+    nm.textContent = e.se.name;
+    svg.appendChild(nm);
+    const vl = el("text", { x: lx, y: e.y + 8, "font-size": 11.5, fill: "var(--ink-3)",
+      "font-family": "ui-monospace,Menlo,monospace" });
+    vl.textContent = spec.fmt(e.v);
+    svg.appendChild(vl);
+  }
+
+  rows.forEach((r, i) => {
+    const lab = el("text", {
+      x: x(i), y: h - padB + 20, "text-anchor": "end", "font-size": 11.5,
+      fill: r.t.startsWith("profitable") ? "var(--prof)" : "var(--ink-2)",
+      transform: `rotate(-38 ${x(i)} ${h - padB + 20})`,
+    });
+    lab.textContent = r.t;
+    svg.appendChild(lab);
+
+    const hit = el("rect", {
+      x: x(i) - plotW / rows.length / 2, y: padT,
+      width: plotW / rows.length, height: plotH, fill: "transparent",
+    });
+    hover(hit, r.t, spec.tip(r));
+    svg.appendChild(hit);
+  });
+
+  $(host).innerHTML = "";
+  $(host).appendChild(svg);
+}
+
+function renderAll() {
+  panel("chart-a", {
+    title: "Median ownership return and total wealth, by raise trigger",
+    fmt: (v) => "$" + (v / 1e6).toFixed(2) + "M",
+    series: [
+      { name: "What the shares paid", get: (r) => r.own, color: "var(--own)" },
+      { name: "Total wealth", get: (r) => r.net, color: "var(--flat)" },
+    ],
+    tip: (r) => [["What the shares paid", money(r.own)], ["Total wealth (incl. salary)", money(r.net)],
+                 ["Equity paid nothing", pct(r.eq0, 1)], ["Ever raised", pct(r.ever, 1)]],
+  });
+  panel("chart-b", {
+    title: "Shares of founders by raise trigger: wiped, failed, profitable",
+    fmt: (v) => pct(v),
+    series: [
+      { name: "Equity paid nothing", get: (r) => r.eq0, color: "var(--wipe)" },
+      { name: "Company failed", get: (r) => r.died, color: "var(--died)" },
+      { name: "Reached profitability", get: (r) => r.prof, color: "var(--prof)" },
+    ],
+    tip: (r) => [["Equity paid nothing", pct(r.eq0, 1)], ["Company failed", pct(r.died, 1)],
+                 ["Reached profitability", pct(r.prof, 1)], ["…by year", r.profyr.toFixed(0)],
+                 ["…and those failed", pct(r.profdied, 1)]],
+  });
+}
+
+legend("legend-a", [{ n: "What the shares paid", c: "var(--own)" },
+                    { n: "Total wealth — salary + shares − the salary given up", c: "var(--flat)" }]);
+legend("legend-b", [{ n: "Equity paid nothing", c: "var(--wipe)" },
+                    { n: "Company failed", c: "var(--died)" },
+                    { n: "Reached profitability", c: "var(--prof)" }]);
+
+$("note-b").innerHTML =
+  "The green line is the share of each cohort that ever becomes profitable. " +
+  "Note that it is <em>highest</em> for the founders who never raise, and lowest for " +
+  "those who raise on day one — taking money does not merely postpone profitability, " +
+  "it reduces how many companies ever reach it.";
+
+$("prov").innerHTML = [
+  "5,000 founders × 6 replicates",
+  "12-year horizon",
+  "small-cap configuration",
+  `"profitable" = covers a $${Math.round(DATA.salary / 1000)}k founder salary`,
+].map((s) => `<span>${s}</span>`).join("");
+
+(function table() {
+  const cols = [
+    ["Raise trigger", (r) => r.t, false],
+    ["What the shares paid", (r) => money(r.own), true],
+    ["Equity paid nothing", (r) => pct(r.eq0, 1), true],
+    ["Ever raised", (r) => pct(r.ever, 1), true],
+    ["Founder kept", (r) => pct(r.kept, 1), true],
+    ["Company failed", (r) => pct(r.died, 1), true],
+    ["Reached profit", (r) => pct(r.prof, 1), true],
+    ["…by year", (r) => (r.prof ? r.profyr.toFixed(0) : "—"), true],
+    ["…those failed", (r) => pct(r.profdied, 1), true],
+  ];
+  $("table").innerHTML =
+    "<thead><tr>" + cols.map((c) => `<th>${c[0]}</th>`).join("") + "</tr></thead><tbody>" +
+    DATA.rows.map((r) =>
+      `<tr class="${r.t.startsWith("profitable") ? "hi" : ""}">` +
+      cols.map((c) => `<td class="${c[2] ? "num" : ""}">${c[1](r)}</td>`).join("") + "</tr>"
+    ).join("") + "</tbody>";
+})();
+
+renderAll();
+let raf = null;
+addEventListener("resize", () => {
+  if (raf) cancelAnimationFrame(raf);
+  raf = requestAnimationFrame(renderAll);
+});
+</script>
