@@ -1,4 +1,4 @@
-<title>Incentive Evolution — live simulator</title>
+<title>Incentive Evolution Simulator — does the definition of success change who succeeds?</title>
 
 <style>
   :root {
@@ -52,7 +52,8 @@
     margin: 0; font-size: clamp(1.6rem,1.2rem+1.6vw,2.4rem); line-height: 1.05;
     letter-spacing: -0.03em; font-weight: 700; text-wrap: balance; max-width: 22ch;
   }
-  header p { margin: 0; max-width: 64ch; color: var(--ink-2); text-wrap: pretty; }
+  header p.standfirst { margin: 0; max-width: 68ch; color: var(--ink-2); text-wrap: pretty; }
+  header p.standfirst strong { color: var(--ink); font-weight: 620; }
   header { display: flex; flex-direction: column; gap: 0.7rem; }
 
   .panel {
@@ -153,13 +154,19 @@
 
 <div class="wrap">
   <header>
-    <div class="micro">Freedom Startups &middot; live simulator</div>
-    <h1>Turn the knobs. Watch what evolves.</h1>
-    <p>
-      Two leagues of 64 teams, identical at season zero, playing the same game under
-      the same physics. The only difference is what counts as a success. Everything
-      below is simulated in your browser as it runs &mdash; change any control mid-run
-      and the populations respond from where they are.
+    <div class="micro">Freedom Startups &middot; incentive evolution simulator</div>
+    <h1>Does the definition of success change who succeeds?</h1>
+    <p class="standfirst">
+      Two leagues of 64 basketball teams, <strong>identical at season zero</strong>, playing the
+      same game under the same physics. The only difference between them is what counts
+      as a win: League A rewards any victory, League B only rewards winning by a set
+      margin. Then both evolve for hundreds of seasons &mdash; the teams that score well
+      have more offspring &mdash; and we watch what each league becomes.
+    </p>
+    <p class="standfirst">
+      Everything below is simulated live in your browser. <strong>Turn the knobs and watch:</strong>
+      every control except the seed applies mid-run, so you can raise the bar at season
+      300 and see the population turn from where it stands.
     </p>
   </header>
 
